@@ -1,0 +1,78 @@
+import React from "react";
+
+export default function FrontView({
+  onSelect,
+  selectedMuscle,
+  highlightedMuscle,
+  onHover,
+  onLeave,
+}) {
+  // Active if either hovered OR selected
+  const isActive = (id) => id === selectedMuscle || id === highlightedMuscle;
+
+  const pathProps = (id) => ({
+    id,
+    onMouseEnter: () => onHover(id),
+    onMouseLeave: onLeave,
+    className: `
+      cursor-pointer
+      transition-colors duration-200 ease-in-out
+      ${
+        isActive(id)
+          ? "fill-blue-600"
+          : "fill-gray-400 hover:fill-blue-300"
+      }
+    `,
+  });
+
+  return (
+    <svg
+      viewBox="0 0 563 857"
+      className="w-full h-auto select-none"
+    >
+      <g
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.target.id) onSelect(e.target.id);
+        }}
+      >
+        <path {...pathProps("face")} d="m249 96l1 12 13 10 9 3 12 1 11-3 7-5 3-6 2-6 1-5 5-1 6-10v-4l-1-7-2-5-9-1v-16l-2-11-5-3-8 1-13 3-7-1c-4.86-2.05-12-4-12-4l-10-2-5 6v7 7 5 6l-5 5-2 5v5 5l1 5 4 4z" />
+
+        <path {...pathProps("traps")} d="m249 135l-4 4-18 6-13 7-5 7 20 3 9 2 8-1 2-10z" />
+        <path {...pathProps("traps")} d="m307 136v12l2 9 8 7 7-1 7-2 14-1h4l-21-12z" />
+
+        <path {...pathProps("shoulders")} d="m153 224l4-16 6-17 7-11 15-8c3.31 0.08 25-7 25-7h21l-10 10-14 18c0 0-5.55 9.63-14 15-8.45 5.37-28 10-28 10z" />
+        <path {...pathProps("shoulders")} d="m325 166l13 10 11 10 6 10 7 8 10 8c0 0 5.24 3.37 11 5 5.76 1.63 17 5 17 5h4l-3-15c-1.73-3.39-8-24-8-24l-19-17-29-3z" />
+
+        <path {...pathProps("chest")} d="m188 220l19-19 15-21 21-13h16l15 4 2 23-1 30-21 18-23 7-18-4z" />
+        <path {...pathProps("chest")} d="m283 174l-2 33 3 20 27 17 20 2c4.45 0.03 16-8 16-8l14-13 9-7-18-20-22-21-14-5-12-3-12 1z" />
+
+        <path {...pathProps("neck")} d="m255 119l1 26-2 15 23 5 12-6 11-1v-24l1-14-17 7-15-2z" />
+
+        <path {...pathProps("biceps")} d="m129 278l9-34c0 0 8.84-10.76 17-13 8.16-2.24 30-6 30-6l2 13-5 18c-2.33 2.42-5.41 11.94-11 16-5.59 4.06-13 12-13 12-1.6 3.69-8 12-8 12 0 0-0.13 3.92-7 4-6.87 0.08-10-1-10-1z" />
+        <path {...pathProps("biceps")} d="m381 265l-9-10-4-19c0 0 0.5-9.88 5-11 4.5-1.12 27 1 27 1l11 8 7 17 5 13 3 18v13l-15 7c-3.85-0.42-17-13-17-13l-6-15z" />
+
+        <path {...pathProps("forearms")} d="m70 376l9-27 13-25c0 0 5.02-8.09 9-13 3.98-4.91 15-15 15-15l7-9 3 14c0 0-2.76 5.29 5 5 7.76-0.29 10 0 10 0 0 0-4.37 21.38-8 25-3.63 3.62-11.35 11.86-18 19-6.65 7.14-23 28-23 28l-9 10-11-2z" />
+        <path {...pathProps("forearms")} d="m420 334l-9-25 8-1 7-5c0 0 2.45-4.32 4-10 1.55-5.68 3-13 3-13l21 26 11 26 19 41-1 15h-12l-14-15-19-16z" />
+
+        <path {...pathProps("lats")} d="m197 239l-3 19 17 48-3 64 20-5 7-23-1-42 9-25z" />
+        <path {...pathProps("lats")} d="m315 275l48-45 1 23-13 43-7 18 5 55-10 5-9-6-8-7-2-21 2-24-1-15z" />
+
+        <path {...pathProps("abdominals")} d="m246 253l19-9 11-1 5 4 2-3 20 3 13 9-4 31-2 85-29 47-31-34-7-66 2-49-4-12z" />
+
+        <path {...pathProps("quadriceps")} d="m203 584l-12-51 5-73 15-80 28 22 17 39 18 22-5 48-13 41-16 55h-14l-21-18z" />
+        <path {...pathProps("quadriceps")} d="m281 463l11-22 14-35c0 0 5.25-15.75 15-19 9.75-3.25 20-10 20-10l7-1 11 75 12 55-8 56-9 24-18 4-4 12-15 2-8-7z" />
+
+        <path {...pathProps("calves")} d="m194 628l-15 59 9 58-5 47-20 40 6 13 26-10 10-14 8-11 2-34 11-57 10-27-4-58-19 9z" />
+        <path {...pathProps("calves")} d="m324 636l18 10 23-22 6 53-1 50-3 33 6 43 15 20-5 17-20 1-15-15-9-17 1-50-10-45-14-19z" />
+
+        <path {...pathProps("triceps")} d="m412 228l8 11 6 19 6 18 10-12-5-23-2-15-12-4z" />
+        <path {...pathProps("triceps")} d="m121 273l3-19 7-20 12-9 2-11-16 2-10 6-2 11-4 12v10l2 9z" />
+
+        <path {...pathProps("hands")} d="m65 391l-21 37 7 28 23-11 11-36 1-10z" />
+        <path {...pathProps("hands")} d="m472 400l20-9 11 26-7 42-24-21z" />
+      </g>
+    </svg>
+  );
+}
