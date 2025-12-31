@@ -8,7 +8,7 @@ function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeLink, setActiveLink] = useState(null);
   // Increased base opacity from 0.05 to 0.15 for better visibility on dark bg
-  const [activeColor, setActiveColor] = useState("rgba(255, 255, 255, 0.15)");
+  const [activeColor, setActiveColor] = useState("rgba(67, 64, 218, 0.6)");
   const [showArrow, setShowArrow] = useState(false);
 
   const toggleMenu = () => {
@@ -18,7 +18,7 @@ function Navbar() {
     } else {
       setIsOpen(false);
       setShowArrow(false);
-      setActiveColor("rgba(255, 255, 255, 0.15)");
+      setActiveColor("rgba(180, 53, 249, 0.6)");
       setActiveLink(null);
     }
   };
