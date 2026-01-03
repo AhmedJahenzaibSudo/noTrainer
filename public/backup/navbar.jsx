@@ -1,155 +1,182 @@
 "use client";
-
-import { useState, useEffect, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { ArrowRight, Calculator, Dumbbell, Gamepad2, LayoutDashboard, Info, Home } from "lucide-react";
+import Link from "next/link";
 
-const MENU_ITEMS = [
-  { label: "HOME", href: "/", bg: "#FFE500" },
-  { label: "CALCULATORS", href: "/calculators", bg: "#00F58C" },
-  { label: "WIZARD", href: "/wizard", bg: "#7EE8FA" },
-  { label: "ABOUT", href: "/about", bg: "#FF6B4A" },
-  { label: "CONTACT", href: "/contact", bg: "#B197FC" },
-];
+function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeLink, setActiveLink] = useState(null);
+  // Increased base opacity from 0.05 to 0.15 for better visibility on dark bg
+  const [activeColor, setActiveColor] = useState("rgba(67, 64, 218, 0.6)");
+  const [showArrow, setShowArrow] = useState(false);
 
-export default function BrutalMenu() {
-  const router = useRouter();
-  const pathname = usePathname();
+  const toggleMenu = () => {
+    if (!isOpen) {
+      setShowArrow(true);
+      setTimeout(() => setIsOpen(true), 300); // Slightly faster trigger
+    } else {
+      setIsOpen(false);
+      setShowArrow(false);
+      setActiveColor("rgba(180, 53, 249, 0.6)");
+      setActiveLink(null);
+    }
+  };
 
-  const currentIndex = MENU_ITEMS.findIndex(
-    (item) => item.href === pathname
-  );
-
-  const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(
-    currentIndex !== -1 ? currentIndex : 0
-  );
-  const [exiting, setExiting] = useState(false);
-
-  useEffect(() => {
-    const handleEsc = (e) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, []);
-
-  const handleNavigate = useCallback(
-    (href) => {
-      if (pathname === href) {
-        setOpen(false);
-        return;
-      }
-
-      setExiting(true);
-      setTimeout(() => {
-        setOpen(false);
-        setExiting(false);
-        router.push(href);
-      }, 350);
+  const navLinks = [
+    { 
+      name: "Home", 
+      href: "/", 
+      color: "rgba(36, 120, 255, 0.6)", // Increased opacity
+      icon: <Home size={40} />,
+      desc: "Welcome to noTrainer. Your house, your gym.",
+      details: ["24/7 Chatbot Support", "Daily Challenges", "Motivation"]
     },
-    [pathname, router]
-  );
+    { 
+      name: "Wizard", 
+      href: "/wizard", 
+      color: "rgba(168, 85, 247, 0.6)",
+      icon: <Dumbbell size={40} />,
+      desc: "Custom workout generator based on your body.",
+      details: ["SVG Muscle Selection", "Equipment Filtering", "Posture Guides"]
+    },
+    { 
+      name: "Calculators", 
+      href: "/calculators", 
+      color: "rgba(236, 72, 153, 0.6)",
+      icon: <Calculator size={40} />,
+      desc: "Track your health metrics precisely.",
+      details: ["BMI & Calorie Tracker", "Ideal Body Weight", "Protein Intake"]
+    },
+    { 
+      name: "Game", 
+      href: "/game", 
+      color: "rgba(34, 197, 94, 0.6)",
+      icon: <Gamepad2 size={40} />,
+      desc: "Relax and focus with our mini-games.",
+      details: ["Focus Exercises", "Relaxation Mode", "High Scores"]
+    },
+    { 
+      name: "Kanban", 
+      href: "/kanban", 
+      color: "rgba(249, 115, 22, 0.6)",
+      icon: <LayoutDashboard size={40} />,
+      desc: "Organize your fitness journey.",
+      details: ["Task Tracking", "Workout Scheduling", "Progress Visualization"]
+    },
+    { 
+      name: "About", 
+      href: "/about", 
+      color: "rgba(6, 182, 212, 0.6)",
+      icon: <Info size={40} />,
+      desc: "Why we built noTrainer.",
+      details: ["Mission Statement", "Home Gym Philosophy", "Contact Team"]
+    },
+  ];
 
   return (
     <>
-      {/* Trigger Button */}
-      <motion.button
-        onClick={() => setOpen(!open)}
-        className="fixed top-6 left-6 z-[100] h-14 w-14 rounded-full border-[3px] border-black bg-white shadow-[4px_4px_0px_black] flex items-center justify-center transition-transform hover:scale-105 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+      {/* Floating Toggle Button */}
+      <button
+        onClick={toggleMenu}
+        className="fixed top-8 left-8 z-[100] w-14 h-14 rounded-full flex flex-col items-center justify-center gap-1.5 transition-all duration-500 bg-white/20 backdrop-blur-2xl border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:scale-105 active:scale-95"
       >
-        <AnimatePresence mode="wait">
-          {open ? (
-            <motion.div
-              key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            >
-              <X size={28} strokeWidth={4} />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="menu"
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.7, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            >
-              <Menu size={28} strokeWidth={4} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
+        <motion.span
+          animate={isOpen ? { rotate: 45, y: 8, width: "24px" } : { rotate: 0, y: 0, width: "22px" }}
+          className="h-1 bg-white rounded-full shadow-[0_0_10px_white]"
+        />
+        <motion.span
+          animate={isOpen ? { opacity: 0, x: -10 } : { opacity: 1, x: 0, width: "18px" }}
+          className="h-1 bg-white rounded-full shadow-[0_0_10px_white]"
+        />
+        <motion.span
+          animate={isOpen ? { rotate: -45, y: -8, width: "24px" } : { rotate: 0, y: 0, width: "22px" }}
+          className="h-1 bg-white rounded-full shadow-[0_0_10px_white]"
+        />
+      </button>
 
       <AnimatePresence>
-        {open && (
+        {isOpen && (
           <motion.div
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
-            transition={{
-              duration: 0.35,
-              ease: [0.22, 1, 0.36, 1], // fast-out brutal curve
-            }}
-            className="fixed inset-0 z-[90] flex items-center overflow-hidden"
+            transition={{ type: "spring", damping: 30, stiffness: 200 }}
+            className="fixed inset-0 z-[90] bg-zinc-950 flex items-center justify-between px-10 md:px-32 overflow-hidden"
           >
-            {/* Background */}
-            <motion.div
-              animate={{
-                backgroundColor: MENU_ITEMS[active]?.bg || "#fff",
-              }}
-              transition={{ duration: 0.25 }}
-              className="absolute inset-0"
+            {/* Dynamic Background Glow - Speed increased to 300ms */}
+            <motion.div 
+              className="absolute inset-0 transition-colors duration-300 ease-out"
+              style={{ backgroundColor: activeColor }}
             />
 
-            <nav className="relative z-10 w-full">
-              <ul className="ml-10 md:ml-24 space-y-2">
-                {MENU_ITEMS.map((item, i) => {
-                  const isCurrent = pathname === item.href;
-
-                  return (
-                    <li key={item.label} onMouseEnter={() => setActive(i)}>
-                      <button
-                        onClick={() => handleNavigate(item.href)}
-                        className="group relative flex items-center"
-                      >
-                        <span className="absolute -left-16 opacity-0 -translate-x-6 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0 hidden md:block">
-                          <ArrowRight size={56} strokeWidth={6} />
-                        </span>
-
-                        <div className="transition-transform duration-200 group-hover:translate-x-3">
-                          <span
-                            className="text-[clamp(2.5rem,12vw,9rem)] font-black leading-[0.85] tracking-tighter uppercase transition-all duration-200"
-                            style={{
-                              color: isCurrent ? "#000" : "#555",
-                              opacity: isCurrent ? 1 : 0.5,
-                            }}
-                          >
-                            {item.label}
-                          </span>
-                        </div>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+            {/* LEFT: Navigation Links */}
+            <nav className="relative z-10 flex flex-col space-y-6 w-1/2">
+              {navLinks.map((link, index) => (
+                <motion.div
+                  key={link.name}
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 + (index * 0.05) }}
+                  onMouseEnter={() => {
+                    setActiveColor(link.color);
+                    setActiveLink(link);
+                  }}
+                  onMouseLeave={() => setActiveColor("rgba(255, 255, 255, 0.15)")}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={toggleMenu}
+                    className="group flex items-center text-5xl md:text-7xl font-bold tracking-tighter text-white/60 hover:text-white transition-all duration-200"
+                  >
+                    <div className="w-0 overflow-hidden group-hover:w-16 md:group-hover:w-24 transition-all duration-300 ease-out flex items-center">
+                      <ArrowRight size={40} strokeWidth={3} className="text-white" />
+                    </div>
+                    <span>{link.name}</span>
+                  </Link>
+                </motion.div>
+              ))}
             </nav>
 
-            {/* Exit Wipe */}
-            <AnimatePresence>
-              {exiting && (
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="absolute inset-0 origin-left bg-black z-[110]"
-                />
-              )}
-            </AnimatePresence>
+            {/* RIGHT: Preview Panel */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="relative z-10 w-1/3 hidden lg:flex flex-col justify-center border-l border-white/40 pl-16 h-[60vh]"
+            >
+              <AnimatePresence mode="wait">
+                {activeLink && (
+                  <motion.div
+                    key={activeLink.name}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-white">{activeLink.icon}</div>
+                    <h2 className="text-5xl font-black text-white">{activeLink.name}</h2>
+                    <p className="text-xl text-white/90 leading-relaxed font-medium">
+                      {activeLink.desc}
+                    </p>
+                    <ul className="space-y-4">
+                      {activeLink.details.map((detail, i) => (
+                        <li key={i} className="flex items-center text-white text-sm font-bold tracking-widest uppercase">
+                          <span className="w-3 h-3 rounded-full bg-white mr-3 shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
+                          {detail}
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </>
   );
 }
+
+export default Navbar;

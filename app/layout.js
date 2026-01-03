@@ -3,8 +3,8 @@ import Script from "next/script";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import AggressiveMarquee from "@/components/AggressiveMarquee";
-import { SmoothCursor } from "@/components/ui/smooth-cursor";
+import Marquee from "@/components/Marquee";
+import { Cursor } from "@/components/Cursor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,9 +27,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AggressiveMarquee />
+        <Marquee />
         <Navbar />
-        <SmoothCursor />
+        <Cursor />
 
         <main>{children}</main>
 

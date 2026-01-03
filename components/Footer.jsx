@@ -105,10 +105,7 @@ function Footer() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-gray-900 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-        <p>&copy; {currentYear} noTrainer. All rights reserved.</p>
-        <p>Built for strength.</p>
-      </div>
+      
     </footer>
   );
 }

@@ -1,52 +1,68 @@
-import React from "react";
-import { Dumbbell, Activity, Timer, LineChart } from "lucide-react";
+"use client";
 
-function Features() {
+import React from "react";
+import { motion } from "framer-motion";
+import { 
+  Camera, 
+  Database, 
+  MessageSquare, 
+  Columns3, 
+  Gamepad2, 
+  Wand2, 
+  UserCircle, 
+  Calculator, 
+  Trophy 
+} from "lucide-react";
+
+const Features = () => {
   const features = [
-    {
-      icon: <Dumbbell size={36} className="text-blue-500" />,
-      title: "Workout Library",
-      desc: "Access hundreds of exercises with proper form and step-by-step guidance.",
-    },
-    {
-      icon: <Activity size={36} className="text-green-500" />,
-      title: "Track Progress",
-      desc: "Monitor your improvements, set goals, and stay consistent every week.",
-    },
-    {
-      icon: <Timer size={36} className="text-yellow-400" />,
-      title: "Custom Plans",
-      desc: "Get personalized workout splits and training programs designed for you.",
-    },
-    {
-      icon: <LineChart size={36} className="text-purple-500" />,
-      title: "Calorie & Macro Tracking",
-      desc: "Visualize your growth with progress charts and analytics that motivate you.",
-    },
+    { icon: <UserCircle size={24} />, title: "Muscle Mapping", desc: "SVG selection for visual targeting." },
+    { icon: <Wand2 size={24} />, title: "Workout Wizard", desc: "Custom plans based on your gear." },
+    { icon: <Camera size={24} />, title: "Visual Guides", desc: "Photo references and postures." },
+    { icon: <Database size={24} />, title: "Rich Dataset", desc: "Detailed names and exercise info." },
+    { icon: <Columns3 size={24} />, title: "Kanban Board", desc: "Productivity and organizing tools ." },
+    { icon: <MessageSquare size={24} />, title: "24/7 Chatbot Support", desc: "AI chatbot trainer always online." },
+    { icon: <Gamepad2 size={24} />, title: "Relaxing Game", desc: "Interactive challenges and rewards." },
+    { icon: <Calculator size={24} />, title: "Calculators", desc: "Health and macro metrics." },
   ];
 
   return (
-    <section className="bg-gray-950 text-white py-20 border-t border-gray-800">
-      <div className="max-w-6xl mx-auto px-6 text-center">
-        <h2 className="text-4xl font-extrabold mb-12">
-          Why Choose <span className="text-[#c2c5ca]">noTrainer?</span>
-        </h2>
+    <section className="bg-black text-white py-16 px-6 md:px-20 border-t-4 border-yellow-400">
+      <div className="max-w-7xl mx-auto">
+        
+        <div className="mb-12">
+          <h2 className="text-5xl font-black uppercase italic tracking-tighter">
+            Features
+          </h2>
+          <div className="h-1.5 w-16 bg-yellow-400 mt-2" />
+        </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {features.map((feature, index) => (
-            <div
+            <motion.div
               key={index}
-              className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-blue-500/10 transition transform hover:-translate-y-1"
+              whileHover={{ y: -4, x: 4 }}
+              className="bg-yellow-400 text-black p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_0px_#22c55e] transition-all"
             >
-              <div className="flex justify-center mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-400 text-sm">{feature.desc}</p>
-            </div>
+              <div className="flex items-start gap-4">
+                <div className="bg-black text-yellow-400 p-2 border-2 border-black shrink-0">
+                  {feature.icon}
+                </div>
+                <div>
+                  <h3 className="text-lg font-black uppercase leading-tight mb-1">
+                    {feature.title}
+                  </h3>
+                  <p className="text-[12px] font-bold uppercase leading-tight opacity-80 border-t border-black/20 pt-1">
+                    {feature.desc}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>
     </section>
   );
-}
+};
 
 export default Features;

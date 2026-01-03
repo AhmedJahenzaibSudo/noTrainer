@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Zap,
@@ -11,170 +11,244 @@ import {
   MessageSquare,
   Target,
   Info,
-  ChevronRight,
   MapPin,
+  Package,
 } from "lucide-react";
 
 import FrontView from "@/components/anatomy/FrontView";
-import { TextRotate } from "@/components/ui/text-rotate";
+import { TextRotate } from "@/components/text-rotate";
 
 const Hero = () => {
   const [glitchIds, setGlitchIds] = useState([]);
   const [selectedMuscle, setSelectedMuscle] = useState(null);
   const [highlightedMuscle, setHighlightedMuscle] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const [selectedExcuse, setSelectedExcuse] = useState(null);
 
-  /* ---------- Mount guard ---------- */
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const blueprint = [
-    { prob: "Gym is too far / Cold outside", sol: "Make your house your gym", icon: <MapPin size={16} /> },
-    { prob: "Expensive gym fees", sol: "Free Calculators & Tools", icon: <Calculator size={16} /> },
-    { prob: "Wrong workouts don't help", sol: "Posture guides & Photo refs", icon: <Info size={16} /> },
-    { prob: "Too introverted for help", sol: "24/7 AI Chatbot support", icon: <MessageSquare size={16} /> },
-    { prob: "No information available", sol: "Rich dataset & Details", icon: <Dumbbell size={16} /> },
-    { prob: "Women who can't go out", sol: "Custom Workout Wizard", icon: <Zap size={18} /> },
-    { prob: "Need organization", sol: "Kanban & Tracking", icon: <LayoutDashboard size={16} /> },
-    { prob: "Low motivation", sol: "Games & Challenges", icon: <Target size={16} /> },
+  const excuses = [
+    {
+      id: 1,
+      text: "Gym too far / Cold outside",
+      solution: "Transform your home into the perfect gym space with our AI-powered workout wizard. No weather, no travel, just results.",
+      icon: <MapPin size={28} />,
+      color: "bg-yellow-400",
+      textColor: "text-gray-900",
+    },
+    {
+      id: 2,
+      text: "Expensive gym fees",
+      solution: "Get everything you need for free. Premium calculators, tracking tools, and personalized workouts without subscriptions.",
+      icon: <Calculator size={28} />,
+      color: "bg-yellow-400",
+      textColor: "text-gray-900",
+    },
+    {
+      id: 3,
+      text: "Wrong workouts don't help",
+      solution: "Every exercise includes posture cues, photo references, and muscle targeting so you train correctly every time.",
+      icon: <Info size={28} />,
+      color: "bg-yellow-400",
+      textColor: "text-gray-900",
+    },
+    {
+      id: 4,
+      text: "Too introverted for help",
+      solution: "Your AI trainer is available 24/7. Ask anything, anytime, without judgment or pressure.",
+      icon: <MessageSquare size={28} />,
+      color: "bg-yellow-400",
+      textColor: "text-gray-900",
+    },
+    {
+      id: 5,
+      text: "No information available",
+      solution: "Access 500+ exercises with difficulty levels, muscle focus, and step-by-step instructions.",
+      icon: <Dumbbell size={28} />,
+      color: "bg-yellow-400",
+      textColor: "text-gray-900",
+    },
+    {
+      id: 6,
+      text: "Women who can't go out",
+      solution: "Private, safe, and effective home workouts designed for your space and comfort.",
+      icon: <Zap size={28} />,
+      color: "bg-yellow-400",
+      textColor: "text-gray-900",
+    },
+    {
+      id: 7,
+      text: "Need organization",
+      solution: "Plan workouts, track progress, and stay consistent with built-in boards and goals.",
+      icon: <LayoutDashboard size={28} />,
+      color: "bg-yellow-400",
+      textColor: "text-gray-900",
+    },
+    {
+      id: 8,
+      text: "Low motivation",
+      solution: "Challenges, streaks, and rewards keep you engaged and progressing every day.",
+      icon: <Target size={28} />,
+      color: "bg-yellow-400",
+      textColor: "text-gray-900",
+    },
+    {
+      id: 9,
+      text: "No equipment available",
+      solution: "Effective bodyweight programs that build strength using nothing but your body.",
+      icon: <Package size={28} />,
+      color: "bg-yellow-400",
+      textColor: "text-gray-900",
+    },
   ];
 
   const muscleIds = useMemo(
     () => [
-      "face", "traps", "shoulders", "chest", "neck", 
-      "biceps", "forearms", "lats", "abdominals", 
-      "quadriceps", "calves", "triceps", "hands",
+      "face", "traps", "shoulders", "chest", "neck", "biceps", 
+      "forearms", "lats", "abdominals", "quadriceps", "calves", 
+      "triceps", "hands",
     ],
     []
   );
 
-  /* ---------- Glitch logic (Aggressive Multi-Glitch) ---------- */
   useEffect(() => {
     if (!mounted) return;
-
     const interval = setInterval(() => {
-      const count = Math.floor(Math.random() * 3) + 1;
+      const count = Math.floor(Math.random() * 2) + 1;
       const shuffled = [...muscleIds].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, count);
-
       setGlitchIds(selected);
-      setTimeout(() => setGlitchIds([]), 100);
-    }, 350);
-
+      setTimeout(() => setGlitchIds([]), 80);
+    }, 400);
     return () => clearInterval(interval);
   }, [mounted, muscleIds]);
 
-  /* ---------- Injected CSS ---------- */
   const glitchStyles = useMemo(() => {
-    if (glitchIds.length === 0) return "";
+    if (!glitchIds.length) return "";
     return glitchIds
       .map(
         (id) => `
         #${id.replace(/\s+/g, "\\ ")} {
-          fill: #a3e635 !important;
-          filter: drop-shadow(0 0 15px #a3e635) brightness(1.5);
-          transform: translate(${Math.random() * 6 - 3}px, ${Math.random() * 4 - 2}px)
-            skewX(${Math.random() * 8 - 4}deg);
+          fill: #22c55e !important;
+          filter: drop-shadow(0 0 12px #22c55e);
           opacity: 1 !important;
-          transition: none !important;
         }
       `
       )
       .join("");
   }, [glitchIds]);
 
-  if (!mounted) return <div className="min-h-screen bg-[#050505]" />;
+  if (!mounted) return null;
 
   return (
-    <section className="min-h-screen bg-[#050505] text-white pt-6 pb-10 px-6 md:px-20 flex flex-col overflow-hidden">
+    <section className="min-h-screen bg-black text-white px-6 md:px-20 pt-8 pb-12 overflow-hidden relative">
       <style>{glitchStyles}</style>
 
-      {/* ---------- HEADLINE ---------- */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8 w-fit"
-      >
-        <div className="flex items-center gap-x-3 text-4xl md:text-5xl font-black tracking-tighter uppercase">
-          <h1 className="text-white">noTrainer</h1>
-          <span className="text-lime-400">/</span>
-          <div className="text-slate-950 bg-lime-400 px-3 py-0.5">
+      {/* Header */}
+      <div className="mb-10">
+        <div className="flex items-center gap-3 text-5xl md:text-6xl font-black uppercase">
+          <h1>noTrainer</h1>
+          <span className="text-yellow-400">/</span>
+          <div className="bg-yellow-400 text-black px-4 py-1 rounded-lg">
             <TextRotate
-              texts={["Home Gym", "House Gym", "Bio-Logic", "AI Logic"]}
-              staggerDuration={0.02}
-              rotation={0}
-              mainClassName="rotate-0"
+              texts={["Home Gym", "Workout Reference", "Calculators", "Health AI"]}
             />
           </div>
         </div>
-        <div className="h-1 w-20 bg-lime-400 mt-2" />
-      </motion.div>
+        <div className="h-1 w-24 bg-yellow-400 mt-3" />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start flex-1">
-        
-        {/* ---------- LIST (Expanded to 8 columns) ---------- */}
-        <div className="lg:col-span-8 space-y-3">
-          {blueprint.map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="flex items-stretch group h-12 cursor-pointer"
-            >
-              <div className="w-1/2 bg-zinc-900/40 border-y border-l border-white/5 px-4 flex items-center gap-3">
-                <X size={14} className="text-red-500/60" />
-                <span className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-tight truncate">
-                  {item.prob}
-                </span>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Excuses Section */}
+        <div className="lg:col-span-8">
+          <h2 className="text-4xl font-black mb-2">What's Stopping You?</h2>
+          <p className="text-gray-400 mb-6">Pick the problem. We handle the solution.</p>
 
-              <div className="w-1/2 bg-white/5 border border-white/10 px-4 flex items-center gap-3 group-hover:bg-lime-400 group-hover:border-lime-400 transition-all duration-200">
-                <div className="text-lime-400 group-hover:text-slate-950">
-                  {item.icon}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {excuses.map((excuse) => (
+              <motion.div
+                key={excuse.id}
+                layoutId={`excuse-${excuse.id}`}
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedExcuse(excuse)}
+                className={`${excuse.color} ${excuse.textColor} p-6 rounded-lg border-2 border-black cursor-pointer shadow-lg`}
+              >
+                <div className="flex flex-col items-center gap-3 text-center">
+                  {excuse.icon}
+                  <p className="text-sm font-bold uppercase">{excuse.text}</p>
                 </div>
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white group-hover:text-slate-950 truncate">
-                  {item.sol}
-                </span>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </div>
         </div>
 
-        {/* ---------- SVG PANEL (RESIZED & COMPACT) ---------- */}
-        <div className="lg:col-span-4 flex flex-col h-full max-w-sm mx-auto lg:mx-0">
-          <div className="bg-zinc-900/20 border border-white/10 rounded-sm relative h-[380px] flex items-center justify-center overflow-hidden p-4 group">
-            
-            {/* Scan Line Overlay */}
+        {/* Anatomy Panel */}
+        <div className="lg:col-span-4 max-w-sm mx-auto w-full">
+          <div
+            className={`relative h-[550px] border-4 border-yellow-400/20 bg-zinc-900/20 rounded-xl flex items-center justify-center overflow-hidden transition-opacity duration-300 p-12 ${
+              selectedExcuse ? "opacity-10" : "opacity-100"
+            }`}
+          >
+            {/* SINGLE SCANNING LINE */}
             <motion.div
-              animate={{ top: ["0%", "100%", "0%"] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              className="absolute left-0 right-0 h-[2px] bg-lime-400/20 z-10 pointer-events-none"
+              animate={{ top: ["-2%", "102%"] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
+              className="absolute left-0 right-0 h-[2px] bg-green-400 z-20"
+              style={{ boxShadow: "0 0 15px 2px rgba(74, 222, 128, 0.8)" }}
             />
 
-            {/* SVG Content */}
-            <div className="relative w-full h-full flex items-center justify-center pointer-events-auto">
-              <div className="scale-84 origin-center">
-              <FrontView
-                onHover={(id) => setHighlightedMuscle(id)}
-                onLeave={() => setHighlightedMuscle(null)}
-                onSelect={(id) => setSelectedMuscle(id)}
-                selectedMuscle={selectedMuscle}
-                highlightedMuscle={highlightedMuscle}
-                /* Fixed height makes the SVG fill the smaller box perfectly */
-                className="h-[320px] w-auto transition-all duration-700 opacity-40 group-hover:opacity-100"
-              />
-              </div>
-            </div>
+            {/* Scaled Down SVG */}
+            <FrontView
+              onHover={setHighlightedMuscle}
+              onLeave={() => setHighlightedMuscle(null)}
+              onSelect={setSelectedMuscle}
+              selectedMuscle={selectedMuscle}
+              highlightedMuscle={highlightedMuscle}
+              className="h-[340px] w-auto opacity-90 z-10 transition-transform duration-500"
+            />
           </div>
-
-          {/* Compact Button */}
-          <button className="bg-lime-400 p-3 mt-4 text-slate-950 font-black uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-white transition-all active:scale-[0.98]">
-            Initialize Wizard <ChevronRight size={18} />
-          </button>
         </div>
       </div>
+
+      {/* Modal */}
+      <AnimatePresence>
+        {selectedExcuse && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-40"
+              onClick={() => setSelectedExcuse(null)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+              <motion.div
+                layoutId={`excuse-${selectedExcuse.id}`}
+                className="relative bg-yellow-400 text-black p-8 md:p-12 rounded-xl max-w-2xl w-full border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <button
+                  onClick={() => setSelectedExcuse(null)}
+                  className="absolute top-4 right-4 bg-black text-white p-2 rounded-lg hover:scale-110"
+                >
+                  <X size={20} />
+                </button>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="p-3 bg-black text-yellow-400 rounded-lg">{selectedExcuse.icon}</div>
+                    <h3 className="text-3xl font-black uppercase">The Solution</h3>
+                  </div>
+                  <p className="text-xl md:text-2xl font-medium leading-relaxed italic border-l-4 border-black pl-4">
+                    "{selectedExcuse.solution}"
+                  </p>
+                </motion.div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

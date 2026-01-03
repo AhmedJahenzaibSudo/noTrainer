@@ -26,7 +26,7 @@ const CrosshairSVG = () => (
   </svg>
 );
 
-export function SmoothCursor({
+export function Cursor({
   springConfig = { damping: 35, stiffness: 700, mass: 0.8 },
 }) {
   const [isTargeting, setIsTargeting] = useState(false);
