@@ -143,72 +143,79 @@ const Hero = () => {
   if (!mounted) return null;
 
   return (
-    <section className="min-h-screen bg-black text-white px-6 md:px-20 pt-8 pb-12 overflow-hidden relative">
+    <section 
+      className="min-h-screen bg-black text-white px-6 md:px-20 pt-8 pb-12 overflow-hidden relative bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/bg.jpg')" }}
+    >
+      {/* Background Overlay for better text contrast */}
+      <div className="absolute inset-0 bg-black/70 z-0" />
+
       <style>{glitchStyles}</style>
 
-      {/* Header */}
-      <div className="mb-10">
-        <div className="flex items-center gap-3 text-5xl md:text-6xl font-black uppercase">
-          <h1>noTrainer</h1>
-          <span className="text-yellow-400">/</span>
-          <div className="bg-yellow-400 text-black px-4 py-1 rounded-lg">
-            <TextRotate
-              texts={["Home Gym", "Workout Reference", "Calculators", "Health AI"]}
-            />
+      {/* Content wrapper to stay above overlay */}
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="mb-10">
+          <div className="flex items-center gap-3 text-5xl md:text-6xl font-black uppercase">
+            <h1>noTrainer</h1>
+            <span className="text-yellow-400">/</span>
+            <div className="bg-yellow-400 text-black px-4 py-1 rounded-lg">
+              <TextRotate
+                texts={["Home Gym", "Workout Reference", "Calculators", "Health AI"]}
+              />
+            </div>
           </div>
+          <div className="h-1 w-24 bg-yellow-400 mt-3" />
         </div>
-        <div className="h-1 w-24 bg-yellow-400 mt-3" />
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* Excuses Section */}
-        <div className="lg:col-span-8">
-          <h2 className="text-4xl font-black mb-2">What's Stopping You?</h2>
-          <p className="text-gray-400 mb-6">Pick the problem. We handle the solution.</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          {/* Excuses Section */}
+          <div className="lg:col-span-8">
+            <h2 className="text-4xl font-black mb-2">What's Stopping You?</h2>
+            <p className="text-gray-100 mb-6 font-medium">Pick the problem. We handle the solution.</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {excuses.map((excuse) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {excuses.map((excuse) => (
+                <motion.div
+                  key={excuse.id}
+                  layoutId={`excuse-${excuse.id}`}
+                  whileHover={{ y: -4 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSelectedExcuse(excuse)}
+                  className={`${excuse.color} ${excuse.textColor} p-6 rounded-lg border-2 border-black cursor-pointer shadow-lg`}
+                >
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    {excuse.icon}
+                    <p className="text-sm font-bold uppercase">{excuse.text}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Anatomy Panel */}
+          <div className="lg:col-span-4 max-w-sm mx-auto w-full">
+            <div
+              className={`relative h-[550px] border-4 border-yellow-400/20 bg-zinc-900/40 backdrop-blur-md rounded-xl flex items-center justify-center overflow-hidden transition-opacity duration-300 p-12 ${
+                selectedExcuse ? "opacity-10" : "opacity-100"
+              }`}
+            >
               <motion.div
-                key={excuse.id}
-                layoutId={`excuse-${excuse.id}`}
-                whileHover={{ y: -4 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedExcuse(excuse)}
-                className={`${excuse.color} ${excuse.textColor} p-6 rounded-lg border-2 border-black cursor-pointer shadow-lg`}
-              >
-                <div className="flex flex-col items-center gap-3 text-center">
-                  {excuse.icon}
-                  <p className="text-sm font-bold uppercase">{excuse.text}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                animate={{ top: ["-2%", "102%"] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
+                className="absolute left-0 right-0 h-[2px] bg-green-400 z-20"
+                style={{ boxShadow: "0 0 15px 2px rgba(74, 222, 128, 0.8)" }}
+              />
 
-        {/* Anatomy Panel */}
-        <div className="lg:col-span-4 max-w-sm mx-auto w-full">
-          <div
-            className={`relative h-[550px] border-4 border-yellow-400/20 bg-zinc-900/20 rounded-xl flex items-center justify-center overflow-hidden transition-opacity duration-300 p-12 ${
-              selectedExcuse ? "opacity-10" : "opacity-100"
-            }`}
-          >
-            {/* SINGLE SCANNING LINE */}
-            <motion.div
-              animate={{ top: ["-2%", "102%"] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
-              className="absolute left-0 right-0 h-[2px] bg-green-400 z-20"
-              style={{ boxShadow: "0 0 15px 2px rgba(74, 222, 128, 0.8)" }}
-            />
-
-            {/* Scaled Down SVG */}
-            <FrontView
-              onHover={setHighlightedMuscle}
-              onLeave={() => setHighlightedMuscle(null)}
-              onSelect={setSelectedMuscle}
-              selectedMuscle={selectedMuscle}
-              highlightedMuscle={highlightedMuscle}
-              className="h-[340px] w-auto opacity-90 z-10 transition-transform duration-500"
-            />
+              <FrontView
+                onHover={setHighlightedMuscle}
+                onLeave={() => setHighlightedMuscle(null)}
+                onSelect={setSelectedMuscle}
+                selectedMuscle={selectedMuscle}
+                highlightedMuscle={highlightedMuscle}
+                className="h-[340px] w-auto opacity-90 z-10 transition-transform duration-500"
+              />
+            </div>
           </div>
         </div>
       </div>

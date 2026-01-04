@@ -1,66 +1,91 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
-import { 
-  Camera, 
-  Database, 
-  MessageSquare, 
-  Columns3, 
-  Gamepad2, 
-  Wand2, 
-  UserCircle, 
-  Calculator, 
-  Trophy 
-} from "lucide-react";
+import ScrollTimeline from "./lightswind/scroll-timeline";
+import { Wand2, UserCircle, Database, Calculator, MessageSquare, Columns3, Gamepad2, Trophy } from "lucide-react";
 
 const Features = () => {
   const features = [
-    { icon: <UserCircle size={24} />, title: "Muscle Mapping", desc: "SVG selection for visual targeting." },
-    { icon: <Wand2 size={24} />, title: "Workout Wizard", desc: "Custom plans based on your gear." },
-    { icon: <Camera size={24} />, title: "Visual Guides", desc: "Photo references and postures." },
-    { icon: <Database size={24} />, title: "Rich Dataset", desc: "Detailed names and exercise info." },
-    { icon: <Columns3 size={24} />, title: "Kanban Board", desc: "Productivity and organizing tools ." },
-    { icon: <MessageSquare size={24} />, title: "24/7 Chatbot Support", desc: "AI chatbot trainer always online." },
-    { icon: <Gamepad2 size={24} />, title: "Relaxing Game", desc: "Interactive challenges and rewards." },
-    { icon: <Calculator size={24} />, title: "Calculators", desc: "Health and macro metrics." },
+    {
+      tag: "Core",
+      title: "Custom Workout Wizard",
+      subtitle: "Personalized training engine",
+      description: "Select body muscles from an interactive SVG diagram and generate relevant workouts instantly.",
+      icon: <Wand2 className="w-5 h-5" />,
+      color: "cyan-500"
+    },
+    {
+      tag: "Visualization",
+      title: "SVG Muscle Selection",
+      subtitle: "Visual body-based targeting",
+      description: "Interactive human body diagram lets you visually select muscle groups for intuitive discovery.",
+      icon: <UserCircle className="w-5 h-5" />,
+      color: "blue-500"
+    },
+    {
+      tag: "Data",
+      title: "Rich Workout Dataset",
+      subtitle: "Always expanding",
+      description: "A continuously growing collection of exercises categorized by muscle and goals.",
+      icon: <Database className="w-5 h-5" />,
+      color: "indigo-500"
+    },
+    {
+      tag: "Health",
+      title: "Health Calculators",
+      subtitle: "Science-based metrics",
+      description: "BMI, calorie needs, and protein intake calculated instantly with modern formulas.",
+      icon: <Calculator className="w-5 h-5" />,
+      color: "purple-500"
+    },
+    {
+      tag: "AI",
+      title: "24/7 Fitness Chatbot",
+      subtitle: "Always available",
+      description: "Ask fitness or nutrition questions anytime with an intelligent assistant.",
+      icon: <MessageSquare className="w-5 h-5" />,
+      color: "pink-500"
+    },
+    {
+      tag: "Productivity",
+      title: "Workout Kanban Board",
+      subtitle: "Plan and track progress",
+      description: "Organize workouts and fitness tasks using a visual Kanban board.",
+      icon: <Columns3 className="w-5 h-5" />,
+      color: "rose-500"
+    },
+    {
+      tag: "Focus",
+      title: "Mini Games",
+      subtitle: "Relax and refocus",
+      description: "Simple games designed to improve focus and keep motivation high between workouts.",
+      icon: <Gamepad2 className="w-5 h-5" />,
+      color: "orange-500"
+    },
+    {
+      tag: "Engagement",
+      title: "Daily Challenges",
+      subtitle: "Consistency made fun",
+      description: "Fresh daily challenges that push consistency and encourage healthy habits.",
+      icon: <Trophy className="w-5 h-5" />,
+      color: "emerald-500"
+    }
   ];
+
 
   return (
     <section className="bg-black text-white py-16 px-6 md:px-20 border-t-4 border-yellow-400">
-      <div className="max-w-7xl mx-auto">
-        
-        <div className="mb-12">
-          <h2 className="text-5xl font-black uppercase italic tracking-tighter">
-            Features
-          </h2>
-          <div className="h-1.5 w-16 bg-yellow-400 mt-2" />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ y: -4, x: 4 }}
-              className="bg-yellow-400 text-black p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[8px_8px_0px_0px_#22c55e] transition-all"
-            >
-              <div className="flex items-start gap-4">
-                <div className="bg-black text-yellow-400 p-2 border-2 border-black shrink-0">
-                  {feature.icon}
-                </div>
-                <div>
-                  <h3 className="text-lg font-black uppercase leading-tight mb-1">
-                    {feature.title}
-                  </h3>
-                  <p className="text-[12px] font-bold uppercase leading-tight opacity-80 border-t border-black/20 pt-1">
-                    {feature.desc}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+      <ScrollTimeline
+        title="noTrainer Features"
+        subtitle="No Trainer needed! Yes"
+        events={features}
+        cardAlignment="alternating"
+        revealAnimation="slide"
+        animationOrder="staggered"
+        cardVariant="elevated"
+        cardEffect="glow"
+        progressIndicator
+      />
     </section>
   );
 };

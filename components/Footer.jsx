@@ -2,6 +2,7 @@ import React from "react";
 import {Twitter, Instagram, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
 
+
 function Footer() {
   const currentYear = new Date().getFullYear();
 

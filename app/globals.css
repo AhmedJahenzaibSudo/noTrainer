@@ -1,2 +1,7 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@plugin 'lightswind/plugin';
 @import "tw-animate-css";
+
+*{
+    cursor: none;
+}
