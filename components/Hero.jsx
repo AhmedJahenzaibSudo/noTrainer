@@ -148,7 +148,7 @@ const Hero = () => {
       style={{ backgroundImage: "url('/bg.jpg')" }}
     >
       {/* Background Overlay for better text contrast */}
-      <div className="absolute inset-0 bg-black/70 z-0" />
+      <div className="absolute inset-0 bg-black/20 z-0" />
 
       <style>{glitchStyles}</style>
 
@@ -161,7 +161,7 @@ const Hero = () => {
             <span className="text-yellow-400">/</span>
             <div className="bg-yellow-400 text-black px-4 py-1 rounded-lg">
               <TextRotate
-                texts={["Home Gym", "Workout Reference", "Calculators", "Health AI"]}
+                texts={["Home Gym", "Workout Reference", "Calculators", "Health AI", "Productivity Tools"]}
               />
             </div>
           </div>
