@@ -140,7 +140,7 @@ function Navbar() {
                       className="space-y-8"
                     >
                       {/* Big Glowing Icon */}
-                      <div className="text-yellow-400 filter drop-shadow-[0_0_15px_rgba(250,204,21,0.6)] mb-4">
+                      <div className="text-pink-400 filter drop-shadow-[0_0_15px_rgba(250,204,21,0.6)] mb-4">
                         {activeLink.icon}
                       </div>
 

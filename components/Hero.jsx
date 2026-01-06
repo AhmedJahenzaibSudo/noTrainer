@@ -144,14 +144,10 @@ const Hero = () => {
 
   return (
     <section 
-      className="min-h-screen bg-black text-white px-6 md:px-20 pt-8 pb-12 overflow-hidden relative bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('/bg.jpg')" }}
-    >
+      className="min-h-screen bg-black text-white px-6 md:px-20 pt-8 pb-12 overflow-hidden relative bg-cover bg-center bg-no-repeat">
       {/* Background Overlay for better text contrast */}
       <div className="absolute inset-0 bg-black/20 z-0" />
-
       <style>{glitchStyles}</style>
-
       {/* Content wrapper to stay above overlay */}
       <div className="relative z-10">
         {/* Header */}

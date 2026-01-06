@@ -9,8 +9,8 @@ function cx(...classes) {
 
 export default function ScrollTimeline({
   events = [],
-  title = "Platform Features",
-  subtitle = "Everything you need to crush your fitness goals.",
+  title = "noTrainer Features",
+  subtitle = "Why need a trainer when you can train with noTrainer?",
   className = ""
 }) {
   const containerRef = useRef(null);
@@ -71,7 +71,7 @@ export default function ScrollTimeline({
           style={{ height: progressHeight }}
         />
 
-        <div className="relative z-20 space-y-40 pb-40">
+        <div className="relative z-20 space-y-1 pb-1">
           {events.map((feature, index) => {
             const isEven = index % 2 === 0;
             const isActive = index === activeIndex;
@@ -79,15 +79,15 @@ export default function ScrollTimeline({
             return (
               <div 
                 key={index} 
-                className="relative flex flex-col items-center justify-center snap-center min-h-[60vh]"
+                className="relative flex flex-col items-center justify-center snap-center min-h-[10vh]"
               >
                 {/* Visual Connector Dot */}
                 <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-30">
                   <motion.div
                     animate={{
                       scale: isActive ? 1.5 : 1,
-                      backgroundColor: isActive ? "#22d3ee" : "#18181b",
-                      boxShadow: isActive ? `0 0 30px #06b6d4` : "0 0 0px transparent"
+                      backgroundColor: isActive ? "#22d3ee" : "#e51b1bff",
+                      boxShadow: isActive ? `0 0 30px #1b54ceff` : "0 0 0px transparent"
                     }}
                     className="w-6 h-6 rounded-full border-4 border-zinc-950 shadow-xl transition-colors duration-300"
                   />
@@ -141,7 +141,7 @@ export default function ScrollTimeline({
                   </div>
 
                   {/* Aesthetic Number Background */}
-                  <div className="absolute -bottom-4 -right-2 opacity-10 text-white pointer-events-none">
+                  <div className="absolute -bottom-4 -right-2 opacity-40 text-white pointer-events-none">
                     <span className="text-[10rem] font-black select-none leading-none">
                       {index + 1}
                     </span>

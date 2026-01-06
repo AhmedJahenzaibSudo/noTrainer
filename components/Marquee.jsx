@@ -19,8 +19,7 @@ function Marquee() {
   ];
 
   const colors = [
-    "#dd5e63", "#65abd6", "#a57fda", "#bb952b",
-    "#7eb329", "#c467c8", "#1c887f", "#d3146a",
+    "#f2ff01ff", "#00ec6eff",
   ];
 
   const [quoteIndex, setQuoteIndex] = useState(0);
