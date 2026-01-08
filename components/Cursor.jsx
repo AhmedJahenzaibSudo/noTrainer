@@ -1,139 +1,102 @@
 "use client";
-import { useEffect, useState } from "react";
-import { motion, useSpring, useAnimationControls } from "motion/react";
+import React, { useEffect, useRef, useState } from "react";
 
-const CrosshairSVG = () => (
-  <svg
-    width="50"
-    height="50"
-    viewBox="0 0 40 40"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    style={{
-      filter: "drop-shadow(0px 0px 6px currentColor)",
-    }}
-  >
-    {/* Tactical geometric circles */}
-    <circle cx="20" cy="20" r="14" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-    <circle cx="20" cy="20" r="10" stroke="currentColor" strokeWidth="3" />
-    <circle cx="20" cy="20" r="2.5" fill="currentColor" />
-    
-    {/* Heavy crosshair lines */}
-    <path d="M20 0V8" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
-    <path d="M20 32V40" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
-    <path d="M0 20H8" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
-    <path d="M32 20H40" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
-  </svg>
-);
+const Cursor = () => {
+  const cursorRef = useRef(null);
+  const [ripples, setRipples] = useState([]);
 
-export function Cursor({
-  springConfig = { damping: 35, stiffness: 700, mass: 0.8 },
-}) {
-  const [isTargeting, setIsTargeting] = useState(false);
-  
-  const cursorX = useSpring(0, springConfig);
-  const cursorY = useSpring(0, springConfig);
-  const scale = useSpring(1, { stiffness: 1000, damping: 25 });
-  
-  const flashControls = useAnimationControls();
-
+  // Move the cursor
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
-
-      const target = e.target;
-      const isClickable = 
-        target.closest('button') || 
-        target.closest('a') || 
-        window.getComputedStyle(target).cursor === 'pointer';
-      
-      setIsTargeting(!!isClickable);
+    const moveCursor = (e) => {
+      if (cursorRef.current) {
+        cursorRef.current.style.left = `${e.clientX}px`;
+        cursorRef.current.style.top = `${e.clientY}px`;
+      }
     };
 
-    const handleMouseDown = () => {
-      scale.set(0.6); // Impact recoil
-      
-      // Muzzle Flash Effect
-      flashControls.set({ scale: 0.1, opacity: 1 });
-      flashControls.start({
-        scale: 4,
-        opacity: 0,
-        transition: { duration: 0.3, ease: "circOut" }
-      });
+    const handleClick = (e) => {
+      // Add a ripple at click position
+      const id = Date.now();
+      const rect = cursorRef.current.getBoundingClientRect();
+      setRipples((prev) => [
+        ...prev,
+        { id, x: e.clientX - rect.left, y: e.clientY - rect.top },
+      ]);
+
+      // Remove ripple after animation
+      setTimeout(() => {
+        setRipples((prev) => prev.filter((r) => r.id !== id));
+      }, 500);
     };
 
-    const handleMouseUp = () => {
-      scale.set(isTargeting ? 1.3 : 1);
-    };
-
-    document.body.style.cursor = "none";
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", moveCursor);
+    window.addEventListener("mousedown", handleClick);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "auto";
+      window.removeEventListener("mousemove", moveCursor);
+      window.removeEventListener("mousedown", handleClick);
     };
-  }, [cursorX, cursorY, scale, flashControls, isTargeting]);
-
-  useEffect(() => {
-    scale.set(isTargeting ? 1.3 : 1);
-  }, [isTargeting, scale]);
+  }, []);
 
   return (
-    <motion.div
-      style={{
-        position: "fixed",
-        left: cursorX,
-        top: cursorY,
-        translateX: "-50%",
-        translateY: "-50%",
-        scale: scale,
-        zIndex: 9999,
-        pointerEvents: "none",
-        color: isTargeting ? "#FF0000" : "#1dd535ff",
-        willChange: "transform",
-      }}
-    >
-      {/* Constant Rotation Wrapper */}
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{
-          repeat: Infinity,
-          duration: isTargeting ? 1 : 4, // Spins 4x faster when red/targeting
-          ease: "linear",
-        }}
+    <>
+      <style>{`
+        body, a, button, input, textarea, select {
+          cursor: none !important;
+        }
+      `}</style>
+
+      <div
+        ref={cursorRef}
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "20px",
+          height: "20px",
+          backgroundColor: "rgba(40, 239, 139, 0.67)", // frosted glass
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+          border: "3px solid rgba(249, 229, 10, 1)",
+          borderRadius: "50%",
+          pointerEvents: "none",
+          zIndex: 9999,
+          transform: "translate(-50%, -50%)",
+          boxShadow: "0 0 12px rgba(255,255,255,0.25)",
         }}
       >
-        <CrosshairSVG />
-      </motion.div>
+        {ripples.map((r) => (
+          <span
+            key={r.id}
+            style={{
+              position: "absolute",
+              left: r.x,
+              top: r.y,
+              width: "30px",
+              height: "30px",
+              borderRadius: "80%",
+              border: "3px solid rgba(39, 255, 89, 0.96)",
+              transform: "translate(-50%, -50%)",
+              animation: "ripple 0.5s ease-out forwards",
+            }}
+          />
+        ))}
+      </div>
 
-      {/* Flash Ring */}
-      <motion.div
-        animate={flashControls}
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          x: "-50%",
-          y: "-50%",
-          width: 50,
-          height: 50,
-          borderRadius: "50%",
-          border: "3px solid currentColor",
-          opacity: 0,
-          filter: "blur(2px)",
-          pointerEvents: "none",
-        }}
-      />
-    </motion.div>
+      <style>{`
+        @keyframes ripple {
+          0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.5;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(3);
+            opacity: 0;
+          }
+        }
+      `}</style>
+    </>
   );
-}
+};
+
+export default Cursor;

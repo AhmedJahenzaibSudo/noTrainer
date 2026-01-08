@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Marquee from "@/components/Marquee";
-import { Cursor } from "@/components/Cursor";
+import Cursor from "@/components/Cursor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

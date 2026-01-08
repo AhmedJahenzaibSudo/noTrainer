@@ -18,9 +18,7 @@ function Marquee() {
     "Push Limits, Break Barriers",
   ];
 
-  const colors = [
-    "#f2ff01ff", "#00ec6eff",
-  ];
+  const colors = ["#7d98d6", "#77eaac"]; // solid colors, no transparency
 
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
@@ -30,9 +28,10 @@ function Marquee() {
   const [currentBg, setCurrentBg] = useState(colors[0]);
 
   const typingTimer = useRef(null);
+
   const nextColor = colors[(quoteIndex + 1) % colors.length];
 
-  // 1. Typewriter Logic
+  // --- Typewriter Logic (letter by letter, can switch to word by word if needed) ---
   useEffect(() => {
     if (isPaused || isFlooding) return;
 
@@ -44,38 +43,39 @@ function Marquee() {
         setCharIndex((p) => p + 1);
       }, 60);
     } else {
-      // Wait 1 second after typing completes
+      // Start flood after typing completes
       typingTimer.current = setTimeout(() => {
         setIsFlooding(true);
-      }, 1000); 
+      }, 500);
     }
 
     return () => clearTimeout(typingTimer.current);
   }, [charIndex, quoteIndex, isFlooding, isPaused]);
 
-  // 2. Flood & State Reset Logic
+  // --- Flood Animation & State Reset ---
   useEffect(() => {
     if (!isFlooding || isPaused) return;
 
-    // After 500ms (duration of the flood animation), 
-    // update the background and reset for the next quote
     const resetTimer = setTimeout(() => {
+      // Update main background permanently
       setCurrentBg(nextColor);
+
+      // Reset for next quote
       setDisplayText("");
       setCharIndex(0);
       setQuoteIndex((prev) => (prev + 1) % quotes.length);
       setIsFlooding(false);
-    }, 550); 
+    }, 550); // match flood animation duration
 
     return () => clearTimeout(resetTimer);
   }, [isFlooding, isPaused, nextColor]);
 
   return (
-    <div 
+    <div
       className="sticky top-0 z-50 w-full border-b border-black/10 py-3 relative overflow-hidden"
       style={{ backgroundColor: currentBg }}
     >
-      {/* The Sliding Flood */}
+      {/* Optional flood animation overlay for visual effect */}
       <AnimatePresence>
         {isFlooding && (
           <motion.div
@@ -85,24 +85,20 @@ function Marquee() {
             exit={{ x: "100%" }}
             transition={{ duration: 0.5, ease: [0.7, 0, 0.3, 1] }}
             className="absolute inset-0 z-10"
-            style={{ backgroundColor: nextColor }}
+            style={{ backgroundColor: nextColor, opacity: 0.3 }}
           />
         )}
       </AnimatePresence>
 
-      {/* Content */}
+      {/* Text Content */}
       <div className="relative z-20 flex justify-center items-center h-8 select-none px-12">
         <span className="text-sm md:text-base font-black uppercase tracking-widest text-black">
-          {/* Hide text during flood to prevent weird overlapping */}
-          {!isFlooding && displayText}
-          {!isFlooding && (
-            <span className={`ml-1 text-black ${isPaused ? "opacity-100" : "animate-pulse"}`}>
-              |
-            </span>
-          )}
+          {displayText}
+          {!isPaused && <span className="ml-1 animate-pulse">|</span>}
         </span>
       </div>
 
+      {/* Pause / Play Button */}
       <button
         onClick={() => setIsPaused((p) => !p)}
         className="absolute right-3 top-1/2 -translate-y-1/2 text-black p-2 rounded-full bg-black/5 hover:bg-black/10 backdrop-blur-sm z-30 transition-all active:scale-90"

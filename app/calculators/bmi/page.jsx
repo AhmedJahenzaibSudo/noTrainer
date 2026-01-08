@@ -2,159 +2,306 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calculator, Zap, Info, ChevronRight, Activity } from "lucide-react";
+import { Activity, Scale, Ruler, RefreshCw, CheckCircle, Info, AlertTriangle, XCircle } from "lucide-react";
+
+// Configuration for Categories used in the Chart
+const CATEGORIES = [
+  {
+    key: "underweight",
+    label: "Underweight",
+    range: "< 18.5",
+    color: "border-cyan-500 text-cyan-500",
+    bgGradient: "from-cyan-500/20 to-blue-500/20",
+    glow: "shadow-[0_0_30px_rgba(6,182,212,0.3)]",
+    icon: <AlertTriangle size={20} />,
+    advice: "Consider increasing caloric intake with nutrient-rich foods.",
+  },
+  {
+    key: "normal",
+    label: "Normal",
+    range: "18.5 - 24.9",
+    color: "border-emerald-500 text-emerald-500",
+    bgGradient: "from-emerald-500/20 to-teal-500/20",
+    glow: "shadow-[0_0_30px_rgba(16,185,129,0.3)]",
+    icon: <CheckCircle size={20} />,
+    advice: "Great job! Keep up your balanced lifestyle.",
+  },
+  {
+    key: "overweight",
+    label: "Overweight",
+    range: "25 - 29.9",
+    color: "border-amber-500 text-amber-500",
+    bgGradient: "from-amber-500/20 to-orange-500/20",
+    glow: "shadow-[0_0_30px_rgba(245,158,11,0.3)]",
+    icon: <Info size={20} />,
+    advice: "Increase physical activity and monitor your diet.",
+  },
+  {
+    key: "obese",
+    label: "Obese",
+    range: "30+",
+    color: "border-red-500 text-red-500",
+    bgGradient: "from-red-500/20 to-rose-500/20",
+    glow: "shadow-[0_0_30px_rgba(239,68,68,0.3)]",
+    icon: <XCircle size={20} />,
+    advice: "Consult a healthcare provider for a tailored plan.",
+  },
+];
 
 export default function BMIPage() {
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
-  const [unit, setUnit] = useState("metric");
+  const [weight, setWeight] = useState(""); 
+  const [heightFt, setHeightFt] = useState("");
+  const [heightIn, setHeightIn] = useState("");
+
   const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const calculateBMI = () => {
-    if (!weight || !height) return;
-    let bmiValue = unit === "metric" 
-      ? weight / ((height / 100) ** 2) 
-      : (weight / (height ** 2)) * 703;
+    setError("");
+    setResult(null);
 
-    const score = parseFloat(bmiValue.toFixed(1));
-    let category, color, protocol, fact;
+    if (!weight || !heightFt) {
+      setError("Please enter both weight and height.");
+      return;
+    }
 
-    if (score < 18.5) { category = "Underweight"; color = "#7EE8FA"; protocol = "Increase caloric density."; fact = "Muscle is 3x denser than fat."; }
-    else if (score < 25) { category = "Optimal"; color = "#00F58C"; protocol = "Maintain equilibrium."; fact = "This is the metabolic sweet spot."; }
-    else if (score < 30) { category = "Overweight"; color = "#FFE500"; protocol = "Increase cardio output."; fact = "BMI was invented in 1830!"; }
-    else { category = "Obese"; color = "#FF6B4A"; protocol = "Consult a specialist."; fact = "A 5% drop aids heart health."; }
+    const w = parseFloat(weight);
+    const ft = parseFloat(heightFt);
+    const inches = parseFloat(heightIn || 0);
 
-    setResult({ score, category, color, protocol, fact });
+    if (w <= 0 || ft < 0) {
+      setError("Please enter valid positive numbers.");
+      return;
+    }
+
+    setIsCalculating(true);
+
+    setTimeout(() => {
+      const totalInches = (ft * 12) + inches;
+      const heightMeters = totalInches * 0.0254;
+      const bmi = w / (heightMeters * heightMeters);
+      const score = parseFloat(bmi.toFixed(1));
+
+      let categoryKey = "underweight";
+      if (score >= 18.5 && score < 25) categoryKey = "normal";
+      else if (score >= 25 && score < 30) categoryKey = "overweight";
+      else if (score >= 30) categoryKey = "obese";
+
+      setResult({ score, categoryKey });
+      setIsCalculating(false);
+    }, 600);
   };
 
+  const reset = () => {
+    setWeight("");
+    setHeightFt("");
+    setHeightIn("");
+    setResult(null);
+    setError("");
+  };
+
+  // Find the active category object based on result
+  const activeCategoryData = result 
+    ? CATEGORIES.find(c => c.key === result.categoryKey) 
+    : null;
+
   return (
-    // ADDED: Solid background color + Architectural grid pattern
-    <main className="min-h-screen bg-[#F0F0F0] text-black pt-20 pb-10 px-4 font-sans relative overflow-hidden">
-      <div className="absolute inset-0 z-0 opacity-15" style={{ backgroundImage: 'linear-gradient(#000 1.5px, transparent 1.5px), linear-gradient(90deg, #000 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
-      
-      <div className="max-w-6xl mx-auto relative z-10">
-        {/* COMPACT HEADER */}
-        <header className="flex justify-between items-end border-b-8 border-black pb-4 mb-8">
-          <div>
-            <div className="bg-black text-white px-3 py-1 inline-block font-black uppercase text-xs mb-2 shadow-[3px_3px_0_#00F58C]">
-              Terminal v1.0 // BMI
-            </div>
-            <h1 className="text-5xl md:text-7xl font-[1000] uppercase tracking-tighter leading-none">
-              BODY <span className="text-[#FF6B4A]">STATS</span>
-            </h1>
-          </div>
-          <Activity size={48} strokeWidth={3} className="hidden md:block" />
+    <main className="min-h-screen bg-[#050505] text-white font-sans selection:bg-white selection:text-black overflow-x-hidden">
+      {/* Ambient Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-900/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-pink-900/10 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 py-16">
+        
+        <header className="mb-20 text-center">
+          <h1 className="text-6xl md:text-7xl font-black tracking-tighter text-white mb-4">
+            BMI<span className="text-neutral-600">.</span>Check
+          </h1>
+          <p className="text-neutral-400 text-lg font-light tracking-wide">
+            Simple. Accurate. Fast.
+          </p>
         </header>
 
-        {/* TWO-COLUMN DASHBOARD (Fits on one screen) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* INPUT SECTION (5 Cols) */}
-          <section className="lg:col-span-5 border-4 border-black p-6 bg-white shadow-[8px_8px_0px_black]">
-            <div className="flex gap-2 mb-6">
-              {['metric', 'imperial'].map((u) => (
+          {/* --- INPUTS --- */}
+          <section className="lg:col-span-4">
+            <div className="sticky top-8 bg-[#0A0A0A] border border-white/10 p-8 rounded-3xl backdrop-blur-xl shadow-2xl">
+              
+              <div className="space-y-8">
+                {/* Weight */}
+                <div>
+                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3">Weight (kg)</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      placeholder="70"
+                      className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-4 text-4xl font-bold text-white focus:border-white focus:bg-neutral-900 transition-all outline-none placeholder-neutral-800"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 font-bold text-sm uppercase">kg</span>
+                  </div>
+                </div>
+
+                {/* Height */}
+                <div>
+                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3">Height (ft + in)</label>
+                  <div className="flex gap-4">
+                    <div className="relative flex-1">
+                      <input
+                        type="number"
+                        value={heightFt}
+                        onChange={(e) => setHeightFt(e.target.value)}
+                        placeholder="5"
+                        className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-4 text-4xl font-bold text-white focus:border-white focus:bg-neutral-900 transition-all outline-none placeholder-neutral-800 text-center"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 font-bold text-sm uppercase">ft</span>
+                    </div>
+                    <div className="relative flex-1">
+                      <input
+                        type="number"
+                        value={heightIn}
+                        onChange={(e) => setHeightIn(e.target.value)}
+                        placeholder="9"
+                        className="w-full bg-neutral-900/50 border border-white/10 rounded-xl px-4 py-4 text-4xl font-bold text-white focus:border-white focus:bg-neutral-900 transition-all outline-none placeholder-neutral-800 text-center"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 font-bold text-sm uppercase">in</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="mt-10 flex gap-4">
                 <button
-                  key={u}
-                  onClick={() => { setUnit(u); setResult(null); }}
-                  className={`flex-1 py-2 font-black uppercase border-2 border-black text-sm transition-all ${
-                    unit === u ? "bg-black text-white" : "bg-white hover:bg-gray-100"
-                  }`}
+                  onClick={calculateBMI}
+                  disabled={isCalculating}
+                  className="flex-1 bg-white text-black py-5 text-lg font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50"
                 >
-                  {u}
+                  {isCalculating ? "Calculating" : "Analyze"}
                 </button>
-              ))}
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-black uppercase text-xs mb-1">Weight ({unit === 'metric' ? 'kg' : 'lbs'})</label>
-                  <input
-                    type="number"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    className="w-full border-4 border-black p-3 text-xl font-black focus:bg-[#7EE8FA] outline-none"
-                    placeholder="00"
-                  />
-                </div>
-                <div>
-                  <label className="block font-black uppercase text-xs mb-1">Height ({unit === 'metric' ? 'cm' : 'in'})</label>
-                  <input
-                    type="number"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                    className="w-full border-4 border-black p-3 text-xl font-black focus:bg-[#7EE8FA] outline-none"
-                    placeholder="00"
-                  />
-                </div>
+                <button
+                  onClick={reset}
+                  className="px-5 bg-neutral-900 border border-white/10 rounded-xl hover:bg-neutral-800 transition-all"
+                >
+                  <RefreshCw size={20} className="text-neutral-400" />
+                </button>
               </div>
 
-              <button
-                onClick={calculateBMI}
-                className="w-full bg-black text-white py-4 text-2xl font-black uppercase flex items-center justify-center gap-2 hover:bg-[#00F58C] hover:text-black transition-colors border-2 border-black"
-              >
-                Execute <ChevronRight size={28} />
-              </button>
-            </div>
-
-            {/* QUICK LEGEND (Moved inside left column to save space) */}
-            <div className="mt-8 pt-6 border-t-2 border-dashed border-black/20">
-              <h4 className="text-xs font-black uppercase mb-3">Reference Ranges</h4>
-              <div className="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase">
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#7EE8FA] border border-black"/> &lt; 18.5 Under</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#00F58C] border border-black"/> 18-25 Norm</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#FFE500] border border-black"/> 25-30 Over</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#FF6B4A] border border-black"/> 30+ Obese</div>
-              </div>
+              {error && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-red-400 text-sm font-medium text-center bg-red-500/10 py-3 rounded-lg border border-red-500/20">
+                  {error}
+                </motion.div>
+              )}
             </div>
           </section>
 
-          {/* RESULTS SECTION (7 Cols) */}
-          <section className="lg:col-span-7 h-full">
+          {/* --- RESULTS --- */}
+          <section className="lg:col-span-8">
             <AnimatePresence mode="wait">
               {!result ? (
-                <div className="h-full min-h-[300px] border-4 border-dashed border-black/20 bg-black/5 flex flex-col items-center justify-center p-6 text-center">
-                  <Calculator size={48} className="opacity-20 mb-2" />
-                  <p className="font-black uppercase text-lg opacity-20 tracking-widest">Input Parameters Required</p>
-                </div>
-              ) : (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }} 
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="space-y-4"
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="h-[500px] border border-white/5 rounded-3xl flex flex-col items-center justify-center bg-white/[0.02]"
                 >
-                  <div className="border-4 border-black p-6 shadow-[8px_8px_0px_black]" style={{ backgroundColor: result.color }}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-black uppercase text-sm italic">Diagnostic Result</span>
-                      <Zap size={24} fill="black" />
-                    </div>
-                    <div className="flex items-baseline gap-4">
-                      <div className="text-8xl font-[1000] tracking-tighter leading-none">{result.score}</div>
-                      <div className="bg-black text-white px-3 py-1 font-black uppercase text-xl h-fit">
-                        {result.category}
+                  <Activity size={48} className="text-neutral-700 mb-6" />
+                  <p className="text-neutral-500 font-medium">Enter your details to view results</p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="result"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  {/* Main Score Card */}
+                  <div className={`relative p-8 md:p-10 rounded-3xl border border-white/10 overflow-hidden bg-gradient-to-br ${activeCategoryData?.bgGradient} ${activeCategoryData?.glow} backdrop-blur-md`}>
+                    
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="p-3 bg-[#0A0A0A] rounded-2xl border border-white/10">
+                        {activeCategoryData?.icon}
                       </div>
+                      <span className="text-sm font-bold uppercase tracking-widest text-neutral-400">
+                        Result
+                      </span>
                     </div>
-                    <div className="w-full h-6 border-[3px] border-black bg-white/40 mt-6 relative overflow-hidden">
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(result.score * 2.5, 100)}%` }} className="h-full bg-black" />
+
+                    <div className="flex flex-col md:flex-row justify-between items-end gap-8">
+                      <div>
+                        <div className="text-[120px] leading-none font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
+                          {result.score}
+                        </div>
+                        <div className="text-4xl font-bold text-white mt-2 tracking-tight">
+                          {activeCategoryData?.label}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="border-4 border-black p-4 bg-white shadow-[4px_4px_0px_black] flex items-start gap-3">
-                      <div className="bg-black text-white p-1 border-2 border-black"><Activity size={18}/></div>
-                      <div>
-                        <h4 className="font-black uppercase text-[10px]">Protocol</h4>
-                        <p className="font-bold text-xs leading-tight uppercase">{result.protocol}</p>
-                      </div>
-                    </div>
-                    <div className="border-4 border-black p-4 bg-[#B197FC] shadow-[4px_4px_0px_black] flex items-start gap-3">
-                      <div className="bg-white p-1 border-2 border-black"><Info size={18}/></div>
-                      <div>
-                        <h4 className="font-black uppercase text-[10px]">Stat Fact</h4>
-                        <p className="font-bold text-xs leading-tight uppercase">{result.fact}</p>
-                      </div>
+                  {/* THE CATEGORY CHART */}
+                  <div className="bg-[#0A0A0A] border border-white/10 p-6 rounded-3xl">
+                    <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-6 pl-1">Category Chart</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {CATEGORIES.map((cat) => {
+                        const isActive = result.categoryKey === cat.key;
+                        
+                        return (
+                          <motion.div
+                            key={cat.key}
+                            whileHover={{ scale: 1.02 }}
+                            className={`
+                              relative p-6 rounded-2xl border transition-all duration-500
+                              ${isActive 
+                                ? `${cat.color} ${cat.bgGradient} ${cat.glow} border-opacity-50 bg-opacity-50 scale-105` 
+                                : `border-white/5 bg-white/5 opacity-40 hover:opacity-60`
+                              }
+                            `}
+                          >
+                            {isActive && (
+                              <div className="absolute top-3 right-3">
+                                <CheckCircle size={16} className="text-white drop-shadow-md" />
+                              </div>
+                            )}
+                            <div className="mb-2">
+                              <span className="text-xs font-bold uppercase tracking-wider block mb-1 opacity-70">
+                                Range
+                              </span>
+                              <span className={`text-2xl font-black ${isActive ? 'text-white' : 'text-neutral-400'}`}>
+                                {cat.range}
+                              </span>
+                            </div>
+                            <div>
+                              <span className={`text-lg font-bold uppercase ${isActive ? 'text-white' : 'text-neutral-500'}`}>
+                                {cat.label}
+                              </span>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   </div>
+
+                  {/* Advice Card */}
+                  <div className="bg-[#0A0A0A] border border-white/10 p-8 rounded-3xl flex items-start gap-6 hover:border-white/20 transition-colors">
+                    <div className="p-3 bg-white/5 rounded-xl text-neutral-400">
+                      <Activity size={24} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Recommendation</p>
+                      <p className="text-xl font-medium text-white leading-snug">
+                        {activeCategoryData?.advice}
+                      </p>
+                    </div>
+                  </div>
+
                 </motion.div>
               )}
             </AnimatePresence>
