@@ -1,100 +1,93 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
 const Cursor = () => {
   const cursorRef = useRef(null);
-  const [ripples, setRipples] = useState([]);
+  const requestRef = useRef();
+  const mousePos = useRef({ x: 0, y: 0 });
 
-  // Move the cursor
   useEffect(() => {
-    const moveCursor = (e) => {
+    // 1. Smooth & Instant movement using requestAnimationFrame
+    const updatePosition = () => {
       if (cursorRef.current) {
-        cursorRef.current.style.left = `${e.clientX}px`;
-        cursorRef.current.style.top = `${e.clientY}px`;
+        // translate3d triggers hardware acceleration
+        cursorRef.current.style.transform = `translate3d(calc(${mousePos.current.x}px - 50%), calc(${mousePos.current.y}px - 50%), 0)`;
       }
+      requestRef.current = requestAnimationFrame(updatePosition);
     };
 
-    const handleClick = (e) => {
-      // Add a ripple at click position
-      const id = Date.now();
-      const rect = cursorRef.current.getBoundingClientRect();
-      setRipples((prev) => [
-        ...prev,
-        { id, x: e.clientX - rect.left, y: e.clientY - rect.top },
-      ]);
-
-      // Remove ripple after animation
-      setTimeout(() => {
-        setRipples((prev) => prev.filter((r) => r.id !== id));
-      }, 500);
+    const onMouseMove = (e) => {
+      mousePos.current = { x: e.clientX, y: e.clientY };
     };
 
-    window.addEventListener("mousemove", moveCursor);
-    window.addEventListener("mousedown", handleClick);
+    // 2. Ripple using a simple DOM injection to avoid React state lag
+    const onMouseDown = (e) => {
+      const ripple = document.createElement("div");
+      ripple.className = "cursor-ripple";
+      ripple.style.left = `${e.clientX}px`;
+      ripple.style.top = `${e.clientY}px`;
+      document.body.appendChild(ripple);
+
+      // Clean up DOM after animation
+      ripple.addEventListener("animationend", () => ripple.remove());
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mousedown", onMouseDown);
+    requestRef.current = requestAnimationFrame(updatePosition);
 
     return () => {
-      window.removeEventListener("mousemove", moveCursor);
-      window.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mousedown", onMouseDown);
+      cancelAnimationFrame(requestRef.current);
     };
   }, []);
 
   return (
     <>
       <style>{`
+        /* Hide real cursor globally */
         body, a, button, input, textarea, select {
           cursor: none !important;
         }
-      `}</style>
 
-      <div
-        ref={cursorRef}
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "20px",
-          height: "20px",
-          backgroundColor: "rgba(40, 239, 139, 0.67)", // frosted glass
-          backdropFilter: "blur(6px)",
-          WebkitBackdropFilter: "blur(6px)",
-          border: "3px solid rgba(249, 229, 10, 1)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-          zIndex: 9999,
-          transform: "translate(-50%, -50%)",
-          boxShadow: "0 0 12px rgba(255,255,255,0.25)",
-        }}
-      >
-        {ripples.map((r) => (
-          <span
-            key={r.id}
-            style={{
-              position: "absolute",
-              left: r.x,
-              top: r.y,
-              width: "30px",
-              height: "30px",
-              borderRadius: "80%",
-              border: "3px solid rgba(39, 255, 89, 0.96)",
-              transform: "translate(-50%, -50%)",
-              animation: "ripple 0.5s ease-out forwards",
-            }}
-          />
-        ))}
-      </div>
+        .cursor-main {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 20px;
+          height: 20px;
+          background-color: rgba(40, 239, 139, 0.4);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          border: 2px solid rgba(249, 229, 10, 1);
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 99999;
+          will-change: transform;
+          box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
 
-      <style>{`
-        @keyframes ripple {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0.5;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(3);
-            opacity: 0;
-          }
+        .cursor-ripple {
+          position: fixed;
+          width: 60px;
+          height: 60px;
+          background: transparent;
+          border: 2px solid rgba(212, 255, 39, 0.8);
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 99998;
+          transform: translate(-50%, -50%);
+          animation: ripple-effect 0.7s ease-out forwards;
+        }
+
+        @keyframes ripple-effect {
+          0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+          100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
         }
       `}</style>
+
+      <div ref={cursorRef} className="cursor-main" />
     </>
   );
 };
