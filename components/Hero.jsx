@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap,
@@ -13,11 +13,48 @@ import {
   MapPin,
   Package,
   ChevronRight,
-  Sparkles,
+  Activity,
+  Check,
 } from "lucide-react";
 
 import FrontView from "@/components/anatomy/FrontView";
 import { TextRotate } from "@/components/text-rotate";
+
+// ============================================
+// 🎨 NEW COLOR SCHEME - CYAN/BLUE THEME
+// ============================================
+const theme = {
+  primary: {
+    main: "#06b6d4",      // Cyan 500
+    light: "#22d3ee",     // Cyan 400
+    dark: "#0891b2",      // Cyan 600
+    glow: "rgba(6, 182, 212, 0.5)",
+  },
+  secondary: {
+    main: "#3b82f6",      // Blue 500
+    light: "#60a5fa",     // Blue 400
+    dark: "#2563eb",      // Blue 600
+    glow: "rgba(59, 130, 246, 0.5)",
+  },
+  accent: {
+    success: "#10b981",   // Emerald 500
+    orange: "#f97316",    // Orange 500
+    purple: "#a855f7",    // Purple 500
+  },
+  bg: {
+    primary: "#000000",
+    card: "#0f172a",      // Slate 900
+    cardLight: "#1e293b", // Slate 800
+    darkBlue: "#0c4a6e",  // Sky 900
+  },
+  text: {
+    primary: "#ffffff",
+    secondary: "#94a3b8",  // Slate 400
+  },
+  border: {
+    default: "rgba(6, 182, 212, 0.2)",
+  },
+};
 
 const Hero = () => {
   const [glitchIds, setGlitchIds] = useState([]);
@@ -25,98 +62,86 @@ const Hero = () => {
   const [highlightedMuscle, setHighlightedMuscle] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [selectedExcuseId, setSelectedExcuseId] = useState(1);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const excuses = [
+  const problems = [
     {
       id: 1,
-      text: "Gym too far / Cold outside",
-      solution:
-        "Transform your home into the perfect gym space with our AI-powered workout wizard. No weather, no travel, just results.",
+      text: "No gym access",
+      solution: "Train anywhere with bodyweight workouts and home equipment routines designed for maximum results.",
       icon: <MapPin size={22} />,
+      color: theme.accent.orange,
     },
     {
       id: 2,
-      text: "Expensive gym fees",
-      solution:
-        "Get everything you need for free. Premium calculators, tracking tools, and personalized workouts without subscriptions.",
+      text: "Too expensive",
+      solution: "Free workout plans, progress tracking, and nutrition calculators - everything you need at zero cost.",
       icon: <Calculator size={22} />,
+      color: theme.primary.main,
     },
     {
       id: 3,
-      text: "Wrong workouts don't help",
-      solution:
-        "Every exercise includes posture cues, photo references, and muscle targeting so you train correctly every time.",
+      text: "Don't know how",
+      solution: "Step-by-step exercise guides with photos, videos, and form tips for proper technique every time.",
       icon: <Info size={22} />,
+      color: theme.secondary.main,
     },
     {
       id: 4,
-      text: "Too introverted for help",
-      solution:
-        "Your AI trainer is available 24/7. Ask anything, anytime, without judgment or pressure.",
+      text: "Need privacy",
+      solution: "AI trainer available 24/7 with no judgment or awkwardness - train on your own terms in your own space.",
       icon: <MessageSquare size={22} />,
+      color: theme.accent.success,
     },
     {
       id: 5,
-      text: "No information available",
-      solution:
-        "Access 500+ exercises with difficulty levels, muscle focus, and step-by-step instructions.",
+      text: "Lack of knowledge",
+      solution: "500+ exercises with difficulty levels, muscle targeting, and detailed instructions to educate and empower you.",
       icon: <Dumbbell size={22} />,
+      color: theme.accent.purple,
     },
     {
       id: 6,
-      text: "Women who can't go out",
-      solution:
-        "Private, safe, and effective home workouts designed for your space and comfort.",
+      text: "Can't go out",
+      solution: "Effective home workouts designed for any space - bedroom, living room, or backyard.",
       icon: <Zap size={22} />,
+      color: theme.accent.orange,
     },
     {
       id: 7,
-      text: "Need organization",
-      solution:
-        "Plan workouts, track progress, and stay consistent with built-in boards and goals.",
+      text: "Need structure",
+      solution: "Organized workout plans with progress tracking, goals, and accountability to keep you on track.",
       icon: <LayoutDashboard size={22} />,
+      color: theme.primary.main,
     },
     {
       id: 8,
-      text: "Low motivation",
-      solution:
-        "Challenges, streaks, and rewards keep you engaged and progressing every day.",
+      text: "No motivation",
+      solution: "Daily challenges, streaks, and achievement rewards that make fitness fun and keep you coming back.",
       icon: <Target size={22} />,
+      color: theme.secondary.main,
     },
     {
       id: 9,
-      text: "No equipment available",
-      solution:
-        "Effective bodyweight programs that build strength using nothing but your body.",
+      text: "No equipment",
+      solution: "Build strength with proven bodyweight training programs that require nothing but your commitment.",
       icon: <Package size={22} />,
+      color: theme.accent.success,
     },
   ];
 
-  const selectedExcuse = useMemo(
-    () => excuses.find((e) => e.id === selectedExcuseId) || excuses[0],
+  const selectedProblem = useMemo(
+    () => problems.find((p) => p.id === selectedExcuseId) || problems[0],
     [selectedExcuseId]
   );
 
   const muscleIds = useMemo(
-    () => [
-      "face",
-      "traps",
-      "shoulders",
-      "chest",
-      "neck",
-      "biceps",
-      "forearms",
-      "lats",
-      "abdominals",
-      "quadriceps",
-      "calves",
-      "triceps",
-      "hands",
-    ],
+    () => ["face", "traps", "shoulders", "chest", "neck", "biceps", "forearms", "lats", "abdominals", "quadriceps", "calves", "triceps", "hands"],
     []
   );
 
@@ -132,14 +157,23 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, [mounted, muscleIds]);
 
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
   const glitchStyles = useMemo(() => {
     if (!glitchIds.length) return "";
     return glitchIds
       .map(
         (id) => `
         #${id.replace(/\s+/g, "\\ ")} {
-          fill: #22c55e !important;
-          filter: drop-shadow(0 0 12px #22c55e);
+          fill: ${theme.accent.success} !important;
+          filter: drop-shadow(0 0 12px ${theme.accent.success});
           opacity: 1 !important;
         }
       `
@@ -150,356 +184,395 @@ const Hero = () => {
   if (!mounted) return null;
 
   return (
-    <section className="min-h-screen bg-black text-white overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-400/5 via-transparent to-transparent" />
-      
+    <section
+      className="min-h-screen text-white overflow-hidden relative"
+      style={{ backgroundColor: theme.bg.primary, fontFamily: "'Inter', sans-serif" }}
+    >
+      {/* Ambient Background Glow */}
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{
+          background: `radial-gradient(ellipse at top, ${theme.primary.glow}, transparent 60%)`,
+        }}
+      />
+
       <style>{glitchStyles}</style>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-16">
         
-        {/* 1. BRAND NAME - Big at top */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+        {/* 1. METALLIC GLOWING BRAND NAME */}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-yellow-400" />
-            <Sparkles className="text-yellow-400" size={20} />
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-yellow-400" />
-          </div>
-          
-          <h1 className="text-7xl md:text-8xl lg:text-9xl font-black uppercase tracking-tight">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-yellow-400 to-white">
-              noTrainer
-            </span>
+          <h1
+            className="text-8xl md:text-9xl lg:text-[12rem] font-black tracking-tight leading-none"
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              background: `linear-gradient(180deg, ${theme.text.primary} 0%, ${theme.primary.light} 50%, ${theme.secondary.light} 100%)`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              filter: `drop-shadow(0 0 40px ${theme.primary.glow}) drop-shadow(0 0 80px ${theme.secondary.glow})`,
+            }}
+          >
+            noTrainer
           </h1>
           
-          <div className="flex items-center justify-center gap-2 mt-4">
-            <div className="h-1 w-20 bg-yellow-400 rounded-full" />
-            <p className="text-sm uppercase tracking-[0.3em] text-gray-400 font-bold">
-              AI Powered
-            </p>
-            <div className="h-1 w-20 bg-yellow-400 rounded-full" />
-          </div>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: "200px" }}
+            transition={{ duration: 1, delay: 0.5 }}
+            className="h-1 mx-auto mt-6 rounded-full"
+            style={{
+              background: `linear-gradient(90deg, ${theme.primary.main}, ${theme.secondary.main})`,
+              boxShadow: `0 0 20px ${theme.primary.glow}, 0 0 40px ${theme.secondary.glow}`,
+            }}
+          />
         </motion.div>
 
-        {/* 2. TEXT ROTATION WINDOW */}
-        <motion.div 
+        {/* 2. CLEAN ELITE BLUE TEXT ROTATION */}
+<motion.div
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  className="max-w-5xl mx-auto mb-20 px-6"
+>
+  <div
+    className="relative rounded-3xl px-6 py-16 text-center border border-white/5"
+    style={{ backgroundColor: "#174cbf7c" }}
+  >
+    <div className="flex flex-col items-center justify-center">
+      
+      {/* Problem → Solution Indicator */}
+      <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-cyan-500 mb-6">
+        The Platform
+      </span>
+
+      {/* SINGLE LINE CENTERING CONTAINER */}
+      <div className="w-full flex justify-center items-center overflow-hidden">
+        <div className="text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white whitespace-nowrap">
+          <TextRotate
+            texts={["Home Gym", "Workout Guide", "AI Trainer", "AI Help", "Fitness Hub"]}
+            className="text-white"
+            mainClassName="flex justify-center w-full"
+            staggerDuration={0.02}
+            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+            rotationInterval={2500}
+            style={{ 
+              fontFamily: "sans-serif",
+              display: "inline-flex"
+            }}
+          />
+        </div>
+      </div>
+      
+      {/* Clean Subtext */}
+      <p className="mt-8 text-sm md:text-base font-bold tracking-wider text-slate-400">
+        Your complete fitness platform <span className="text-cyan-500">powered by AI</span>
+      </p>
+    </div>
+  </div>
+</motion.div>
+
+        {/* 3. BRIGHTER SVG ANATOMY VIEWER */}
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-4xl mx-auto mb-16"
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="max-w-lg mx-auto mb-24"
         >
-          <div className="relative rounded-2xl border-2 border-yellow-400/30 bg-zinc-900/60 backdrop-blur-xl overflow-hidden">
-            {/* Animated border glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/0 via-yellow-400/20 to-yellow-400/0 animate-pulse" />
-            
-            <div className="relative px-8 py-10 text-center">
-              <p className="text-xs uppercase tracking-[0.3em] text-yellow-400 font-black mb-4">
-                Your Complete Fitness Solution
-              </p>
-              
-              <div className="text-4xl md:text-5xl lg:text-6xl font-black uppercase flex items-center justify-center gap-4">
-                <TextRotate
-                  texts={[
-                    "Home Gym",
-                    "Workout Reference",
-                    "Calculators",
-                    "Health AI",
-                    "Productivity Tools",
-                  ]}
-                  className="text-yellow-400"
-                />
-              </div>
-              
-              <p className="mt-6 text-lg md:text-xl text-gray-300 font-medium max-w-2xl mx-auto">
-                Everything you need to build strength, track progress, and achieve your fitness goals — all in one intelligent platform.
-              </p>
-            </div>
-
-            {/* Corner accents */}
-            <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-yellow-400" />
-            <div className="absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 border-yellow-400" />
-            <div className="absolute bottom-0 left-0 w-12 h-12 border-b-2 border-l-2 border-yellow-400" />
-            <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-yellow-400" />
-          </div>
-        </motion.div>
-
-        {/* 3. SVG ANATOMY VIEWER */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="max-w-md mx-auto mb-20"
-        >
-          <div className="text-center mb-6">
-            <h2 className="text-3xl md:text-4xl font-black uppercase mb-2">
+          <div className="text-center mb-8">
+            <h2
+              className="text-3xl md:text-4xl font-bold mb-2"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
               Target Every Muscle
             </h2>
-            <p className="text-gray-400 font-medium">
-              Precision anatomy mapping for optimal results
+            <p style={{ color: theme.text.secondary }}>
+              Interactive 3D muscle mapping
             </p>
           </div>
 
-          <div className="relative h-[600px] border-4 border-yellow-400/30 bg-zinc-900/50 backdrop-blur-md rounded-2xl flex items-center justify-center overflow-hidden group hover:border-yellow-400/50 transition-all duration-300">
-            {/* Scanning effect */}
+          <div
+            ref={containerRef}
+            onMouseMove={handleMouseMove}
+            className="relative h-[600px] rounded-3xl flex items-center justify-center overflow-hidden group"
+            style={{
+              backgroundColor: theme.bg.cardLight,
+              boxShadow: `0 0 60px ${theme.primary.glow}`,
+            }}
+          >
+            {/* Futuristic Corner Accents */}
+            <div className="absolute top-0 left-0 w-20 h-20 opacity-60">
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <path d="M0 0 L80 0 L80 3 L3 3 L3 80 L0 80 Z" fill={theme.primary.main} />
+              </svg>
+            </div>
+            <div className="absolute top-0 right-0 w-20 h-20 opacity-60">
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <path d="M80 0 L0 0 L0 3 L77 3 L77 80 L80 80 Z" fill={theme.primary.main} />
+              </svg>
+            </div>
+            <div className="absolute bottom-0 left-0 w-20 h-20 opacity-60">
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <path d="M0 80 L0 0 L3 0 L3 77 L80 77 L80 80 Z" fill={theme.secondary.main} />
+              </svg>
+            </div>
+            <div className="absolute bottom-0 right-0 w-20 h-20 opacity-60">
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <path d="M80 80 L80 0 L77 0 L77 77 L0 77 L0 80 Z" fill={theme.secondary.main} />
+              </svg>
+            </div>
+
+            {/* Holographic Scan Lines */}
             <motion.div
-              animate={{ top: ["-2%", "102%"] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
-              className="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-green-400 to-transparent z-20"
-              style={{ 
-                boxShadow: "0 0 20px 3px rgba(74, 222, 128, 0.8)",
-                filter: "blur(1px)"
+              animate={{ top: ["-5%", "105%"] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              className="absolute left-0 right-0 h-[2px] z-20 pointer-events-none"
+              style={{
+                background: `linear-gradient(90deg, transparent, ${theme.accent.success}, transparent)`,
+                boxShadow: `0 0 30px ${theme.accent.success}`,
               }}
             />
 
-            {/* Status indicators */}
-            <div className="absolute top-4 left-4 flex items-center gap-2 z-30">
-              <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_12px_2px_rgba(74,222,128,0.6)]" />
-              <span className="text-xs uppercase tracking-wide text-green-400 font-black">
-                Active Scan
+            {/* Status HUD */}
+            <div className="absolute top-4 left-4 flex items-center gap-2 z-30 pointer-events-none">
+              <Activity
+                size={16}
+                style={{ color: theme.accent.success }}
+                className="animate-pulse"
+              />
+              <span
+                className="text-xs uppercase tracking-wider font-semibold"
+                style={{ color: theme.accent.success }}
+              >
+                Scanning
               </span>
             </div>
 
-            <div className="absolute top-4 right-4 z-30">
-              <div className="px-3 py-1 bg-black/60 backdrop-blur-sm rounded-lg border border-yellow-400/30">
-                <span className="text-xs uppercase tracking-wide text-yellow-400 font-black">
-                  3D Model
-                </span>
+            {/* Muscle Label Tooltip */}
+            <AnimatePresence>
+              {highlightedMuscle && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                    x: mousePos.x - 60,
+                    y: mousePos.y - 50,
+                  }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                  className="absolute top-0 left-0 z-50 pointer-events-none px-4 py-2 rounded-lg"
+                  style={{
+                    backgroundColor: theme.primary.main,
+                    boxShadow: `0 0 20px ${theme.primary.glow}`,
+                  }}
+                >
+                  <span className="text-xs font-bold uppercase tracking-wider text-white">
+                    {highlightedMuscle}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* 3D Anatomy Model */}
+            <div className="relative w-full h-full flex items-center justify-center p-16 z-10 pointer-events-none">
+              <div className="w-full h-full flex items-center justify-center transition-transform duration-700 group-hover:scale-110 pointer-events-auto">
+                <FrontView
+                  onHover={setHighlightedMuscle}
+                  onLeave={() => setHighlightedMuscle(null)}
+                  onSelect={setSelectedMuscle}
+                  selectedMuscle={selectedMuscle}
+                  highlightedMuscle={highlightedMuscle}
+                  className="max-h-full w-auto opacity-90 object-contain"
+                  style={{ 
+                    filter: `drop-shadow(0 0 20px ${theme.primary.glow})`,
+                    overflow: 'visible'
+                  }}
+                />
               </div>
             </div>
 
-            {/* Anatomy SVG */}
-            <FrontView
-              onHover={setHighlightedMuscle}
-              onLeave={() => setHighlightedMuscle(null)}
-              onSelect={setSelectedMuscle}
-              selectedMuscle={selectedMuscle}
-              highlightedMuscle={highlightedMuscle}
-              className="h-[420px] w-auto opacity-90 z-10 transition-transform duration-500 group-hover:scale-105"
-            />
-
-            {/* Grid overlay */}
-            <div className="absolute inset-0 pointer-events-none" 
+            {/* Holographic Grid Overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none opacity-10"
               style={{
                 backgroundImage: `
-                  linear-gradient(0deg, transparent 24%, rgba(250, 204, 21, 0.05) 25%, rgba(250, 204, 21, 0.05) 26%, transparent 27%, transparent 74%, rgba(250, 204, 21, 0.05) 75%, rgba(250, 204, 21, 0.05) 76%, transparent 77%, transparent),
-                  linear-gradient(90deg, transparent 24%, rgba(250, 204, 21, 0.05) 25%, rgba(250, 204, 21, 0.05) 26%, transparent 27%, transparent 74%, rgba(250, 204, 21, 0.05) 75%, rgba(250, 204, 21, 0.05) 76%, transparent 77%, transparent)
+                  linear-gradient(0deg, transparent 49%, ${theme.primary.main} 50%, transparent 51%),
+                  linear-gradient(90deg, transparent 49%, ${theme.primary.main} 50%, transparent 51%)
                 `,
-                backgroundSize: '50px 50px'
+                backgroundSize: "40px 40px",
               }}
             />
           </div>
-
-          {/* Muscle info display */}
-          {(selectedMuscle || highlightedMuscle) && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-xl text-center"
-            >
-              <p className="text-sm uppercase tracking-wide text-yellow-400 font-black">
-                {selectedMuscle || highlightedMuscle}
-              </p>
-            </motion.div>
-          )}
         </motion.div>
 
-        {/* 4. PROBLEM → SOLUTION SECTION */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+        {/* 4. IMPROVED PROBLEM → SOLUTION SECTION */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          transition={{ duration: 0.8, delay: 0.7 }}
           className="max-w-6xl mx-auto"
         >
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <div className="h-px w-16 bg-yellow-400" />
-              <span className="text-sm uppercase tracking-[0.3em] text-yellow-400 font-black">
-                Real Problems
-              </span>
-              <div className="h-px w-16 bg-yellow-400" />
-            </div>
-            
-            <h2 className="text-5xl md:text-6xl font-black uppercase mb-4">
-              Problems <span className="text-yellow-400">→</span> Solutions
+            <h2
+              className="text-5xl md:text-6xl font-bold mb-4"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Your Problem{" "}
+              <span style={{ color: theme.primary.main }}>→</span>{" "}
+              Our Solution
             </h2>
-            <p className="text-xl text-gray-300 font-medium max-w-2xl mx-auto">
-              Pick your challenge. See the solution. Start transforming today.
+            <p className="text-xl" style={{ color: theme.text.secondary }}>
+              Select your challenge and see how we solve it
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* PROBLEMS GRID */}
-            <div className="rounded-2xl border-2 border-yellow-400/30 bg-zinc-900/50 backdrop-blur-xl overflow-hidden">
-              <div className="px-6 py-5 border-b border-yellow-400/20 flex items-center justify-between bg-gradient-to-r from-yellow-400/10 to-transparent">
-                <div>
-                  <p className="font-black uppercase tracking-wide text-lg text-yellow-400">
-                    Common Barriers
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Click to explore solutions
-                  </p>
-                </div>
-                <div className="px-3 py-1 bg-yellow-400/20 rounded-lg">
-                  <p className="text-sm font-black text-yellow-400">
-                    {excuses.length}
-                  </p>
-                </div>
+            {/* PROBLEMS GRID - SOLID BACKGROUNDS */}
+            <div
+              className="rounded-2xl overflow-hidden p-6"
+              style={{
+                backgroundColor: theme.bg.card,
+              }}
+            >
+              <div className="flex items-center justify-between mb-6 pb-4 border-b"
+                style={{ borderColor: theme.border.default }}
+              >
+                <h3 className="text-lg font-bold uppercase tracking-wide" style={{ color: theme.primary.main }}>
+                  Common Problems
+                </h3>
+                <span className="text-sm" style={{ color: theme.text.secondary }}>
+                  {problems.length} issues
+                </span>
               </div>
 
-              <div className="p-5">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {excuses.map((excuse) => {
-                    const active = excuse.id === selectedExcuseId;
-
-                    return (
-                      <motion.button
-                        key={excuse.id}
-                        type="button"
-                        onClick={() => setSelectedExcuseId(excuse.id)}
-                        whileHover={{ y: -3, scale: 1.02 }}
-                        whileTap={{ scale: 0.97 }}
-                        className={[
-                          "group rounded-xl border-2 text-left p-4 transition-all duration-200",
-                          "min-h-[130px] flex flex-col justify-between relative overflow-hidden",
-                          active
-                            ? "bg-yellow-400 text-black border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.3)]"
-                            : "bg-black/30 text-white border-yellow-400/20 hover:border-yellow-400/50 hover:bg-black/50",
-                        ].join(" ")}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {problems.map((problem) => {
+                  const active = problem.id === selectedExcuseId;
+                  return (
+                    <motion.button
+                      key={problem.id}
+                      onClick={() => setSelectedExcuseId(problem.id)}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="rounded-xl p-4 min-h-[120px] flex flex-col justify-between text-left transition-all"
+                      style={{
+                        backgroundColor: active ? problem.color : theme.bg.cardLight,
+                        color: theme.text.primary,
+                        boxShadow: active ? `0 8px 24px ${problem.color}40` : 'none',
+                      }}
+                    >
+                      <div
+                        className="w-fit p-2.5 rounded-lg mb-3"
+                        style={{
+                          backgroundColor: active ? 'rgba(255, 255, 255, 0.2)' : `${problem.color}20`,
+                          color: active ? theme.text.primary : problem.color,
+                        }}
                       >
-                        {/* Hover gradient */}
-                        {!active && (
-                          <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/0 to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        )}
-
-                        <div className="relative z-10">
-                          <div className="flex items-start justify-between gap-2 mb-3">
-                            <div
-                              className={[
-                                "shrink-0 rounded-lg p-2.5 transition-all",
-                                active
-                                  ? "bg-black text-yellow-400 shadow-lg"
-                                  : "bg-yellow-400/10 text-yellow-400 group-hover:bg-yellow-400/20",
-                              ].join(" ")}
-                            >
-                              {excuse.icon}
-                            </div>
-
-                            <div
-                              className={[
-                                "h-2.5 w-2.5 rounded-full transition-all",
-                                active 
-                                  ? "bg-black shadow-[0_0_8px_rgba(0,0,0,0.5)]" 
-                                  : "bg-green-400/0 group-hover:bg-green-400",
-                              ].join(" ")}
-                            />
-                          </div>
-
-                          <p
-                            className={[
-                              "font-black uppercase tracking-wide leading-tight",
-                              "text-[11px] md:text-[12px]",
-                              active ? "text-black" : "text-white",
-                            ].join(" ")}
-                          >
-                            {excuse.text}
-                          </p>
-                        </div>
-
-                        {/* Active indicator */}
-                        {active && (
-                          <motion.div
-                            layoutId="activeIndicator"
-                            className="absolute bottom-0 left-0 right-0 h-1 bg-black"
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                          />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
+                        {problem.icon}
+                      </div>
+                      <p className="text-xs font-bold uppercase tracking-wide leading-tight">
+                        {problem.text}
+                      </p>
+                    </motion.button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* SOLUTION PANEL */}
-            <div className="rounded-2xl border-2 border-green-400/30 bg-zinc-900/50 backdrop-blur-xl overflow-hidden">
-              <div className="px-6 py-5 border-b border-green-400/20 flex items-center justify-between bg-gradient-to-r from-green-400/10 to-transparent">
-                <p className="font-black uppercase tracking-wide text-lg text-green-400">
-                  Your Solution
-                </p>
+            {/* SOLUTION PANEL - BETTER DESIGN */}
+            <div
+              className="rounded-2xl overflow-hidden"
+              style={{
+                backgroundColor: theme.bg.card,
+              }}
+            >
+              <div 
+                className="px-6 py-4 flex items-center justify-between"
+                style={{ 
+                  backgroundColor: selectedProblem.color,
+                }}
+              >
+                <h3 className="text-lg font-bold uppercase tracking-wide text-white">
+                  Solution
+                </h3>
                 <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_12px_2px_rgba(74,222,128,0.6)]" />
-                  <span className="text-xs uppercase tracking-wide text-green-400 font-bold">
-                    Ready
+                  <Check size={16} className="text-white" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-white">
+                    Available
                   </span>
                 </div>
               </div>
 
-              <div className="p-8 min-h-[400px] flex items-center">
+              <div className="p-8">
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={selectedExcuse.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
+                    key={selectedProblem.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6 w-full"
+                    className="space-y-6"
                   >
-                    {/* Problem reference */}
-                    <div className="flex items-start gap-4">
-                      <div className="p-3.5 bg-gradient-to-br from-yellow-400 to-yellow-500 text-black rounded-xl shadow-lg">
-                        {selectedExcuse.icon}
+                    {/* Icon Header */}
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="p-4 rounded-2xl"
+                        style={{
+                          backgroundColor: selectedProblem.color,
+                          boxShadow: `0 8px 24px ${selectedProblem.color}40`,
+                        }}
+                      >
+                        <div style={{ color: theme.text.primary }}>
+                          {selectedProblem.icon}
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-xs uppercase tracking-wider text-gray-400 mb-1 font-bold">
-                          Challenge
+                      <div>
+                        <p className="text-xs uppercase tracking-wider font-bold mb-1" style={{ color: theme.text.secondary }}>
+                          Problem
                         </p>
-                        <h3 className="text-xl md:text-2xl font-black uppercase leading-tight text-white">
-                          {selectedExcuse.text}
+                        <h3 className="text-2xl font-bold" style={{ color: theme.text.primary }}>
+                          {selectedProblem.text}
                         </h3>
                       </div>
                     </div>
 
-                    <div className="h-px bg-gradient-to-r from-transparent via-green-400/30 to-transparent" />
-
-                    {/* Solution */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <ChevronRight className="text-green-400" size={24} />
-                        <p className="text-sm uppercase tracking-wider text-green-400 font-black">
-                          How we solve it
-                        </p>
-                      </div>
-                      
-                      <p className="text-lg md:text-xl font-medium leading-relaxed text-gray-100 pl-8">
-                        {selectedExcuse.solution}
-                      </p>
+                    {/* Divider */}
+                    <div className="flex items-center gap-3">
+                      <div className="h-px flex-1" style={{ backgroundColor: selectedProblem.color }} />
+                      <span className="text-xs uppercase tracking-wider font-bold" style={{ color: selectedProblem.color }}>
+                        How we solve it
+                      </span>
+                      <div className="h-px flex-1" style={{ backgroundColor: selectedProblem.color }} />
                     </div>
 
-                    {/* CTA */}
-                    <div className="pt-4 pl-8">
-                      <button
-                        type="button"
-                        className="group inline-flex items-center gap-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black px-6 py-3 rounded-xl font-black uppercase text-sm border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[6px] active:translate-y-[6px] transition-all duration-150"
-                      >
-                        Get Started Free
-                        <ChevronRight 
-                          size={20} 
-                          className="group-hover:translate-x-1 transition-transform" 
-                        />
-                      </button>
-                    </div>
+                    {/* Solution Text */}
+                    <p className="text-lg leading-relaxed" style={{ color: theme.text.secondary }}>
+                      {selectedProblem.solution}
+                    </p>
+
+                    {/* CTA Button */}
+                    <button
+                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold uppercase text-sm transition-all hover:scale-105"
+                      style={{
+                        backgroundColor: selectedProblem.color,
+                        color: theme.text.primary,
+                        boxShadow: `0 4px 20px ${selectedProblem.color}60`,
+                      }}
+                    >
+                      Start Now
+                      <ChevronRight size={18} />
+                    </button>
                   </motion.div>
                 </AnimatePresence>
               </div>
             </div>
           </div>
         </motion.div>
-
       </div>
     </section>
   );
