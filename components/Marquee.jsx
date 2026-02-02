@@ -21,9 +21,19 @@ export default function Marquee() {
   const [displayText, setDisplayText] = useState("");
   const [charIndex, setCharIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [showCursor, setShowCursor] = useState(true);
 
   const typingTimer = useRef(null);
 
+  // Blinking cursor effect
+  useEffect(() => {
+    const cursorInterval = setInterval(() => {
+      setShowCursor((prev) => !prev);
+    }, 500);
+    return () => clearInterval(cursorInterval);
+  }, []);
+
+  // Typing Logic
   useEffect(() => {
     if (isPaused) return;
 
@@ -33,13 +43,13 @@ export default function Marquee() {
       typingTimer.current = setTimeout(() => {
         setDisplayText((prev) => prev + currentQuote[charIndex]);
         setCharIndex((prev) => prev + 1);
-      }, 40);
+      }, 50); 
     } else {
       typingTimer.current = setTimeout(() => {
         setDisplayText("");
         setCharIndex(0);
         setQuoteIndex((prev) => (prev + 1) % QUOTES.length);
-      }, 2400);
+      }, 3000);
     }
 
     return () => {
@@ -48,60 +58,62 @@ export default function Marquee() {
   }, [charIndex, quoteIndex, isPaused]);
 
   return (
-    <div className="sticky top-0 z-[60] w-full h-10 md:h-12 overflow-hidden border-b border-yellow-400/20">
-      {/* Brighter background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900" />
-      <div className="absolute inset-0 opacity-80 bg-[radial-gradient(900px_200px_at_50%_-10%,rgba(65, 98, 158, 0.89),transparent_60%)]" />
-      <div className="absolute inset-0 opacity-60 bg-[radial-gradient(700px_220px_at_15%_120%,rgba(60, 224, 120, 0.9),transparent_60%)]" />
-      <div className="absolute inset-0 opacity-55 bg-[radial-gradient(700px_220px_at_85%_120%,rgba(203, 113, 74, 0.91),transparent_60%)]" />
-      <div className="absolute inset-0 bg-white/5 backdrop-blur-md" />
-
-      {/* Content */}
-      <div className="relative z-10 w-full h-full max-w-7xl mx-auto px-3 md:px-5">
-        {/* Centered quote */}
-        <div className="absolute inset-0 flex items-center justify-center px-12 md:px-20">
-          <h2 className="text-[11px] md:text-sm font-extrabold italic uppercase tracking-wider text-center truncate">
-            <span className="text-white drop-shadow-[0_1px_0_rgba(0,0,0,0.6)]">
-              {displayText}
+    // UPDATED: Visible Background Color + Yellow Accent Border
+    <div className="sticky top-0 z-[100] w-full h-10 md:h-12 bg-neutral-900 border-b border-yellow-500/30 flex items-center justify-center shadow-lg">
+      
+      <div className="w-full max-w-7xl mx-auto px-4 flex items-center justify-between relative h-full">
+        
+        {/* LEFT: Badge */}
+        <div className="flex-shrink-0 flex items-center gap-2 z-20">
+          <div className="flex items-center gap-2 bg-red-600 px-2.5 py-1 rounded shadow-sm">
+            <Flame size={12} className="text-white fill-white" />
+            <span className="text-[10px] font-black text-white uppercase tracking-widest hidden sm:block">
+              MODE
             </span>
+          </div>
+        </div>
+
+        {/* CENTER: Text (Yellow) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <h2 className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-yellow-400 truncate max-w-[60%] md:max-w-[70%] text-center drop-shadow-sm">
+            {displayText}
+            <span 
+              className={`inline-block w-2 md:w-2.5 h-4 md:h-5 ml-1 align-middle bg-yellow-400 ${showCursor ? 'opacity-100' : 'opacity-0'}`} 
+            />
           </h2>
         </div>
 
-        {/* Left + Right controls */}
-        <div className="relative h-full flex items-center justify-between">
-          {/* Left */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 rounded-md px-2 py-0.5 bg-black border border-white/20">
-              <Flame size={12} className="text-red-600" />
-              <span className="text-[9px] font-black text-white/80 uppercase tracking-[0.18em] hidden sm:block">
-                Motivation
-              </span>
+        {/* RIGHT: Controls */}
+        <div className="flex-shrink-0 flex items-center gap-3 z-20">
+            
+          {/* Divider */}
+          <div className="hidden md:block h-5 w-[1px] bg-white/20" />
+
+          <button
+            onClick={() => setIsPaused((p) => !p)}
+            className="group flex items-center gap-3 focus:outline-none"
+            aria-label={isPaused ? "Play" : "Pause"}
+          >
+            <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest hidden md:block group-hover:text-white transition-colors">
+              {isPaused ? "RESUME" : "PAUSE"}
+            </span>
+
+            {/* UPDATED BUTTON: Solid Background, Brighter, Pop Effect */}
+            <div className={`
+              w-8 h-8 flex items-center justify-center rounded border transition-all duration-200 shadow-sm
+              ${isPaused 
+                ? 'bg-yellow-500 border-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)]' // Active State
+                : 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-zinc-500'} // Default State (Solid & Bright)
+            `}>
+              {isPaused ? (
+                <Play size={12} className="fill-current ml-0.5" />
+              ) : (
+                <Pause size={12} className="fill-current" />
+              )}
             </div>
-          </div>
-
-          {/* Right */}
-          <div className="flex items-center gap-2">
-            <div className="hidden md:block h-3 w-[1px] bg-white/25" />
-
-            <button
-              onClick={() => setIsPaused((p) => !p)}
-              className="flex items-center gap-2 group text-white/80 hover:text-yellow-300 transition-colors"
-              aria-label={isPaused ? "Play" : "Pause"}
-            >
-              <span className="text-[9px] font-mono tracking-widest hidden md:block uppercase opacity-90">
-                {isPaused ? "Resume" : "Hold"}
-              </span>
-
-              <div className="w-7 h-7 md:w-7 md:h-7 flex items-center justify-center rounded-md border border-white/25 bg-black/20 group-hover:border-yellow-300/60 group-hover:bg-yellow-400/15 transition-colors">
-                {isPaused ? (
-                  <Play size={11} className="fill-current" />
-                ) : (
-                  <Pause size={11} className="fill-current" />
-                )}
-              </div>
-            </button>
-          </div>
+          </button>
         </div>
+
       </div>
     </div>
   );

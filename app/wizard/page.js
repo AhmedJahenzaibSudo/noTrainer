@@ -128,7 +128,7 @@ export default function WorkoutWizard() {
     return exercisesData.filter(
       (ex) =>
         ex.primaryMuscles?.includes(muscle) ||
-        ex.secondaryMuscles?.includes(muscle)
+        ex.secondaryMuscles?.includes(muscle),
     );
   }, [muscle]);
 
@@ -140,21 +140,21 @@ export default function WorkoutWizard() {
 
   const exercisesForEquipment = useMemo(() => {
     return exercisesForMuscle.filter(
-      (ex) => !equipment || ex.equipment === equipment
+      (ex) => !equipment || ex.equipment === equipment,
     );
   }, [exercisesForMuscle, equipment]);
 
   const availableCategories = useMemo(() => {
     return [
       ...new Set(
-        exercisesForEquipment.map((ex) => ex.category).filter(Boolean)
+        exercisesForEquipment.map((ex) => ex.category).filter(Boolean),
       ),
     ].sort();
   }, [exercisesForEquipment]);
 
   const exercisesForCategory = useMemo(() => {
     return exercisesForEquipment.filter(
-      (ex) => !category || ex.category === category
+      (ex) => !category || ex.category === category,
     );
   }, [exercisesForEquipment, category]);
 
@@ -365,8 +365,8 @@ export default function WorkoutWizard() {
           active
             ? "bg-yellow-400 border-black scale-110"
             : completed
-            ? "bg-white border-black text-black"
-            : "bg-black border-white text-white"
+              ? "bg-white border-black text-black"
+              : "bg-black border-white text-white"
         }`}
       >
         {completed && !active ? (
@@ -646,7 +646,7 @@ export default function WorkoutWizard() {
                 {availableEquipment.map((opt) => {
                   const Icon = equipmentIcons[opt.toLowerCase()] || Dumbbell;
                   const exerciseCount = exercisesForMuscle.filter(
-                    (e) => e.equipment === opt
+                    (e) => e.equipment === opt,
                   ).length;
                   const isActive = equipment === opt;
 
@@ -699,7 +699,7 @@ export default function WorkoutWizard() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {availableCategories.map((opt) => {
                   const exerciseCount = exercisesForEquipment.filter(
-                    (e) => e.category === opt
+                    (e) => e.category === opt,
                   ).length;
                   const isActive = category === opt;
 
