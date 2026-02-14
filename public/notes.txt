@@ -1,0 +1,22 @@
+inputs:
+Gender
+age
+weights in kg
+height in ft'in
+Activity level
+Your Goal(maintain, loss, gain)
+
+Outputs
+BMI ( number, range, catagory, )
+Ideal weight, loose/gain how much?
+Hydration (how much water to drink based on weight)
+Macronutrients(proteins, carbs, fats, total calories)
+
+93.5vh sections
+add a reset button.
+1st section for hero.
+2nd Section for inputs. 
+3rd section for BMI (Number, Category, Range/Bar) 
+4th section for ideal weight and lose/gain to achieve it. 
+5th section for Macronutrients needed (Proteins, Carbs, Fats, total calories) also give example of foods where they are found. 
+6th section for hydration needed. (litres, glasses)

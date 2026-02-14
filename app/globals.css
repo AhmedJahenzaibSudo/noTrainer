@@ -9,3 +9,26 @@
 section {
   height: 93.5vh;
 }
+
+
+
+/* 1. Prevent the white background from ever showing */
+:fullscreen, ::backdrop {
+  background-color: #171717 !important; /* bg-neutral-900 */
+}
+
+/* 2. Fix the height of your sections in fullscreen */
+/* We keep the marquee visible, but ensure sections fill the rest */
+:fullscreen [class*="h-[93.5vh]"],
+:fullscreen [class*="min-h-[93.5vh]"] {
+  /* In fullscreen, 93.5vh leaves a gap. This forces it to fill the screen minus the bar. */
+  height: calc(100vh - 2.5rem) !important; 
+  min-height: calc(100vh - 2.5rem) !important;
+}
+
+/* 3. Ensure the Marquee stays visible and at the top */
+:fullscreen .sticky.top-0 {
+  display: flex !important;
+  position: sticky !important;
+  top: 0 !important;
+}

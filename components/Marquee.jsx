@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { Pause, Play, Flame } from "lucide-react";
+import { Pause, Play, Flame, Maximize, Minimize } from "lucide-react";
 
 const QUOTES = [
   "Shut Up and Lift",
@@ -22,8 +22,31 @@ export default function Marquee() {
   const [charIndex, setCharIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [showCursor, setShowCursor] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const typingTimer = useRef(null);
+
+  // Fullscreen Logic
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((e) => {
+        console.error(`Error attempting to enable fullscreen: ${e.message}`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
+  // Sync state with browser (handles 'Esc' key)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   // Blinking cursor effect
   useEffect(() => {
@@ -58,7 +81,6 @@ export default function Marquee() {
   }, [charIndex, quoteIndex, isPaused]);
 
   return (
-    // UPDATED: Visible Background Color + Yellow Accent Border
     <div className="sticky top-0 z-[100] w-full h-10 md:h-12 bg-neutral-900 border-b border-yellow-500/30 flex items-center justify-center shadow-lg">
       
       <div className="w-full max-w-7xl mx-auto px-4 flex items-center justify-between relative h-full">
@@ -84,8 +106,17 @@ export default function Marquee() {
         </div>
 
         {/* RIGHT: Controls */}
-        <div className="flex-shrink-0 flex items-center gap-3 z-20">
+        <div className="flex-shrink-0 flex items-center gap-2 md:gap-3 z-20">
             
+          {/* NEW: Fullscreen Button */}
+          <button
+            onClick={toggleFullscreen}
+            className="w-8 h-8 flex items-center justify-center rounded border bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-700 hover:border-zinc-500 transition-all active:scale-90"
+            aria-label="Toggle Fullscreen"
+          >
+            {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
+          </button>
+
           {/* Divider */}
           <div className="hidden md:block h-5 w-[1px] bg-white/20" />
 
@@ -98,12 +129,11 @@ export default function Marquee() {
               {isPaused ? "RESUME" : "PAUSE"}
             </span>
 
-            {/* UPDATED BUTTON: Solid Background, Brighter, Pop Effect */}
             <div className={`
               w-8 h-8 flex items-center justify-center rounded border transition-all duration-200 shadow-sm
               ${isPaused 
-                ? 'bg-yellow-500 border-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)]' // Active State
-                : 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-zinc-500'} // Default State (Solid & Bright)
+                ? 'bg-yellow-500 border-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)]' 
+                : 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-zinc-500'}
             `}>
               {isPaused ? (
                 <Play size={12} className="fill-current ml-0.5" />

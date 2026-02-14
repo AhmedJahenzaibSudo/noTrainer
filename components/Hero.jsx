@@ -50,8 +50,8 @@ const theme = {
     purple: "#a855f7",
   },
   bg: {
-    primary: "#000000",
-    card: "#0f172a",
+    primary: "#2d2d8de6",
+    card: "#33436aff",
     cardLight: "#1e293b",
   },
   text: {
@@ -443,7 +443,7 @@ const Hero = () => {
 
   return (
     <div className="relative w-full text-white" style={{
-      backgroundColor: theme.bg.primary,
+      backgroundColor: "#020617", // Dark base for text contrast
       fontFamily: "'Inter', sans-serif",
     }}>
       <style>{`
@@ -482,19 +482,20 @@ const Hero = () => {
         <motion.div
           key={activeSection}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.18 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
           className="fixed inset-0 pointer-events-none z-0"
           style={{
-            background: `radial-gradient(circle at center, ${bgColor}, transparent 70%)`,
+            // Creates a colored gradient that fades to dark at the bottom for readability
+            background: `radial-gradient(circle at 50% 0%, ${bgColor}66 0%, #020617 85%)`,
           }}
         />
       </AnimatePresence>
 
       {/* Ambient dual glow for depth */}
       <div
-        className="fixed inset-0 pointer-events-none z-0 opacity-[0.10]"
+        className="fixed inset-0 pointer-events-none z-0 opacity-[0.15]"
         style={{
           background: `radial-gradient(circle at 15% 15%, ${theme.primary.glow}, transparent 55%),
                        radial-gradient(circle at 85% 70%, ${theme.secondary.glow}, transparent 55%)`,
@@ -569,9 +570,10 @@ const Hero = () => {
         style={{ height: '93.5vh' }}
       >
         {/* SECTION 1: BRAND */}
+        {/* REMOVED bg-black to allow color to show */}
         <section 
           ref={el => sectionsRef.current[0] = el}
-          className="h-screen w-full flex flex-col justify-start items-center relative px-6 overflow-hidden bg-black pt-44"
+          className="h-screen w-full flex flex-col justify-start items-center relative px-6 overflow-hidden pt-44"
         >
           <div className="absolute inset-0 pointer-events-none">
             <div
@@ -615,14 +617,14 @@ const Hero = () => {
             transition={{ delay: 1, duration: 0.8 }}
             className="absolute bottom-28 flex flex-col items-center gap-6 z-20"
           >
-            <span className="text-[12px] uppercase tracking-[0.8em] text-white font-bold drop-shadow-lg">
+            <span className="text-[15px] uppercase tracking-[0.4em] text-white font-bold drop-shadow-lg">
               Explore
             </span>
 
             <motion.div
               animate={{
                 y: [0, 12, 0],
-                opacity: [0.4, 1, 0.4],
+                opacity: [0.7, 1, 0.7],
               }}
               transition={{
                 duration: 2,
@@ -630,15 +632,16 @@ const Hero = () => {
                 ease: "easeInOut",
               }}
             >
-              <ChevronDown size={32} className="text-cyan-400 stroke-[3px]" />
+              <ChevronDown size={32} className="text-cyan-600 stroke-[3px]" />
             </motion.div>
           </motion.div>
         </section>
 
         {/* SECTION 2: PLATFORM / TEXT ROTATE */}
+        
         <section 
           ref={el => sectionsRef.current[1] = el}
-          className="h-screen w-full flex flex-col justify-center items-center relative px-4 overflow-hidden bg-black"
+          className="h-screen w-full flex flex-col justify-center items-center relative px-4 overflow-hidden"
         >
           <div className="absolute inset-0 z-0 flex justify-center items-center pointer-events-none">
             <div
@@ -658,13 +661,13 @@ const Hero = () => {
             <div
               className="relative rounded-[3.5rem] px-4 py-24 text-center border border-white/10 overflow-hidden"
               style={{
-                background: "rgba(0, 0, 0, 0.5)",
+                background: "rgba(13, 27, 90, 0.86)",
                 backdropFilter: "blur(50px) saturate(200%)",
-                boxShadow: "inset 0 0 40px rgba(255,255,255,0.02)",
+                boxShadow: "inset 0 0 60px rgba(45, 90, 150, 0.7)",
               }}
             >
               <div className="flex flex-col items-center justify-center relative z-10">
-                <span className="text-[12px] font-black uppercase tracking-[0.8em] text-cyan-400 mb-14 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
+                <span className="text-[16px] font-black uppercase tracking-[0.4em] text-cyan-400 mb-14 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
                   The Platform
                 </span>
 
@@ -702,9 +705,10 @@ const Hero = () => {
         </section>
 
         {/* SECTION 3: ANATOMY */}
+        {/* REMOVED bg-black/20 to allow color to show */}
         <section 
           ref={el => sectionsRef.current[2] = el}
-          className="h-screen w-full flex flex-col justify-center items-center px-6 bg-black/20"
+          className="h-screen w-full flex flex-col justify-center items-center px-6"
         >
           <style>{`
             .anatomy-svg-wrapper svg {
@@ -819,15 +823,17 @@ const Hero = () => {
         </section>
 
         {/* SECTION 4: PROBLEM -> SOLUTION */}
+        {/* REMOVED bg-[#050505] to allow global color tint to show through */}
         <section 
           ref={el => sectionsRef.current[3] = el}
-          className="h-screen w-full flex flex-col justify-center items-center relative px-6 overflow-hidden bg-[#050505]"
+          className="h-screen w-full flex flex-col justify-center items-center relative px-6 overflow-hidden"
         >
+          {/* The internal blur gradient remains, blending with the new colored background */}
           <div
             className="absolute inset-0 opacity-40 blur-[140px] pointer-events-none transition-colors duration-1000"
             style={{
               background: `radial-gradient(circle at 80% 50%, ${selectedProblem.color}, transparent 65%),
-                   radial-gradient(circle at 10% 10%, #3b82f6, transparent 55%)`,
+                   radial-gradient(circle at 10% 10%, #092045ff, transparent 55%)`,
             }}
           />
 
@@ -848,7 +854,7 @@ const Hero = () => {
                 transition={{ delay: 0.7, duration: 0.8 }}
                 className="h-[1px] bg-white/20 relative"
               >
-                <div className="absolute right-0 -top-[3px] border-y-[4px] border-y-transparent border-l-[7px] border-l-white/20" />
+                <div className="absolute right-0 -top-[3px] border-y-[4px] border-y-transparent border-l-[9px] border-l-white" />
               </motion.div>
 
               <motion.h2
@@ -962,80 +968,72 @@ const Hero = () => {
         </section>
 
         {/* SECTION 5: FEATURES */}
+        {/* REMOVED bg-[#0f172a] to allow color to show */}
         <section 
   ref={el => sectionsRef.current[4] = el}
-  className="h-screen w-full flex flex-col bg-[#0f172a]"
+  className="h-screen w-full flex flex-col bg-[#020617] group/section overflow-hidden"
 >
   {/* TOP SECTION: HEADING */}
-  <div className="h-[15%] w-full flex items-center justify-center border-b border-white/10 bg-[#0f172a] z-20 shadow-xl">
-    <h2 className="text-5xl md:text-7xl font-black text-white tracking-widest uppercase italic drop-shadow-lg">
+  <div className="h-[18%] w-full flex items-center justify-center border-b border-white/5 bg-[#020617] z-20">
+    <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase italic drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
       Features
     </h2>
   </div>
 
-  {/* BOTTOM SECTION: VIBRANT STRIP */}
-  <div className="h-[85%] w-full relative overflow-hidden bg-[#020617]">
+  {/* BOTTOM SECTION: SCROLLING CARDS */}
+  <div className="h-[82%] w-full relative overflow-hidden bg-black">
     <div className="flex h-full animate-scroll-features hover:[animation-play-state:paused]">
       {[...features, ...features].map((feature, idx) => {
         
-        // UPGRADED PALETTE: Uses gradients and lighter stops (600-800) instead of 950
-        const colors = [
-  // Electric Cyan - Crisp and icy
-  'bg-gradient-to-b from-cyan-400 via-cyan-600 to-cyan-900 border-t border-cyan-300 shadow-inner shadow-cyan-400/50',
-  
-  // Royal Purple - Deep and velvety
-  'bg-gradient-to-b from-purple-400 via-purple-600 to-purple-900 border-t border-purple-300 shadow-inner shadow-purple-400/50',
-  
-  // Dragon Fruit - Vibrant but sophisticated
-  'bg-gradient-to-b from-rose-400 via-rose-600 to-rose-900 border-t border-rose-300 shadow-inner shadow-rose-400/50',
-  
-  // Jungle Emerald - High-energy tech green
-  'bg-gradient-to-b from-emerald-400 via-emerald-600 to-emerald-900 border-t border-emerald-300 shadow-inner shadow-emerald-400/50',
-  
-  // Blood Orange - Saturated sunset
-  'bg-gradient-to-b from-orange-400 via-orange-600 to-orange-900 border-t border-orange-300 shadow-inner shadow-orange-400/50',
-  
-  // Cobalt Blue - Deep ocean power
-  'bg-gradient-to-b from-blue-400 via-blue-600 to-blue-900 border-t border-blue-300 shadow-inner shadow-blue-400/50',
-  
-  // Vivid Violet - Electric luxury
-  'bg-gradient-to-b from-violet-400 via-violet-600 to-violet-900 border-t border-violet-300 shadow-inner shadow-violet-400/50',
-  
-  // Silver Graphite - Machined metal
-  'bg-gradient-to-b from-slate-300 via-slate-500 to-slate-800 border-t border-slate-200 shadow-inner shadow-slate-300/50'
-];
+        const isCyan = idx % 2 === 0;
+        
+        // DEEP SATURATED BACKGROUNDS
+        const cardBg = isCyan 
+          ? 'bg-gradient-to-br from-[#082f49] via-[#0c4a6e] to-[#020617]' // Deep Cyan/Ocean
+          : 'bg-gradient-to-br from-[#4c1d95] via-[#2e1065] to-[#020617]'; // Deep Purple/Grape
+
+        const neonText = isCyan ? 'text-cyan-400' : 'text-fuchsia-400';
+        const neonGlow = isCyan 
+          ? 'drop-shadow-[0_0_20px_rgba(34,211,238,0.8)]' 
+          : 'drop-shadow-[0_0_20px_rgba(232,121,249,0.8)]';
 
         return (
           <motion.div
             key={idx}
-            whileHover={{ width: '420px' }}
-            // Removed bg-black/40 overlay for instant visibility
-            className={`h-full w-[280px] md:w-[350px] flex-shrink-0 relative group cursor-pointer transition-all duration-500 ease-out border-r border-white/20 overflow-hidden ${colors[idx % colors.length]}`}
+            whileHover={{ width: '480px' }}
+            className={`h-full w-[320px] md:w-[400px] flex-shrink-0 relative group cursor-pointer transition-all duration-700 ease-in-out border-r border-white/10 ${cardBg}`}
           >
+            {/* OVERLAY FOR DEPTH */}
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500" />
             
-            {/* Inner Content */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center z-10">
+            {/* VIBRANT TOP BORDER ACCENT */}
+            <div className={`absolute top-0 left-0 right-0 h-1 transition-all duration-500 opacity-50 group-hover:opacity-100 ${isCyan ? 'bg-cyan-400 shadow-[0_0_15px_#22d3ee]' : 'bg-fuchsia-500 shadow-[0_0_15px_#d946ef]'}`} />
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center z-10">
               
-              {/* Icon - Starts visible (80%), becomes pure white on hover */}
-              <div className="text-white/80 group-hover:text-white group-hover:scale-110 transition-transform duration-300 drop-shadow-md">
-                {React.cloneElement(feature.icon, { size: 80, strokeWidth: 1.5 })}
+              {/* LARGE NEON ICON */}
+              <div className={`transition-all duration-500 group-hover:scale-125 ${neonText} ${neonGlow}`}>
+                {React.cloneElement(feature.icon, { 
+                    size: 130, 
+                    strokeWidth: 1.2 
+                })}
               </div>
 
-              {/* Title - Pure White */}
-              <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter leading-none mt-8 text-white drop-shadow-sm">
+              {/* Title */}
+              <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mt-12 text-white leading-none">
                 {feature.title}
               </h3>
 
-              {/* Description - High Contrast White */}
-              <div className="max-h-0 opacity-0 group-hover:max-h-48 group-hover:opacity-100 transition-all duration-500 mt-4 overflow-hidden">
-                <p className="text-white/90 text-lg font-medium leading-snug border-t-2 border-white/20 pt-4 max-w-[240px] mx-auto">
+              {/* Description */}
+              <div className="max-h-0 opacity-0 group-hover:max-h-60 group-hover:opacity-100 transition-all duration-500 mt-8 overflow-hidden">
+                <p className="text-white/80 text-xl font-medium leading-tight border-t border-white/20 pt-6 max-w-[300px] mx-auto">
                   {feature.description}
                 </p>
               </div>
             </div>
 
-            {/* Background Index Number - More visible now */}
-            <span className="absolute bottom-20 right-6 text-white/60 font-black text-8xl italic select-none pointer-events-none">
+            {/* Background Index Number */}
+            <span className={`absolute bottom-10 right-10 font-black text-9xl italic select-none pointer-events-none opacity-10 transition-all duration-700 group-hover:opacity-30 group-hover:scale-110 ${neonText}`}>
               {(idx % features.length) + 1}
             </span>
           </motion.div>
@@ -1050,9 +1048,8 @@ const Hero = () => {
       100% { transform: translateX(-50%); }
     }
     .animate-scroll-features {
-      animation: scrollFeatures 45s linear infinite;
+      animation: scrollFeatures 35s linear infinite;
       width: max-content;
-      display: flex;
     }
   `}</style>
 </section>
