@@ -1,114 +1,120 @@
 "use client";
 
 import Link from "next/link";
-import { Gamepad, Clock, AlertCircle, Zap, Target, Star } from "lucide-react";
+import { Brain, Zap, Target, Wind, ChevronRight } from "lucide-react";
 
 const GAMES = [
   {
-    title: "Memory Match",
-    href: "/game/memory",
-    icon: Gamepad,
-    desc: "Test your short-term memory",
-    color: "from-yellow-400/20 to-yellow-300/10",
-  },
-  {
-    title: "Reaction Speed",
-    href: "/game/reaction",
-    icon: Clock,
-    desc: "How fast can you click?",
-    color: "from-red-400/20 to-red-300/10",
-  },
-  {
-    title: "Number Guess",
-    href: "/game/guess",
+    title: "Focus Strike",
+    href: "/game/focus",
     icon: Target,
-    desc: "Guess the correct number",
-    color: "from-green-400/20 to-green-300/10",
+    desc: "Target Acquisition",
+    color: "from-blue-600/20 to-blue-400/10",
+    glow: "bg-blue-500/10",
   },
   {
-    title: "Stroop Challenge",
-    href: "/game/stroop",
-    icon: Star,
-    desc: "Test your focus & attention",
-    color: "from-blue-400/20 to-blue-300/10",
+    title: "Neural Recall",
+    href: "/game/recall",
+    icon: Brain,
+    desc: "Pattern Memory",
+    color: "from-cyan-600/20 to-cyan-400/10",
+    glow: "bg-cyan-500/10",
   },
   {
-    title: "Logic Puzzle",
-    href: "/game/puzzle",
-    icon: AlertCircle,
-    desc: "Solve simple logic puzzles",
-    color: "from-purple-400/20 to-purple-300/10",
-  },
-  {
-    title: "Decision Game",
-    href: "/game/decision",
+    title: "Reflex Pro",
+    href: "/game/reaction",
     icon: Zap,
-    desc: "Make the best choices",
-    color: "from-cyan-400/20 to-cyan-300/10",
+    desc: "Reaction Speed",
+    color: "from-indigo-600/20 to-indigo-400/10",
+    glow: "bg-indigo-500/10",  
+  },
+  {
+    title: "Zen Flow",
+    href: "/game/zenflow",
+    icon: Wind,
+    desc: "Mental Reset",
+    color: "from-emerald-600/20 to-emerald-400/10",
+    glow: "bg-emerald-500/10",
   },
 ];
 
-export default function Game() {
+export default function Dashboard() {
   return (
-    <main className="min-h-screen bg-black text-white font-sans relative overflow-hidden">
-      {/* Background glows */}
-      <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-yellow-400/10 blur-[150px]" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-white/5 blur-[200px]" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-yellow-400/5 blur-[180px]" />
+    <main 
+      className="bg-[#020205] text-white font-sans relative overflow-hidden flex flex-col items-center justify-between" 
+      style={{ height: '93.5vh' }}
+    >
+      {/* Subtle Background Glows */}
+      <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-blue-600/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-cyan-600/5 blur-[120px] pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto relative z-10 p-8 md:p-16">
-        {/* Header */}
-        <header className="mb-16 text-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-4">
-            Mind <span className="text-yellow-400">Games</span>
-          </h1>
-          <div className="h-1 w-28 bg-gradient-to-r from-yellow-400/80 to-yellow-300/50 mx-auto mb-6 rounded-full" />
-          <p className="text-xl text-white/70 font-medium max-w-2xl mx-auto">
-            Fun & challenging games to train your mind and reflexes.
-          </p>
-        </header>
+      {/* Header Section */}
+      <header className="pt-12 text-center flex-none">
+        <h1 className="text-6xl font-black tracking-tighter uppercase leading-none">
+          Games
+        </h1>
+        <div className="h-1.5 w-24 bg-blue-600 mt-4 mx-auto rounded-none shadow-[0_0_15px_#2563eb]" />
+      </header>
 
-        {/* Games Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      {/* 2x2 Games Grid */}
+      <div className="flex-grow w-full max-w-4xl px-6 flex items-center justify-center">
+        <div className="grid grid-cols-2 gap-5 w-full h-[65%] max-h-[480px]">
           {GAMES.map((game) => {
             const Icon = game.icon;
             return (
               <Link
                 key={game.href}
                 href={game.href}
-                className={`group relative rounded-2xl min-h-[250px] p-6 flex flex-col justify-between overflow-hidden
+                className={`group relative rounded-none p-6 flex flex-col justify-between overflow-hidden
                   bg-gradient-to-br ${game.color} 
-                  border border-white/10 backdrop-blur-lg
-                  hover:scale-105 hover:shadow-2xl hover:shadow-[rgba(255,255,255,0.15)]
-                  transition-all duration-300`}
+                  border border-white/5 backdrop-blur-3xl
+                  hover:border-blue-500/40 hover:scale-[1.02]
+                  transition-all duration-500 active:scale-95 shadow-2xl`}
               >
-                <div className="flex justify-between items-start">
-                  <Icon
-                    size={48}
-                    className="text-white/80 drop-shadow-[0_0_15px_rgba(255,255,255,0.6)] group-hover:scale-110 group-hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.9)] transition-transform duration-300"
-                    strokeWidth={2.2}
-                  />
+                {/* Decorative Internal Glow */}
+                <div className={`absolute -right-5 -top-5 w-24 h-24 rounded-full blur-3xl opacity-20 group-hover:opacity-60 transition-opacity ${game.glow}`} />
+
+                <div className="relative z-10">
+                  {/* ICON + NAME ROW */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-none bg-white/5 flex items-center justify-center group-hover:bg-blue-600/20 transition-all duration-300">
+                      <Icon size={24} className="text-blue-400 group-hover:text-white transition-colors" />
+                    </div>
+                    <h3 className="text-2xl font-black text-white uppercase tracking-tight leading-tight">
+                      {game.title}
+                    </h3>
+                  </div>
+                  
+                  {/* DESCRIPTION */}
+                  <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.2em] ml-16 group-hover:text-blue-300 transition-colors">
+                    {game.desc}
+                  </p>
                 </div>
 
-                <div className="mt-6">
-                  <h3 className="text-2xl font-bold text-white mb-1">{game.title}</h3>
-                  <p className="text-sm font-medium text-white/70">{game.desc}</p>
+                {/* BOTTOM INTERACTION BAR */}
+                <div className="relative z-10 flex items-center justify-between mt-4">
+                    <div className="flex items-center gap-2">
+                      <span className="h-[2px] w-8 bg-blue-600 group-hover:w-16 transition-all duration-500" />
+                      <span className="text-[8px] font-black uppercase text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">Launch Game</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/20 group-hover:text-blue-400 transform group-hover:translate-x-1 transition-all" />
                 </div>
 
-                <span className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-20 bg-white/5 pointer-events-none animate-pulse" />
+                {/* Hover Shine Effect */}
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none transition-opacity" />
               </Link>
             );
           })}
         </div>
       </div>
 
-      <style>{`
-        @keyframes pulse { 
-          0%, 100% { opacity: 0.3; } 
-          50% { opacity: 0.1; } 
-        }
-        .animate-pulse { animation: pulse 2s ease-in-out infinite; }
-      `}</style>
+      {/* Footer */}
+      <footer className="w-full pb-10 flex flex-col items-center gap-4 flex-none opacity-20">
+        <div className="flex gap-8 text-[9px] font-mono tracking-[0.3em] text-neutral-500 uppercase font-bold">
+          <span>System Active</span>
+          <span>v3.0.4</span>
+        </div>
+      </footer>
     </main>
   );
 }

@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowRight,
   RotateCcw,
   Coffee,
-  ArrowRight,
   Dumbbell,
   Zap,
   Trophy,
@@ -19,12 +19,31 @@ import {
   Flame,
   Droplets,
   Utensils,
+  GlassWater,
+  Download,
+  CheckCircle2,
 } from "lucide-react";
 
-// ------------------------------
-// Layout & Data Constants
-// ------------------------------
-const SECTION_HEIGHT = "93.5vh";
+const SECTION_HEIGHT = "93.5dvh";
+
+const PANEL = {
+  hero: "bg-slate-950",
+  inputs: "bg-blue-950",
+  bmi: "bg-cyan-950",
+  ibw: "bg-indigo-950",
+  macros: "bg-amber-950",
+  water: "bg-sky-950",
+  summary: "bg-violet-950",
+};
+
+const UI = {
+  btn: "bg-white text-black hover:bg-slate-200",
+  btnGhost:
+    "bg-transparent text-white border-2 border-white hover:bg-slate-900",
+  btnDanger: "bg-red-600 text-white border-2 border-red-600 hover:bg-red-500",
+  tag: "px-4 py-2 border-2 font-black text-sm uppercase tracking-wider",
+  accentBlue: "text-blue-300",
+};
 
 const ACTIVITY_LEVELS = [
   {
@@ -32,50 +51,40 @@ const ACTIVITY_LEVELS = [
     desc: "Little to no exercise",
     val: 1.2,
     icon: Coffee,
-    idleCls:
-      "bg-indigo-500/10 border-indigo-500/40 text-indigo-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600",
-    activeCls:
-      "bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20",
+    idle: "bg-violet-900 border-violet-300",
+    active: "bg-violet-600 border-white",
   },
   {
     label: "Light",
     desc: "1-3 days/week",
     val: 1.375,
     icon: Footprints,
-    idleCls:
-      "bg-cyan-500/10 border-cyan-500/40 text-cyan-400 hover:bg-cyan-600 hover:text-white hover:border-cyan-600",
-    activeCls:
-      "bg-cyan-600 text-white border-cyan-600 shadow-lg shadow-cyan-500/20",
+    idle: "bg-sky-900 border-sky-300",
+    active: "bg-sky-600 border-white",
   },
   {
     label: "Moderate",
     desc: "3-5 days/week",
     val: 1.55,
     icon: Dumbbell,
-    idleCls:
-      "bg-emerald-500/10 border-emerald-500/40 text-emerald-400 hover:bg-emerald-600 hover:text-white hover:border-emerald-600",
-    activeCls:
-      "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-500/20",
+    idle: "bg-indigo-900 border-indigo-300",
+    active: "bg-indigo-600 border-white",
   },
   {
     label: "Active",
     desc: "6-7 days/week",
     val: 1.725,
     icon: Zap,
-    idleCls:
-      "bg-orange-500/10 border-orange-500/40 text-orange-400 hover:bg-orange-600 hover:text-white hover:border-orange-600",
-    activeCls:
-      "bg-orange-600 text-white border-orange-600 shadow-lg shadow-orange-500/20",
+    idle: "bg-amber-800 border-amber-200",
+    active: "bg-amber-600 border-white",
   },
   {
     label: "Athlete",
     desc: "Physical job + training",
     val: 1.9,
     icon: Trophy,
-    idleCls:
-      "bg-rose-500/10 border-rose-500/40 text-rose-400 hover:bg-rose-600 hover:text-white hover:border-rose-600",
-    activeCls:
-      "bg-rose-600 text-white border-rose-600 shadow-lg shadow-rose-500/20",
+    idle: "bg-emerald-900 border-emerald-300",
+    active: "bg-emerald-600 border-white",
   },
 ];
 
@@ -84,61 +93,39 @@ const GOALS = [
     label: "Lose Weight",
     val: -500,
     icon: TrendingDown,
-    idleCls:
-      "bg-rose-500/10 border-rose-500/60 text-rose-400 hover:bg-rose-500 hover:text-white hover:border-rose-500",
-    activeCls: "bg-rose-500 text-white border-rose-500",
+    idle: "bg-red-900 border-red-300",
+    active: "bg-red-600 border-white",
   },
   {
     label: "Maintain",
     val: 0,
     icon: Shield,
-    idleCls:
-      "bg-[#bbfa26]/10 border-[#bbfa26]/60 text-[#bbfa26] hover:bg-[#bbfa26] hover:text-black hover:border-[#bbfa26]",
-    activeCls: "bg-[#bbfa26] text-black border-[#bbfa26]",
+    idle: "bg-blue-900 border-blue-300",
+    active: "bg-blue-600 border-white",
   },
   {
     label: "Build Muscle",
     val: 500,
     icon: TrendingUp,
-    idleCls:
-      "bg-blue-500/10 border-blue-500/60 text-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500",
-    activeCls: "bg-blue-500 text-white border-blue-500",
+    idle: "bg-emerald-900 border-emerald-300",
+    active: "bg-emerald-600 border-white",
   },
 ];
 
 const BMI_CATEGORIES = [
-  {
-    label: "Underweight",
-    min: 0,
-    max: 18.5,
-    bar: "bg-blue-500",
-    text: "text-blue-400",
-  },
-  {
-    label: "Healthy",
-    min: 18.5,
-    max: 25,
-    bar: "bg-[#bbfa26]",
-    text: "text-[#bbfa26]",
-  },
-  {
-    label: "Overweight",
-    min: 25,
-    max: 30,
-    bar: "bg-orange-500",
-    text: "text-orange-400",
-  },
-  {
-    label: "Obese",
-    min: 30,
-    max: 1000,
-    bar: "bg-rose-600",
-    text: "text-rose-500",
-  },
+  { label: "Underweight", min: 0, max: 18.5 },
+  { label: "Healthy", min: 18.5, max: 25 },
+  { label: "Overweight", min: 25, max: 30 },
+  { label: "Obese", min: 30, max: 1000 },
 ];
 
 function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
+}
+function parseNum(raw, mode = "float") {
+  if (raw === "") return "";
+  const v = mode === "int" ? parseInt(raw, 10) : parseFloat(raw);
+  return Number.isFinite(v) ? v : "";
 }
 
 function BMIRangeBar({ bmi }) {
@@ -147,130 +134,227 @@ function BMIRangeBar({ bmi }) {
   const pos = ((clamp(bmi, min, max) - min) / (max - min)) * 100;
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-10">
-      <div className="relative h-5 bg-slate-800 border border-slate-700 overflow-hidden">
+    <div className="w-full max-w-4xl mx-auto mt-8">
+      <div className="relative h-6 bg-slate-900 border-2 border-white overflow-hidden">
         <div className="absolute inset-0 flex">
-          <div className="w-[23%] bg-blue-500/70" />
-          <div className="w-[23%] bg-[#bbfa26]/70" />
-          <div className="w-[12%] bg-orange-500/70" />
-          <div className="flex-1 bg-rose-600/70" />
+          <div className="w-[23%] bg-sky-400" />
+          <div className="w-[23%] bg-emerald-400" />
+          <div className="w-[12%] bg-amber-400" />
+          <div className="flex-1 bg-red-500" />
         </div>
         <div
-          className="absolute top-0 bottom-0 w-[3px] bg-white shadow-[0_0_18px_rgba(255,255,255,0.6)]"
+          className="absolute top-0 bottom-0 w-[8px] bg-black border-2 border-white z-10"
           style={{ left: `${pos}%` }}
         />
       </div>
 
-      <div className="flex justify-between text-xs uppercase tracking-widest font-bold text-slate-400 mt-3">
-        <span>{min}</span>
-        <span>{max}</span>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
         {[
           {
             name: "Underweight",
             range: "< 18.5",
-            cls: "text-blue-400 border-blue-500/30",
+            min: 0,
+            max: 18.5,
+            active: "bg-sky-500 text-black border-2 border-sky-200",
           },
           {
             name: "Healthy",
             range: "18.5 - 25",
-            cls: "text-[#bbfa26] border-[#bbfa26]/30",
+            min: 18.5,
+            max: 25,
+            active: "bg-emerald-500 text-black border-2 border-emerald-200",
           },
           {
             name: "Overweight",
             range: "25 - 30",
-            cls: "text-orange-400 border-orange-500/30",
+            min: 25,
+            max: 30,
+            active: "bg-amber-400 text-black border-2 border-amber-200",
           },
           {
             name: "Obese",
             range: "> 30",
-            cls: "text-rose-500 border-rose-500/30",
+            min: 30,
+            max: 1000,
+            active: "bg-red-500 text-white border-2 border-red-200",
           },
-        ].map((c) => (
-          <div
-            key={c.name}
-            className={`border px-4 py-3 bg-slate-950/30 ${c.cls}`}
-          >
-            <div className="font-black uppercase">{c.name}</div>
-            <div className="text-slate-400">{c.range}</div>
-          </div>
-        ))}
+        ].map((c) => {
+          const isActive = bmi >= c.min && bmi < c.max;
+          return (
+            <div
+              key={c.name}
+              className={`p-4 text-center transition border-2 ${
+                isActive
+                  ? c.active
+                  : "bg-slate-900 text-white border-white hover:bg-slate-800"
+              }`}
+            >
+              <div className="font-black uppercase text-sm">{c.name}</div>
+              <div className="text-xs font-semibold mt-1">BMI: {c.range}</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
+function SquareStat({
+  title,
+  value,
+  hint,
+  icon: Icon,
+  tone = "border-white",
+  bg = "bg-slate-900",
+}) {
+  return (
+    <div className={`border-2 ${tone} ${bg} p-6`}>
+      <div className="flex items-center gap-3">
+        <div className="h-12 w-12 flex items-center justify-center">
+          <Icon size={22} className="text-white" />
+        </div>
+        <div className="text-left">
+          <div className="text-xs font-black uppercase tracking-widest text-slate-200">
+            {title}
+          </div>
+          <div className="text-3xl md:text-4xl font-black text-white leading-tight">
+            {value}
+          </div>
+          {hint ? (
+            <div className="text-sm font-semibold text-slate-200 mt-1">
+              {hint}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const INITIAL_INPUTS = {
+  gender: "",
+  age: "",
+  weight: "",
+  feet: "",
+  inches: "",
+  activity: "",
+  goal: "",
+};
+
 export default function HealthCalculators() {
   const scrollContainerRef = useRef(null);
+  const ageRef = useRef(null);
+  const weightRef = useRef(null);
+  const feetRef = useRef(null);
+  const inchesRef = useRef(null);
 
   const [step, setStep] = useState(0);
-  const [inputs, setInputs] = useState({
-    gender: "",
-    age: "",
-    weight: "",
-    feet: "",
-    inches: "",
-    activity: "",
-    goal: "",
-  });
+  const [inputs, setInputs] = useState(INITIAL_INPUTS);
   const [results, setResults] = useState(null);
 
   const numberInputNoSpinner =
     "appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 
-  const inputStyle = `w-full bg-transparent text-white text-center text-6xl md:text-8xl font-black outline-none border-b-4 border-slate-700 focus:border-[#bbfa26] transition-all py-4 placeholder:text-slate-600 focus:placeholder-transparent ${numberInputNoSpinner}`;
+  const inputStyle = useMemo(
+    () =>
+      `w-full bg-transparent text-white text-center text-5xl md:text-7xl font-black outline-none border-b-4 border-white focus:border-blue-300 transition-all py-4 placeholder:text-slate-200 ${numberInputNoSpinner}`,
+    [numberInputNoSpinner],
+  );
 
   const scrollToPage = (index) => {
     if (!scrollContainerRef.current) return;
-    const sectionHeight = scrollContainerRef.current.offsetHeight;
-    scrollContainerRef.current.scrollTo({
-      top: sectionHeight * index,
-      behavior: "smooth",
-    });
+    const h = scrollContainerRef.current.clientHeight;
+    scrollContainerRef.current.scrollTo({ top: h * index, behavior: "smooth" });
   };
 
   const resetAll = () => {
     setResults(null);
     setStep(0);
-    setInputs({
-      gender: "",
-      age: "",
-      weight: "",
-      feet: "",
-      inches: "",
-      activity: "",
-      goal: "",
-    });
+    setInputs(INITIAL_INPUTS);
     scrollToPage(0);
   };
 
-  const canNext = (() => {
+  const canNext = useMemo(() => {
     if (step === 0) return inputs.gender !== "";
-    if (step === 1) return Number(inputs.age) > 0;
-    if (step === 2) return Number(inputs.weight) > 0;
-    if (step === 3) return Number(inputs.feet) > 0;
-    if (step === 4) return Number(inputs.activity) > 0;
+    if (step === 1) return inputs.age !== "" && inputs.age > 0;
+    if (step === 2) return inputs.weight !== "" && inputs.weight > 0;
+    if (step === 3) return inputs.feet !== "" && inputs.feet > 0;
+    if (step === 4) return inputs.activity !== "" && inputs.activity > 0;
     if (step === 5) return inputs.goal !== "";
     return false;
-  })();
+  }, [step, inputs]);
+
+  const setAgeInputRef = useCallback(
+    (node) => {
+      ageRef.current = node;
+      if (node && step === 1) node.focus({ preventScroll: true });
+    },
+    [step],
+  );
+
+  const setWeightInputRef = useCallback(
+    (node) => {
+      weightRef.current = node;
+      if (node && step === 2) node.focus({ preventScroll: true });
+    },
+    [step],
+  );
+
+  const setFeetInputRef = useCallback(
+    (node) => {
+      feetRef.current = node;
+      if (node && step === 3) node.focus({ preventScroll: true });
+    },
+    [step],
+  );
+
+  const setInchesInputRef = useCallback((node) => {
+    inchesRef.current = node;
+  }, []);
+
+  const validateInputs = () => {
+    const age = inputs.age;
+    const weightKg = inputs.weight;
+    const feet = inputs.feet;
+    const inches = inputs.inches === "" ? 0 : inputs.inches;
+    const totalInches = feet * 12 + inches;
+
+    if (!inputs.gender) return false;
+    if (inputs.activity === "" || !inputs.activity) return false;
+    if (inputs.goal === "") return false;
+
+    if (age === "" || age < 5 || age > 120) return false;
+    if (weightKg === "" || weightKg < 20 || weightKg > 400) return false;
+    if (!Number.isFinite(totalInches) || totalInches < 36 || totalInches > 96)
+      return false;
+
+    return true;
+  };
+
+  const goalLabel =
+    inputs.goal === 0
+      ? "Maintain"
+      : inputs.goal > 0
+        ? "Build Muscle"
+        : "Lose Weight";
 
   const calculate = () => {
-    const feet = Number(inputs.feet);
-    const inches = Number(inputs.inches || 0);
+    if (!validateInputs()) return;
+
+    const feet = inputs.feet;
+    const inches = inputs.inches === "" ? 0 : inputs.inches;
     const totalInches = feet * 12 + inches;
 
     const heightM = totalInches * 0.0254;
     const heightCm = heightM * 100;
 
-    const weightKg = Number(inputs.weight);
-    const age = Number(inputs.age);
+    const weightKg = inputs.weight;
+    const age = inputs.age;
 
     const bmi = Number((weightKg / (heightM * heightM)).toFixed(1));
     const cat =
       BMI_CATEGORIES.find((c) => bmi >= c.min && bmi < c.max) ||
-      BMI_CATEGORIES[3];
+      BMI_CATEGORIES[BMI_CATEGORIES.length - 1];
 
     const bmr =
       10 * weightKg +
@@ -278,16 +362,16 @@ export default function HealthCalculators() {
       5 * age +
       (inputs.gender === "male" ? 5 : -161);
 
-    const dailyBurn = Math.round(bmr * Number(inputs.activity));
-    const targetCalories = dailyBurn + Number(inputs.goal);
+    const dailyBurn = Math.round(bmr * inputs.activity);
+    const targetCalories = Math.max(1200, dailyBurn + inputs.goal);
 
-    const inchesOver5ft = Math.max(0, totalInches - 60);
-    const ibw = (inputs.gender === "male" ? 50 : 45.5) + 2.3 * inchesOver5ft;
+    const inchesDiff = totalInches - 60;
+    const base = inputs.gender === "male" ? 50 : 45.5;
+    const ibw = clamp(base + 2.3 * inchesDiff, 30, 250);
 
-    const idealRangeMin = ibw * 0.9;
-    const idealRangeMax = ibw * 1.1;
+    const idealRangeMin = Number((ibw * 0.9).toFixed(1));
+    const idealRangeMax = Number((ibw * 1.1).toFixed(1));
 
-    // ✅ simple target weight
     const midpoint = (idealRangeMin + idealRangeMax) / 2;
     const targetWeight =
       weightKg > idealRangeMax
@@ -296,16 +380,14 @@ export default function HealthCalculators() {
           ? idealRangeMin
           : midpoint;
 
-    const diffToTarget = weightKg - targetWeight;
+    const diffToTarget = Number((weightKg - targetWeight).toFixed(1));
 
-    // Macro split (30/40/30)
     const protein = Math.round((targetCalories * 0.3) / 4);
     const carbs = Math.round((targetCalories * 0.4) / 4);
     const fat = Math.round((targetCalories * 0.3) / 9);
 
-    // Water
     const waterL = Number((weightKg * 0.035).toFixed(1));
-    const glasses = Math.round(waterL / 0.25);
+    const glasses = Math.max(1, Math.round(waterL / 0.25));
 
     setResults({
       bmi,
@@ -316,29 +398,146 @@ export default function HealthCalculators() {
       fat,
       waterL,
       glasses,
-
-      // ✅ new fields
-      idealRangeMin: Number(idealRangeMin.toFixed(1)),
-      idealRangeMax: Number(idealRangeMax.toFixed(1)),
+      idealRangeMin,
+      idealRangeMax,
       targetWeight: Number(targetWeight.toFixed(1)),
-
-      weightDiffText:
-        Math.abs(diffToTarget) < 0.6
-          ? "You’re on target"
-          : `${diffToTarget > 0 ? "Lose" : "Gain"} ${Math.abs(diffToTarget).toFixed(1)}kg to hit target`,
-      weightDiffColor:
-        Math.abs(diffToTarget) < 0.6
-          ? "text-[#bbfa26]"
-          : diffToTarget > 0
-            ? "text-rose-500"
-            : "text-blue-400",
+      diffToTarget,
     });
 
-    requestAnimationFrame(() => scrollToPage(2));
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => scrollToPage(2));
+    });
+  };
+
+  const onEnter = (e) => {
+    if (e.key !== "Enter") return;
+
+    if (step === 3 && e.target === feetRef.current && inchesRef.current) {
+      inchesRef.current.focus({ preventScroll: true });
+      return;
+    }
+
+    if (step < 5) {
+      if (!canNext) return;
+      setStep((s) => s + 1);
+      return;
+    }
+    if (step === 5 && canNext) calculate();
+  };
+
+  const bmiColor = !results
+    ? "text-white"
+    : results.cat.label === "Underweight"
+      ? "text-sky-300"
+      : results.cat.label === "Healthy"
+        ? "text-emerald-300"
+        : results.cat.label === "Overweight"
+          ? "text-amber-300"
+          : "text-red-300";
+
+  const goalSentence = useMemo(() => {
+    if (!results) return { text: "", cls: "" };
+    const d = results.diffToTarget;
+
+    if (Math.abs(d) < 0.6)
+      return {
+        text: "You are already in a healthy range.",
+        cls: "text-emerald-300",
+      };
+    if (d > 0)
+      return {
+        text: `Lose ${Math.abs(d).toFixed(1)} kg to reach the range.`,
+        cls: "text-red-300",
+      };
+    return {
+      text: `Gain ${Math.abs(d).toFixed(1)} kg to reach the range.`,
+      cls: "text-emerald-300",
+    };
+  }, [results]);
+
+  const downloadReport = () => {
+    if (!results) return;
+
+    const activityObj = ACTIVITY_LEVELS.find((a) => a.val === inputs.activity);
+    const activityLabel = activityObj ? activityObj.label : "Unknown";
+
+    const content = `
+HEALTH REPORT
+generated on ${new Date().toLocaleDateString()}
+----------------------------------------
+
+PROFILE INPUTS:
+• Gender: ${inputs.gender.toUpperCase()}
+• Age: ${inputs.age}
+• Weight: ${inputs.weight} kg
+• Height: ${inputs.feet}'${inputs.inches || 0}"
+• Activity: ${activityLabel}
+• Goal: ${goalLabel.toUpperCase()}
+
+----------------------------------------
+
+YOUR RESULTS:
+
+1. BMI (Body Mass Index)
+   Score: ${results.bmi}
+   Category: ${results.cat.label}
+
+2. IDEAL BODY WEIGHT
+   Range: ${results.idealRangeMin}kg - ${results.idealRangeMax}kg
+   Target Adjustment: ${
+     results.diffToTarget > 0.5
+       ? `Lose ${Math.abs(results.diffToTarget)}kg`
+       : results.diffToTarget < -0.5
+         ? `Gain ${Math.abs(results.diffToTarget)}kg`
+         : "Maintain"
+   }
+
+3. NUTRITION
+   Daily Target: ${results.targetCalories} Calories
+   • Protein: ${results.protein}g
+   • Carbs: ${results.carbs}g
+   • Fats: ${results.fat}g
+
+4. HYDRATION
+   Daily Water: ${results.waterL} Liters
+   (~${results.glasses} glasses)
+
+----------------------------------------
+    `;
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Health_Report_${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="bg-slate-950 text-white overflow-hidden selection:bg-[#bbfa26] selection:text-black font-sans">
+    <div className="bg-black text-white overflow-hidden selection:bg-white selection:text-black font-sans">
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+      />
+      <style jsx global>{`
+        body {
+          font-family: "Inter", sans-serif;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        input[type="number"] {
+          -moz-appearance: textfield;
+        }
+      `}</style>
+
       <div
         ref={scrollContainerRef}
         style={{ height: SECTION_HEIGHT }}
@@ -347,62 +546,77 @@ export default function HealthCalculators() {
         {/* 1) HERO */}
         <section
           style={{ height: SECTION_HEIGHT }}
-          className="w-full snap-start flex flex-col items-center justify-center bg-slate-900 px-6"
+          className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.hero}`}
         >
-          <h1 className="text-6xl md:text-8xl font-black   text-center leading-none">
-            Health <br /> <span className="text-[#bbfa26]">Calculators</span>
-          </h1>
+          <div className="text-center max-w-4xl">
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-4">
+              Health <span className={UI.accentBlue}>Calculators</span>
+            </h1>
 
-          <button
-            onClick={() => scrollToPage(1)}
-            className="mt-10 bg-white text-black font-black px-12 py-5 text-2xl uppercase hover:bg-[#bbfa26] transition-all"
-          >
-            Start
-          </button>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {["BMI", "IBW", "Macros", "Hydration"].map((t) => (
+                <span
+                  key={t}
+                  className={`${UI.tag} bg-slate-900 border-white text-white`}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-10 flex justify-center">
+              <button
+                onClick={() => scrollToPage(1)}
+                className={`px-10 py-4 border-2 border-white font-black text-lg ${UI.btn} active:scale-95 transition`}
+              >
+                Start
+              </button>
+            </div>
+          </div>
         </section>
 
         {/* 2) INPUTS */}
         <section
           style={{ height: SECTION_HEIGHT }}
-          className="w-full snap-start relative flex flex-col items-center justify-center bg-slate-950 px-6"
+          className={`w-full snap-start relative flex flex-col items-center justify-center px-6 ${PANEL.inputs}`}
         >
           <div className="absolute top-8 left-0 right-0 px-6 md:px-10 flex justify-center">
-            <div className="flex items-center gap-4 bg-slate-900/50 p-2 rounded-2xl backdrop-blur-sm border border-slate-800">
-              {/* Back Button */}
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => step > 0 && setStep((s) => s - 1)}
                 disabled={step === 0}
-                className={`p-3 rounded-xl transition-all border ${
+                aria-label="Back"
+                className={`p-2.5 border-2 font-black transition active:scale-95 ${
                   step === 0
-                    ? "border-slate-800 text-slate-700 opacity-50 cursor-not-allowed"
-                    : "border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white active:scale-95"
+                    ? "border-slate-600 text-slate-500 cursor-not-allowed bg-transparent"
+                    : UI.btnGhost
                 }`}
                 title="Back"
               >
-                <ArrowLeft size={20} strokeWidth={2.5} />
+                <ArrowLeft size={18} strokeWidth={2} />
               </button>
 
-              {/* Reset Button */}
               <button
                 onClick={resetAll}
-                className="p-3 rounded-xl border border-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white transition-all active:scale-95"
+                aria-label="Reset all"
+                className={`p-2.5 font-black transition active:scale-95 ${UI.btnDanger}`}
                 title="Reset All"
               >
-                <RotateCcw size={20} strokeWidth={2.5} />
+                <RotateCcw size={18} strokeWidth={2} />
               </button>
 
-              {/* Next Button */}
               <button
                 onClick={() => canNext && step < 5 && setStep((s) => s + 1)}
                 disabled={!canNext || step >= 5}
-                className={`p-3 rounded-xl transition-all ${
+                aria-label="Next"
+                className={`p-2.5 border-2 font-black transition active:scale-95 ${
                   canNext && step < 5
-                    ? "bg-[#bbfa26] text-black shadow-lg shadow-[#bbfa26]/20 hover:scale-110 active:scale-95"
-                    : "bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700"
+                    ? "border-white bg-white text-black hover:bg-slate-200"
+                    : "border-slate-600 text-slate-500 cursor-not-allowed bg-transparent"
                 }`}
                 title="Next"
               >
-                <ArrowRight size={20} strokeWidth={3} />
+                <ArrowRight size={18} strokeWidth={2.5} />
               </button>
             </div>
           </div>
@@ -416,35 +630,39 @@ export default function HealthCalculators() {
                 exit={{ opacity: 0, y: -16 }}
                 className="w-full max-w-4xl"
               >
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-8 text-center text-[#bbfa26]">
-                  Select Gender
+                <h2 className="text-3xl md:text-4xl font-black mb-4 text-center text-blue-200">
+                  Select Your Gender
                 </h2>
 
-                <div className="grid grid-cols-2 gap-6 md:gap-10 w-full">
+                <div className="grid grid-cols-2 gap-6 md:gap-8 w-full">
                   <button
-                    onClick={() => setInputs({ ...inputs, gender: "male" })}
-                    className={`p-10 md:p-16 border-2 flex flex-col items-center gap-6 transition-all ${
+                    onClick={() => setInputs((p) => ({ ...p, gender: "male" }))}
+                    aria-pressed={inputs.gender === "male"}
+                    className={`p-10 md:p-14 border-2 flex flex-col items-center gap-5 transition-all active:scale-[0.99] ${
                       inputs.gender === "male"
-                        ? "bg-[#bbfa26] text-black border-[#bbfa26]"
-                        : "bg-slate-900 border-slate-800 hover:border-slate-600"
+                        ? "bg-blue-600 border-white text-white"
+                        : "bg-blue-900 border-blue-300 text-white hover:border-white"
                     }`}
                   >
-                    <Mars size={64} />
-                    <span className="text-3xl md:text-4xl font-black uppercase italic">
+                    <Mars size={52} strokeWidth={1.5} className="text-white" />
+                    <span className="text-2xl md:text-3xl font-black">
                       Male
                     </span>
                   </button>
 
                   <button
-                    onClick={() => setInputs({ ...inputs, gender: "female" })}
-                    className={`p-10 md:p-16 border-2 flex flex-col items-center gap-6 transition-all ${
+                    onClick={() =>
+                      setInputs((p) => ({ ...p, gender: "female" }))
+                    }
+                    aria-pressed={inputs.gender === "female"}
+                    className={`p-10 md:p-14 border-2 flex flex-col items-center gap-5 transition-all active:scale-[0.99] ${
                       inputs.gender === "female"
-                        ? "bg-[#bbfa26] text-black border-[#bbfa26]"
-                        : "bg-slate-900 border-slate-800 hover:border-slate-600"
+                        ? "bg-pink-600 border-white text-white"
+                        : "bg-pink-900 border-pink-300 text-white hover:border-white"
                     }`}
                   >
-                    <Venus size={64} />
-                    <span className="text-3xl md:text-4xl font-black uppercase italic">
+                    <Venus size={52} strokeWidth={1.5} className="text-white" />
+                    <span className="text-2xl md:text-3xl font-black">
                       Female
                     </span>
                   </button>
@@ -460,19 +678,23 @@ export default function HealthCalculators() {
                 exit={{ opacity: 0, y: -16 }}
                 className="w-full max-w-3xl text-center"
               >
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-8 text-[#bbfa26]">
-                  How old are you?
+                <h2 className="text-3xl md:text-4xl font-black mb-4 text-blue-200">
+                  Age (years)
                 </h2>
                 <input
+                  ref={setAgeInputRef}
                   type="number"
                   inputMode="numeric"
-                  value={inputs.age}
+                  value={inputs.age === "" ? "" : String(inputs.age)}
+                  onKeyDown={onEnter}
                   onChange={(e) =>
-                    setInputs({ ...inputs, age: e.target.value })
+                    setInputs((p) => ({
+                      ...p,
+                      age: parseNum(e.target.value, "int"),
+                    }))
                   }
                   className={inputStyle}
-                  placeholder="Enter age"
-                  autoFocus
+                  aria-label="Age in years"
                 />
               </motion.div>
             )}
@@ -485,19 +707,23 @@ export default function HealthCalculators() {
                 exit={{ opacity: 0, y: -16 }}
                 className="w-full max-w-3xl text-center"
               >
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-8 text-[#bbfa26]">
-                  Weight (KG)
+                <h2 className="text-3xl md:text-4xl font-black mb-4 text-blue-200">
+                  Weight (Kg)
                 </h2>
                 <input
+                  ref={setWeightInputRef}
                   type="number"
                   inputMode="decimal"
-                  value={inputs.weight}
+                  value={inputs.weight === "" ? "" : String(inputs.weight)}
+                  onKeyDown={onEnter}
                   onChange={(e) =>
-                    setInputs({ ...inputs, weight: e.target.value })
+                    setInputs((p) => ({
+                      ...p,
+                      weight: parseNum(e.target.value, "float"),
+                    }))
                   }
                   className={inputStyle}
-                  placeholder="Enter weight"
-                  autoFocus
+                  aria-label="Weight in kilograms"
                 />
               </motion.div>
             )}
@@ -510,38 +736,51 @@ export default function HealthCalculators() {
                 exit={{ opacity: 0, y: -16 }}
                 className="w-full max-w-4xl mx-auto"
               >
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-8 text-center text-[#bbfa26]">
+                <h2 className="text-3xl md:text-4xl font-black mb-4 text-center text-blue-200">
                   Height
                 </h2>
 
-                <div className="grid grid-cols-2 gap-8 md:gap-10">
+                <div className="grid grid-cols-2 gap-8 md:gap-12">
                   <div className="text-center">
-                    <p className="uppercase font-black text-slate-500 mb-4 tracking-widest">
+                    <p className="text-slate-200 font-black mb-3 uppercase tracking-widest text-sm">
                       Feet
                     </p>
                     <input
+                      ref={setFeetInputRef}
                       type="number"
                       inputMode="numeric"
-                      value={inputs.feet}
+                      value={inputs.feet === "" ? "" : String(inputs.feet)}
+                      onKeyDown={onEnter}
                       onChange={(e) =>
-                        setInputs({ ...inputs, feet: e.target.value })
+                        setInputs((p) => ({
+                          ...p,
+                          feet: parseNum(e.target.value, "int"),
+                        }))
                       }
                       className={inputStyle}
-                      autoFocus
+                      aria-label="Height feet"
                     />
                   </div>
+
                   <div className="text-center">
-                    <p className="uppercase font-black text-slate-500 mb-4 tracking-widest">
+                    <p className="text-slate-200 font-black mb-3 uppercase tracking-widest text-sm">
                       Inches
                     </p>
+
                     <input
+                      ref={setInchesInputRef}
                       type="number"
                       inputMode="numeric"
-                      value={inputs.inches}
+                      value={inputs.inches === "" ? "" : String(inputs.inches)}
+                      onKeyDown={onEnter}
                       onChange={(e) =>
-                        setInputs({ ...inputs, inches: e.target.value })
+                        setInputs((p) => ({
+                          ...p,
+                          inches: parseNum(e.target.value, "int"),
+                        }))
                       }
                       className={inputStyle}
+                      aria-label="Height inches"
                     />
                   </div>
                 </div>
@@ -554,28 +793,36 @@ export default function HealthCalculators() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
-                className="w-full max-w-7xl"
+                className="w-full max-w-6xl"
               >
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-10 text-center text-[#bbfa26]">
-                  Activity Type
+                <h2 className="text-3xl md:text-4xl font-black mb-4 text-center text-blue-200">
+                  Activity Level
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-5 md:gap-6">
                   {ACTIVITY_LEVELS.map((lvl) => {
-                    const isActive = Number(inputs.activity) === lvl.val;
-                    const cls = isActive ? lvl.activeCls : lvl.idleCls;
+                    const isActive = inputs.activity === lvl.val;
                     return (
                       <button
                         key={lvl.val}
                         onClick={() =>
-                          setInputs({ ...inputs, activity: lvl.val })
+                          setInputs((p) => ({ ...p, activity: lvl.val }))
                         }
-                        className={`p-12 border-2 flex flex-col items-center gap-6 font-black uppercase transition-all text-center ${cls}`}
+                        aria-pressed={isActive}
+                        className={`p-7 md:p-8 min-h-[170px] border-2 flex flex-col items-center justify-center gap-4 font-black transition-all text-center active:scale-[0.99] ${
+                          isActive
+                            ? `${lvl.active} text-white`
+                            : `${lvl.idle} text-white hover:border-white`
+                        }`}
                       >
-                        <lvl.icon size={48} />
-                        <div className="leading-tight">
+                        <lvl.icon
+                          size={34}
+                          strokeWidth={1.7}
+                          className="text-white"
+                        />
+                        <div>
                           <div className="text-lg">{lvl.label}</div>
-                          <div className="text-[10px] font-bold opacity-70 mt-2 tracking-widest">
+                          <div className="text-xs text-slate-200 font-semibold mt-1">
                             {lvl.desc}
                           </div>
                         </div>
@@ -594,40 +841,48 @@ export default function HealthCalculators() {
                 exit={{ opacity: 0, y: -16 }}
                 className="w-full max-w-5xl"
               >
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-10 text-center text-[#bbfa26]">
-                  Choose your goal
+                <h2 className="text-3xl md:text-4xl font-black mb-4 text-center text-blue-200">
+                  Primary Goal
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {GOALS.map((g) => {
                     const isActive = inputs.goal === g.val;
-                    const cls = isActive ? g.activeCls : g.idleCls;
                     return (
                       <button
                         key={g.val}
-                        onClick={() => setInputs({ ...inputs, goal: g.val })}
-                        className={`p-12 border-2 flex flex-col items-center gap-6 font-black uppercase transition-all ${cls}`}
+                        onClick={() =>
+                          setInputs((p) => ({ ...p, goal: g.val }))
+                        }
+                        aria-pressed={isActive}
+                        className={`p-10 md:p-12 min-h-[170px] border-2 flex flex-col items-center justify-center gap-4 font-black transition-all active:scale-[0.99] ${
+                          isActive
+                            ? `${g.active} text-white`
+                            : `${g.idle} text-white hover:border-white`
+                        }`}
                       >
-                        <g.icon size={48} /> {g.label}
+                        <g.icon
+                          size={38}
+                          strokeWidth={1.6}
+                          className="text-white"
+                        />
+                        {g.label}
                       </button>
                     );
                   })}
                 </div>
 
-                <div className="mt-10 flex justify-center">
+                <div className="mt-12 flex justify-center">
                   <button
-                    onClick={() => {
-                      if (!canNext) return;
-                      calculate();
-                    }}
+                    onClick={() => canNext && calculate()}
                     disabled={!canNext}
-                    className={`px-14 py-4 font-black uppercase text-lg transition-all ${
+                    className={`px-12 py-4 border-2 font-black text-lg transition active:scale-95 ${
                       canNext
-                        ? "bg-white text-black hover:bg-[#bbfa26]"
-                        : "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700"
+                        ? "border-white bg-white text-black hover:bg-slate-200"
+                        : "border-slate-600 text-slate-500 cursor-not-allowed bg-transparent"
                     }`}
                   >
-                    Calculate
+                    Calculate Results
                   </button>
                 </div>
               </motion.div>
@@ -639,60 +894,81 @@ export default function HealthCalculators() {
         {results && (
           <section
             style={{ height: SECTION_HEIGHT }}
-            className="w-full snap-start flex flex-col items-center justify-center bg-slate-900 px-6"
+            className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.bmi}`}
           >
-            <h2 className="text-4xl md:text-6xl font-black uppercase mb-6">
-              Body Mass Index
-            </h2>
+            <div className="text-center max-w-4xl">
+              <h2 className="text-4xl md:text-5xl font-black mb-3">
+                Body Mass Index
+              </h2>
+              <p className="text-lg md:text-xl font-semibold text-slate-200 mb-10">
+                Based on height and weight
+              </p>
 
-            <div
-              className={`text-[10rem] md:text-[12rem] leading-none font-black tracking-tighter ${results.cat.text}`}
-            >
-              {results.bmi}
+              <div
+                className={`text-8xl md:text-9xl font-black tracking-tight mb-6 ${bmiColor}`}
+              >
+                {results.bmi}
+              </div>
+
+              <div className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white bg-slate-900 mb-10">
+                <span className="text-2xl font-black text-white">
+                  {results.cat.label}
+                </span>
+              </div>
+
+              <BMIRangeBar bmi={results.bmi} />
             </div>
-
-            <div
-              className={`text-3xl md:text-4xl font-black uppercase tracking-widest ${results.cat.text}`}
-            >
-              {results.cat.label}
-            </div>
-
-            <BMIRangeBar bmi={results.bmi} />
           </section>
         )}
 
-        {/* 4) IDEAL WEIGHT (Range + Target) */}
+        {/* 4) IBW */}
         {results && (
           <section
             style={{ height: SECTION_HEIGHT }}
-            className="w-full snap-start flex flex-col items-center justify-center bg-slate-950 px-6"
+            className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.ibw}`}
           >
-            <h2 className="text-4xl md:text-6xl font-black uppercase mb-10 text-center">
-              Ideal Body Weight
-            </h2>
+            <div className="text-center max-w-5xl w-full">
+              <h2 className="text-4xl md:text-5xl font-black mb-3">
+                Ideal Body Weight
+              </h2>
+              <p className="text-lg md:text-xl font-semibold text-slate-200 mb-10">
+                Based on Devine formula (1974)
+              </p>
 
-            {/* Range */}
-            <div className="text-center">
-              <div className="text-[6rem] md:text-[7rem] font-black leading-none tracking-tight">
-                {results.idealRangeMin} – {results.idealRangeMax}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <SquareStat
+                  icon={TrendingDown}
+                  title="Min Weight"
+                  value={`${results.idealRangeMin} kg`}
+                  hint="Lower boundary"
+                  tone="border-indigo-300"
+                  bg="bg-indigo-900"
+                />
+                <SquareStat
+                  icon={TrendingUp}
+                  title="Max Weight"
+                  value={`${results.idealRangeMax} kg`}
+                  hint="Upper boundary"
+                  tone="border-indigo-300"
+                  bg="bg-indigo-900"
+                />
               </div>
-              <div className="text-2xl md:text-3xl font-black uppercase text-slate-500 tracking-widest mt-3">
-                Kilograms
-              </div>
-            </div>
 
-            {/* Target */}
-            <div className="mt-10 text-center">
-              <div className="text-slate-400 uppercase font-black tracking-widest">
-                Simple Target Weight
+              <div className="mt-10 border-2 border-white bg-slate-900 p-6">
+                <div
+                  className={`text-2xl md:text-3xl font-black ${goalSentence.cls}`}
+                >
+                  {goalSentence.text}
+                </div>
               </div>
-              <div className="text-6xl md:text-7xl font-black mt-2 text-white">
-                {results.targetWeight}kg
-              </div>
-              <div
-                className={`mt-6 text-3xl md:text-4xl font-black uppercase italic ${results.weightDiffColor}`}
-              >
-                {results.weightDiffText}
+
+              <div className="mt-8 border-2 border-white bg-slate-900 p-6">
+                <div className="text-xs font-black uppercase tracking-widest text-slate-200">
+                  Current Weight
+                </div>
+                <div className="text-4xl md:text-5xl font-black text-white mt-2">
+                  {inputs.weight} kg
+                </div>
               </div>
             </div>
           </section>
@@ -702,124 +978,254 @@ export default function HealthCalculators() {
         {results && (
           <section
             style={{ height: SECTION_HEIGHT }}
-            className="w-full snap-start flex flex-col items-center justify-center bg-slate-800 px-6"
+            className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.macros}`}
           >
-            <h2 className="text-4xl md:text-6xl font-black uppercase mb-10 text-center">
-              Macronutrients
-            </h2>
+            <div className="text-center max-w-5xl w-full">
+              <h2 className="text-4xl md:text-5xl font-black mb-3">
+                Daily Nutrition Targets
+              </h2>
+              <p className="text-lg md:text-xl font-semibold text-slate-200 mb-10">
+                Based on calorie target and your goal
+              </p>
 
-            <div className="w-full max-w-7xl">
-              <div className="bg-slate-900 border border-slate-700 p-6 md:p-10 mb-8">
-                <div className="text-slate-400 uppercase font-black tracking-widest">
-                  Total calories
+              <div className="border-2 border-white bg-slate-900 p-5 mb-6">
+                <div className="text-xs font-black uppercase tracking-widest text-slate-200">
+                  Goal
                 </div>
-                <div className="text-6xl md:text-7xl font-black mt-2">
+                <div
+                  className={`text-3xl md:text-4xl font-black mt-2 ${
+                    inputs.goal < 0
+                      ? "text-red-300"
+                      : inputs.goal > 0
+                        ? "text-emerald-300"
+                        : "text-blue-300"
+                  }`}
+                >
+                  {goalLabel}
+                </div>
+              </div>
+
+              <div className="border-2 border-white bg-slate-900 p-8 md:p-10 mb-8">
+                <div className="text-xs font-black uppercase tracking-widest text-slate-200 mb-2">
+                  Daily Calorie Target
+                </div>
+                <div className="text-6xl md:text-7xl font-black text-white">
                   {results.targetCalories}
                 </div>
-                <div className="text-slate-500 font-bold uppercase mt-2">
-                  per day (based on your goal)
+                <div className="text-slate-200 font-semibold mt-2">
+                  Calories
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-8 bg-slate-900 border-t-8 border-blue-500 text-center">
-                  <Utensils className="mx-auto mb-6 text-blue-400" size={48} />
-                  <div className="text-6xl font-black mb-2">
-                    {results.protein}g
-                  </div>
-                  <div className="text-xl font-black uppercase text-blue-400 italic">
-                    Protein
-                  </div>
-                  <div className="text-slate-400 mt-4 font-bold">
-                    Chicken, eggs, fish, lentils, yogurt
-                  </div>
-                </div>
-
-                <div className="p-8 bg-slate-900 border-t-8 border-[#bbfa26] text-center">
-                  <Flame className="mx-auto mb-6 text-[#bbfa26]" size={48} />
-                  <div className="text-6xl font-black mb-2">
-                    {results.carbs}g
-                  </div>
-                  <div className="text-xl font-black uppercase text-[#bbfa26] italic">
-                    Carbs
-                  </div>
-                  <div className="text-slate-400 mt-4 font-bold">
-                    Rice, oats, potatoes, fruit, whole wheat bread
-                  </div>
-                </div>
-
-                <div className="p-8 bg-slate-900 border-t-8 border-rose-500 text-center">
-                  <Droplets className="mx-auto mb-6 text-rose-500" size={48} />
-                  <div className="text-6xl font-black mb-2">{results.fat}g</div>
-                  <div className="text-xl font-black uppercase text-rose-500 italic">
-                    Fats
-                  </div>
-                  <div className="text-slate-400 mt-4 font-bold">
-                    Olive oil, nuts, avocado, peanut butter, seeds
-                  </div>
-                </div>
+                <SquareStat
+                  icon={Utensils}
+                  title="Protein"
+                  value={`${results.protein} g`}
+                  hint="Chicken, eggs, lentils, yogurt"
+                  tone="border-amber-200"
+                  bg="bg-amber-900"
+                />
+                <SquareStat
+                  icon={Flame}
+                  title="Carbs"
+                  value={`${results.carbs} g`}
+                  hint="Rice, oats, potatoes, fruits"
+                  tone="border-amber-200"
+                  bg="bg-amber-900"
+                />
+                <SquareStat
+                  icon={Droplets}
+                  title="Fats"
+                  value={`${results.fat} g`}
+                  hint="Nuts, olive oil, eggs, fish"
+                  tone="border-amber-200"
+                  bg="bg-amber-900"
+                />
               </div>
             </div>
           </section>
         )}
 
-        {/* 6) HYDRATION */}
+        {/* 6) HYDRATION - REMOVED VIEW SUMMARY LINK */}
         {results && (
           <section
             style={{ height: SECTION_HEIGHT }}
-            className="w-full snap-start flex flex-col items-center justify-center bg-blue-950 relative overflow-hidden px-6"
+            className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.water}`}
           >
-            <h2 className="text-4xl md:text-6xl font-black uppercase mb-10 z-10">
-              Hydration
-            </h2>
+            <div className="text-center max-w-4xl w-full">
+              <h2 className="text-4xl md:text-5xl font-black mb-3">
+                Hydration Target
+              </h2>
+              <p className="text-lg md:text-xl font-semibold text-slate-200 mb-10">
+                Based on body weight
+              </p>
 
-            <div className="text-[10rem] md:text-[12rem] font-black text-white leading-none z-10 drop-shadow-2xl">
-              {results.waterL}
-            </div>
-            <div className="text-2xl md:text-3xl font-black uppercase text-blue-200 tracking-widest z-10 italic">
-              Litres per day
-            </div>
-
-            <div className="grid grid-cols-2 gap-10 mt-14 z-10 w-full max-w-2xl">
-              <div className="text-center bg-blue-900/20 border border-blue-400/20 p-6">
-                <div className="text-6xl font-black">{results.glasses}</div>
-                <div className="uppercase font-bold tracking-widest opacity-80">
-                  Glasses
+              <div className="border-2 border-white bg-sky-900 p-8 md:p-10">
+                <div className="text-6xl md:text-7xl font-black text-white mb-2">
+                  {results.waterL} L
                 </div>
-                <div className="text-blue-200/80 font-bold mt-2">
-                  250ml each
+                <div className="text-slate-200 font-semibold mb-6">
+                  (~{results.glasses} glasses, 250ml each)
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-6 mb-6">
+                  {Array.from({ length: Math.min(results.glasses, 12) }).map(
+                    (_, i) => (
+                      <div key={i} className="flex flex-col items-center">
+                        <GlassWater
+                          size={44}
+                          strokeWidth={1.6}
+                          className="text-white"
+                        />
+                        <span className="text-sm text-slate-200 font-semibold mt-2">
+                          Glass {i + 1}
+                        </span>
+                      </div>
+                    ),
+                  )}
+                </div>
+
+                <div className="text-slate-200 font-semibold">
+                  Based on{" "}
+                  <span className="text-white font-black">
+                    {inputs.weight} kg
+                  </span>
                 </div>
               </div>
-              <div className="text-center bg-blue-900/20 border border-blue-400/20 p-6">
-                <div className="text-6xl font-black">
-                  {Math.round(results.waterL / 0.5)}
+            </div>
+          </section>
+        )}
+
+        {/* 7) SUMMARY & DOWNLOAD - SCALED DOWN */}
+        {results && (
+          <section
+            style={{ height: SECTION_HEIGHT }}
+            className={`w-full snap-start flex flex-col items-center justify-center px-4 ${PANEL.summary}`}
+          >
+            <div className="text-center max-w-5xl w-full">
+              <CheckCircle2
+                size={48}
+                className="mx-auto text-violet-300 mb-3"
+              />
+              <h2 className="text-3xl md:text-5xl font-black mb-2">
+                Your Health Report
+              </h2>
+              <p className="text-base md:text-lg font-semibold text-violet-200 mb-6">
+                A summary of your inputs and calculated targets.
+              </p>
+
+              {/* Scaled down grid with tighter padding */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-4xl mx-auto mb-8">
+                {/* Inputs Summary */}
+                <div className="bg-violet-900 border-2 border-violet-300 p-5 md:p-6">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-violet-200 border-b border-violet-700 pb-2 mb-3">
+                    Profile Inputs
+                  </h3>
+                  <div className="space-y-2 text-sm md:text-base font-bold">
+                    <div className="flex justify-between">
+                      <span className="text-violet-200">Gender</span>
+                      <span className="capitalize">{inputs.gender}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-violet-200">Age</span>
+                      <span>{inputs.age} Years</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-violet-200">Height</span>
+                      <span>
+                        {inputs.feet}'{inputs.inches}"
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-violet-200">Weight</span>
+                      <span>{inputs.weight} kg</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-violet-200">Activity</span>
+                      <span>
+                        {
+                          ACTIVITY_LEVELS.find((a) => a.val === inputs.activity)
+                            ?.label
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-violet-200">Goal</span>
+                      <span className="text-white">{goalLabel}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="uppercase font-bold tracking-widest opacity-80">
-                  Bottles
-                </div>
-                <div className="text-blue-200/80 font-bold mt-2">
-                  500ml each
+
+                {/* Results Summary - FIXED MACROS */}
+                <div className="bg-white text-black border-2 border-white p-5 md:p-6">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 border-b border-slate-200 pb-2 mb-3">
+                    Calculated Results
+                  </h3>
+                  <div className="space-y-2 text-sm md:text-base font-bold">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">BMI</span>
+                      <span className="bg-black text-white px-2 py-0.5 text-xs md:text-sm">
+                        {results.bmi} ({results.cat.label})
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Ideal Weight</span>
+                      <span>
+                        {results.idealRangeMin}-{results.idealRangeMax} kg
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Calories</span>
+                      <span>{results.targetCalories} kcal</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Water</span>
+                      <span className="text-blue-600">{results.waterL} L</span>
+                    </div>
+
+                    {/* Full labels with colors */}
+                    <div className="pt-2 mt-2 border-t border-slate-200 space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Protein</span>
+                        <span className="text-rose-600">
+                          {results.protein}g
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Carbs</span>
+                        <span className="text-emerald-600">
+                          {results.carbs}g
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Fats</span>
+                        <span className="text-amber-600">{results.fat}g</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="absolute bottom-0 left-0 w-full h-1/3 bg-blue-500/20 blur-3xl rounded-[100%] translate-y-1/2" />
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={resetAll}
+                  className="px-6 py-3 text-sm md:text-base font-black border-2 border-violet-400 text-violet-200 hover:bg-violet-900 transition active:scale-95"
+                >
+                  Start Over
+                </button>
+                <button
+                  onClick={downloadReport}
+                  className="px-6 py-3 text-sm md:text-base bg-white text-black font-black border-2 border-white hover:bg-slate-200 transition flex items-center gap-2 active:scale-95"
+                >
+                  <Download size={18} />
+                  Download
+                </button>
+              </div>
+            </div>
           </section>
         )}
       </div>
-
-      <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        input[type="number"] {
-          -moz-appearance: textfield;
-        }
-      `}</style>
     </div>
   );
 }
