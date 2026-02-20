@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -11,6 +11,7 @@ import {
   Calendar,
   CheckCircle2,
 } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 const columns = [
   {
@@ -50,70 +51,212 @@ const columns = [
 
 const TAGS = [
   { name: "Organize", color: "bg-cyan-500/10 text-cyan-300 border-cyan-400" },
-  {
-    name: "Plan",
-    color: "bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-400",
-  },
-  {
-    name: "Note",
-    color: "bg-emerald-500/10 text-emerald-300 border-emerald-400",
-  },
+  { name: "Plan", color: "bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-400" },
+  { name: "Note", color: "bg-emerald-500/10 text-emerald-300 border-emerald-400" },
 ];
 
+const LS_KEY = "neon-kanban-tasks";
+
+function emptyBoard() {
+  return { todo: [], progress: [], done: [] };
+}
+
+function groupByStatus(rows) {
+  const board = emptyBoard();
+  for (const r of rows) {
+    if (board[r.status]) board[r.status].push({ id: r.id, title: r.title });
+  }
+  return board;
+}
+
 export default function NeonKanban() {
-  // Initialize with empty columns
-  const [data, setData] = useState({ todo: [], progress: [], done: [] });
+  const [data, setData] = useState(emptyBoard());
   const [dragging, setDragging] = useState(null);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [activeColumn, setActiveColumn] = useState(null);
   const [taskTitle, setTaskTitle] = useState("");
 
-  // 1. Load data from Local Storage on startup
+  const [session, setSession] = useState(null);
+  const [loadingCloud, setLoadingCloud] = useState(false);
+  const [cloudError, setCloudError] = useState("");
+
+  const userId = session?.user?.id ?? null;
+
+  // AUTH STATE
   useEffect(() => {
-    const savedData = localStorage.getItem("neon-kanban-tasks");
-    if (savedData) {
-      setData(JSON.parse(savedData));
-    }
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) setSession(data.session ?? null);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) =>
+      setSession(newSession ?? null),
+    );
+
+    return () => {
+      mounted = false;
+      sub?.subscription?.unsubscribe?.();
+    };
   }, []);
 
-  // 2. Save data to Local Storage whenever 'data' changes
+  // LOAD DATA
   useEffect(() => {
-    localStorage.setItem("neon-kanban-tasks", JSON.stringify(data));
-  }, [data]);
+    const run = async () => {
+      setCloudError("");
 
-  const addTask = () => {
-    if (!taskTitle.trim()) return;
-    setData((prev) => ({
-      ...prev,
-      [activeColumn]: [
-        ...prev[activeColumn],
-        { id: crypto.randomUUID(), title: taskTitle },
-      ],
-    }));
-    setTaskTitle("");
-    setModalOpen(false);
+      // Logged out -> localStorage
+      if (!userId) {
+        const saved = localStorage.getItem(LS_KEY);
+        if (saved) setData(JSON.parse(saved));
+        else setData(emptyBoard());
+        return;
+      }
+
+      // Logged in -> Supabase
+      setLoadingCloud(true);
+      try {
+        const { data: rows, error } = await supabase
+          .from("kanban_tasks")
+          .select("id,title,status,created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+        setData(groupByStatus(rows ?? []));
+      } catch (e) {
+        console.error(e);
+        setCloudError("Could not load from Supabase (check table + RLS).");
+      } finally {
+        setLoadingCloud(false);
+      }
+    };
+
+    run();
+  }, [userId]);
+
+  // SAVE TO LOCAL STORAGE only when logged out
+  useEffect(() => {
+    if (!userId) localStorage.setItem(LS_KEY, JSON.stringify(data));
+  }, [data, userId]);
+
+  const activeColMeta = useMemo(
+    () => columns.find((c) => c.key === activeColumn),
+    [activeColumn],
+  );
+
+  // SUPABASE HELPERS
+  const insertSupabaseTask = async ({ title, status }) => {
+    const { data: rows, error } = await supabase
+      .from("kanban_tasks")
+      .insert([{ user_id: userId, title, status }])
+      .select("id,title,status")
+      .limit(1);
+
+    if (error) throw error;
+    return rows?.[0];
   };
 
-  const deleteTask = (col, id) => {
+  const deleteSupabaseTask = async (id) => {
+    const { error } = await supabase
+      .from("kanban_tasks")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+  };
+
+  const updateSupabaseStatus = async (id, status) => {
+    const { error } = await supabase
+      .from("kanban_tasks")
+      .update({ status })
+      .eq("id", id)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+  };
+
+  // ACTIONS
+  const addTask = async () => {
+    if (!taskTitle.trim() || !activeColumn) return;
+
+    const title = taskTitle.trim();
+    const optimistic = { id: crypto.randomUUID(), title };
+
+    // Optimistic UI
+    setData((prev) => ({
+      ...prev,
+      [activeColumn]: [...prev[activeColumn], optimistic],
+    }));
+
+    setTaskTitle("");
+    setModalOpen(false);
+
+    // If logged in, also insert into Supabase and swap ID
+    if (userId) {
+      try {
+        const created = await insertSupabaseTask({ title, status: activeColumn });
+        if (created?.id) {
+          setData((prev) => ({
+            ...prev,
+            [activeColumn]: prev[activeColumn].map((t) =>
+              t.id === optimistic.id ? { id: created.id, title: created.title } : t,
+            ),
+          }));
+        }
+      } catch (e) {
+        console.error(e);
+        setCloudError("Insert failed (Supabase).");
+      }
+    }
+  };
+
+  const deleteTask = async (col, id) => {
+    // Optimistic
     setData((prev) => ({
       ...prev,
       [col]: prev[col].filter((i) => i.id !== id),
     }));
+
+    if (userId) {
+      try {
+        await deleteSupabaseTask(id);
+      } catch (e) {
+        console.error(e);
+        setCloudError("Delete failed (Supabase).");
+      }
+    }
   };
 
-  const onDrop = (columnKey) => {
+  const onDrop = async (columnKey) => {
     if (!dragging) return;
-    setData((prev) => {
-      if (dragging.column === columnKey) return prev;
-      return {
-        ...prev,
-        [dragging.column]: prev[dragging.column].filter(
-          (i) => i.id !== dragging.item.id,
-        ),
-        [columnKey]: [...prev[columnKey], dragging.item],
-      };
-    });
+
+    if (dragging.column === columnKey) {
+      setDragging(null);
+      return;
+    }
+
+    const movedItem = dragging.item;
+    const fromCol = dragging.column;
+
+    // Optimistic UI move
+    setData((prev) => ({
+      ...prev,
+      [fromCol]: prev[fromCol].filter((i) => i.id !== movedItem.id),
+      [columnKey]: [...prev[columnKey], movedItem],
+    }));
     setDragging(null);
+
+    if (userId) {
+      try {
+        await updateSupabaseStatus(movedItem.id, columnKey);
+      } catch (e) {
+        console.error(e);
+        setCloudError("Move failed (Supabase).");
+      }
+    }
   };
 
   return (
@@ -130,7 +273,8 @@ export default function NeonKanban() {
         <h1 className="text-4xl font-black tracking-tighter mb-4 uppercase text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
           Kanban Board
         </h1>
-        <div className="flex gap-2 flex-wrap justify-center">
+
+        <div className="flex gap-2 flex-wrap justify-center mb-3">
           {TAGS.map((tag) => (
             <span
               key={tag.name}
@@ -140,12 +284,26 @@ export default function NeonKanban() {
             </span>
           ))}
         </div>
+
+        <div className="text-[11px] font-black uppercase tracking-widest text-white/70">
+          Mode:{" "}
+          <span className="text-white">
+            {userId ? "Supabase (Logged in)" : "LocalStorage (Logged out)"}
+          </span>
+          {loadingCloud && <span className="ml-2 text-cyan-300">Loading...</span>}
+        </div>
+
+        {cloudError && (
+          <div className="mt-2 text-[11px] font-black uppercase tracking-widest text-red-400">
+            {cloudError}
+          </div>
+        )}
       </header>
 
       {/* BOARD SECTION */}
       <main
         className="w-full max-w-7xl flex gap-4 px-8 pb-4 overflow-hidden justify-center"
-        style={{ height: "calc(100vh - 180px)" }}
+        style={{ height: "calc(100vh - 210px)" }}
       >
         {columns.map((col) => (
           <div
@@ -222,7 +380,7 @@ export default function NeonKanban() {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              className={`relative bg-[#0f172a] border-2 ${columns.find((c) => c.key === activeColumn)?.borderColor} w-full max-w-sm p-8 rounded-none`}
+              className={`relative bg-[#0f172a] border-2 ${activeColMeta?.borderColor} w-full max-w-sm p-8 rounded-none`}
             >
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-black uppercase tracking-tighter text-white">
@@ -247,10 +405,14 @@ export default function NeonKanban() {
 
               <button
                 onClick={addTask}
-                className={`w-full py-3 text-sm font-black uppercase tracking-widest text-black rounded-none ${columns.find((c) => c.key === activeColumn)?.btnBg}`}
+                className={`w-full py-3 text-sm font-black uppercase tracking-widest text-black rounded-none ${activeColMeta?.btnBg}`}
               >
                 Create
               </button>
+
+              <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/60">
+                {userId ? "Saved to Supabase" : "Saved to LocalStorage"}
+              </p>
             </motion.div>
           </div>
         )}

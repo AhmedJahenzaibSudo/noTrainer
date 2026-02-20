@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { Pause, Play, Flame, Maximize, Minimize } from "lucide-react";
+import AuthButton from "@/components/AuthButton"; // ✅ add this
 
 const QUOTES = [
   "Shut Up and Lift",
@@ -45,7 +46,8 @@ export default function Marquee() {
       setIsFullscreen(!!document.fullscreenElement);
     };
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
   // Blinking cursor effect
@@ -66,7 +68,7 @@ export default function Marquee() {
       typingTimer.current = setTimeout(() => {
         setDisplayText((prev) => prev + currentQuote[charIndex]);
         setCharIndex((prev) => prev + 1);
-      }, 50); 
+      }, 50);
     } else {
       typingTimer.current = setTimeout(() => {
         setDisplayText("");
@@ -82,9 +84,7 @@ export default function Marquee() {
 
   return (
     <div className="sticky top-0 z-[100] w-full h-10 md:h-12 bg-neutral-900 border-b border-yellow-500/30 flex items-center justify-center shadow-lg">
-      
       <div className="w-full max-w-7xl mx-auto px-4 flex items-center justify-between relative h-full">
-        
         {/* LEFT: Badge */}
         <div className="flex-shrink-0 flex items-center gap-2 z-20">
           <div className="flex items-center gap-2 bg-red-600 px-2.5 py-1 rounded shadow-sm">
@@ -99,15 +99,21 @@ export default function Marquee() {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <h2 className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-yellow-400 truncate max-w-[60%] md:max-w-[70%] text-center drop-shadow-sm">
             {displayText}
-            <span 
-              className={`inline-block w-2 md:w-2.5 h-4 md:h-5 ml-1 align-middle bg-yellow-400 ${showCursor ? 'opacity-100' : 'opacity-0'}`} 
+            <span
+              className={`inline-block w-2 md:w-2.5 h-4 md:h-5 ml-1 align-middle bg-yellow-400 ${
+                showCursor ? "opacity-100" : "opacity-0"
+              }`}
             />
           </h2>
         </div>
 
         {/* RIGHT: Controls */}
         <div className="flex-shrink-0 flex items-center gap-2 md:gap-3 z-20">
-            
+          {/* ✅ Auth button (popup) */}
+          <div>
+            <AuthButton />
+          </div>
+
           {/* NEW: Fullscreen Button */}
           <button
             onClick={toggleFullscreen}
@@ -129,12 +135,16 @@ export default function Marquee() {
               {isPaused ? "RESUME" : "PAUSE"}
             </span>
 
-            <div className={`
+            <div
+              className={`
               w-8 h-8 flex items-center justify-center rounded border transition-all duration-200 shadow-sm
-              ${isPaused 
-                ? 'bg-yellow-500 border-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)]' 
-                : 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-zinc-500'}
-            `}>
+              ${
+                isPaused
+                  ? "bg-yellow-500 border-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)]"
+                  : "bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-zinc-500"
+              }
+            `}
+            >
               {isPaused ? (
                 <Play size={12} className="fill-current ml-0.5" />
               ) : (
@@ -142,8 +152,11 @@ export default function Marquee() {
               )}
             </div>
           </button>
-        </div>
 
+          {/* ✅ Mobile: Auth icon/button (optional)
+              If you want AuthButton visible on mobile too, remove the "hidden sm:block"
+              wrapper above. */}
+        </div>
       </div>
     </div>
   );
