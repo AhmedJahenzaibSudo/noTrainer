@@ -1,177 +1,164 @@
 "use client";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Calculator, Dumbbell, Gamepad2, LayoutDashboard, Info, Home } from "lucide-react";
+import {
+  Calculator,
+  Dumbbell,
+  Gamepad2,
+  LayoutDashboard,
+  Info,
+  Home,
+} from "lucide-react";
 import Link from "next/link";
+
+const NEO_COLORS = {
+  bg: "#120c52ff",
+  text: "#FFFFFF",
+  blue: "#3b82f6",
+  red: "#ef4444",
+  green: "#22c55e",
+  purple: "#a855f7",
+  pink: "#ec4899",
+  orange: "#f97316",
+};
+
+const navLinks = [
+  { name: "Home", href: "/", color: NEO_COLORS.blue, icon: <Home /> },
+  { name: "Wizard", href: "/wizard", color: NEO_COLORS.purple, icon: <Dumbbell /> },
+  { name: "Calculators", href: "/calculators", color: NEO_COLORS.orange, icon: <Calculator /> },
+  { name: "Game", href: "/game", color: NEO_COLORS.green, icon: <Gamepad2 /> },
+  { name: "Kanban", href: "/kanban", color: NEO_COLORS.pink, icon: <LayoutDashboard /> },
+  { name: "About", href: "/about", color: NEO_COLORS.red, icon: <Info /> },
+];
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeLink, setActiveLink] = useState(null);
-  // Increased base opacity from 0.05 to 0.15 for better visibility on dark bg
-  const [activeColor, setActiveColor] = useState("rgba(67, 64, 218, 0.6)");
-  const [showArrow, setShowArrow] = useState(false);
-
-  const toggleMenu = () => {
-    if (!isOpen) {
-      setShowArrow(true);
-      setTimeout(() => setIsOpen(true), 300); // Slightly faster trigger
-    } else {
-      setIsOpen(false);
-      setShowArrow(false);
-      setActiveColor("rgba(180, 53, 249, 0.6)");
-      setActiveLink(null);
-    }
-  };
-
-  const navLinks = [
-    { 
-      name: "Home", 
-      href: "/", 
-      color: "rgba(36, 120, 255, 0.6)", // Increased opacity
-      icon: <Home size={40} />,
-      desc: "Welcome to noTrainer. Your house, your gym.",
-      details: ["24/7 Chatbot Support", "Daily Challenges", "Motivation"]
-    },
-    { 
-      name: "Wizard", 
-      href: "/wizard", 
-      color: "rgba(168, 85, 247, 0.6)",
-      icon: <Dumbbell size={40} />,
-      desc: "Custom workout generator based on your body.",
-      details: ["SVG Muscle Selection", "Equipment Filtering", "Posture Guides"]
-    },
-    { 
-      name: "Calculators", 
-      href: "/calculators", 
-      color: "rgba(236, 72, 153, 0.6)",
-      icon: <Calculator size={40} />,
-      desc: "Track your health metrics precisely.",
-      details: ["BMI & Calorie Tracker", "Ideal Body Weight", "Protein Intake"]
-    },
-    { 
-      name: "Game", 
-      href: "/game", 
-      color: "rgba(34, 197, 94, 0.6)",
-      icon: <Gamepad2 size={40} />,
-      desc: "Relax and focus with our mini-games.",
-      details: ["Focus Exercises", "Relaxation Mode", "High Scores"]
-    },
-    { 
-      name: "Kanban", 
-      href: "/kanban", 
-      color: "rgba(249, 115, 22, 0.6)",
-      icon: <LayoutDashboard size={40} />,
-      desc: "Organize your fitness journey.",
-      details: ["Task Tracking", "Workout Scheduling", "Progress Visualization"]
-    },
-    { 
-      name: "About", 
-      href: "/about", 
-      color: "rgba(6, 182, 212, 0.6)",
-      icon: <Info size={40} />,
-      desc: "Why we built noTrainer.",
-      details: ["Mission Statement", "Home Gym Philosophy", "Contact Team"]
-    },
-  ];
 
   return (
     <>
-      {/* Floating Toggle Button */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&display=swap');
+      `}</style>
+
+      {/* Toggle Button */}
       <button
-        onClick={toggleMenu}
-        className="fixed top-8 left-8 z-[100] w-14 h-14 rounded-full flex flex-col items-center justify-center gap-1.5 transition-all duration-500 bg-white/20 backdrop-blur-2xl border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:scale-105 active:scale-95"
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed top-8 left-8 z-[100] w-14 h-14 rounded-full flex flex-col items-center justify-center gap-1.5 transition-all duration-300 active:scale-90 hover:scale-105"
+        style={{
+          backgroundColor: isOpen ? "#1e1b4b" : "#0d27beff",
+          border: isOpen
+            ? "2px solid rgba(255,255,255,0.15)"
+            : "2px solid rgba(70, 96, 190, 0.83)",
+          boxShadow: isOpen
+            ? "0 0 0 2px rgba(255,255,255,0.05)"
+            : "0 4px 12px rgba(85, 63, 225, 0.69)",
+        }}
       >
         <motion.span
-          animate={isOpen ? { rotate: 45, y: 8, width: "24px" } : { rotate: 0, y: 0, width: "22px" }}
-          className="h-1 bg-white rounded-full shadow-[0_0_10px_white]"
+          animate={
+            isOpen
+              ? { rotate: 45, y: 7.5, scaleX: 1.1 }
+              : { rotate: 0, y: 0, scaleX: 1 }
+          }
+          className="h-0.5 w-6 rounded-full bg-white"
         />
         <motion.span
-          animate={isOpen ? { opacity: 0, x: -10 } : { opacity: 1, x: 0, width: "18px" }}
-          className="h-1 bg-white rounded-full shadow-[0_0_10px_white]"
+          animate={isOpen ? { opacity: 0 } : { opacity: 1 }}
+          className="h-0.5 w-6 rounded-full bg-white"
         />
         <motion.span
-          animate={isOpen ? { rotate: -45, y: -8, width: "24px" } : { rotate: 0, y: 0, width: "22px" }}
-          className="h-1 bg-white rounded-full shadow-[0_0_10px_white]"
+          animate={
+            isOpen
+              ? { rotate: -45, y: -7.5, scaleX: 1.1 }
+              : { rotate: 0, y: 0, scaleX: 1 }
+          }
+          className="h-0.5 w-6 rounded-full bg-white"
         />
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 200 }}
-            className="fixed inset-0 z-[90] bg-zinc-950 flex items-center justify-between px-10 md:px-32 overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[90] flex items-center overflow-hidden"
+            style={{ backgroundColor: NEO_COLORS.bg }}
           >
-            {/* Dynamic Background Glow - Speed increased to 300ms */}
-            <motion.div 
-              className="absolute inset-0 transition-colors duration-300 ease-out"
-              style={{ backgroundColor: activeColor }}
-            />
-
-            {/* LEFT: Navigation Links */}
-            <nav className="relative z-10 flex flex-col space-y-6 w-1/2">
-              {navLinks.map((link, index) => (
-                <motion.div
-                  key={link.name}
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 + (index * 0.05) }}
-                  onMouseEnter={() => {
-                    setActiveColor(link.color);
-                    setActiveLink(link);
-                  }}
-                  onMouseLeave={() => setActiveColor("rgba(255, 255, 255, 0.15)")}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={toggleMenu}
-                    className="group flex items-center text-5xl md:text-7xl font-bold tracking-tighter text-white/60 hover:text-white transition-all duration-200"
-                  >
-                    <div className="w-0 overflow-hidden group-hover:w-16 md:group-hover:w-24 transition-all duration-300 ease-out flex items-center">
-                      <ArrowRight size={40} strokeWidth={3} className="text-white" />
-                    </div>
-                    <span>{link.name}</span>
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-
-            {/* RIGHT: Preview Panel */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="relative z-10 w-1/3 hidden lg:flex flex-col justify-center border-l border-white/40 pl-16 h-[60vh]"
-            >
-              <AnimatePresence mode="wait">
-                {activeLink && (
+            <div className="w-full max-w-7xl mx-auto px-12 md:px-24 flex justify-between items-center relative z-10">
+              
+              {/* Left Side */}
+              <nav className="flex flex-col space-y-2">
+                {navLinks.map((link, index) => (
                   <motion.div
-                    key={activeLink.name}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="space-y-6"
+                    key={link.name}
+                    onMouseEnter={() => setActiveLink(link)}
+                    onMouseLeave={() => setActiveLink(null)}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 + 0.2 }}
                   >
-                    <div className="text-white">{activeLink.icon}</div>
-                    <h2 className="text-5xl font-black text-white">{activeLink.name}</h2>
-                    <p className="text-xl text-white/90 leading-relaxed font-medium">
-                      {activeLink.desc}
-                    </p>
-                    <ul className="space-y-4">
-                      {activeLink.details.map((detail, i) => (
-                        <li key={i} className="flex items-center text-white text-sm font-bold tracking-widest uppercase">
-                          <span className="w-3 h-3 rounded-full bg-white mr-3 shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-                          {detail}
-                        </li>
-                      ))}
-                    </ul>
+                    <Link
+                      href={link.href}
+                      onClick={() => setIsOpen(false)}
+                      className="group flex items-center gap-8 py-2"
+                    >
+                      <span className="text-lg font-mono font-bold text-white/60">
+                        0{index + 1}
+                      </span>
+
+                      <div className="relative">
+                        <span
+                          className="text-4xl md:text-6xl font-black uppercase tracking-tighter transition-transform duration-200 block"
+                          style={{
+                            fontFamily: "'Inter', sans-serif",
+                            color:
+                              activeLink === link
+                                ? link.color
+                                : NEO_COLORS.text,
+                            transform:
+                              activeLink === link
+                                ? "translateX(15px)"
+                                : "translateX(0)",
+                          }}
+                        >
+                          {link.name}
+                        </span>
+
+                        <motion.div
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: activeLink === link ? 1 : 0 }}
+                          className="h-1.5 w-full mt-1 origin-left"
+                          style={{ backgroundColor: link.color }}
+                        />
+                      </div>
+                    </Link>
                   </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+                ))}
+              </nav>
+
+              {/* Right Side Icon */}
+              <div className="hidden lg:flex items-center justify-center absolute right-12 top-1/2 -translate-y-1/2 pointer-events-none w-[450px] h-[450px]">
+                <AnimatePresence mode="wait">
+                  {activeLink && (
+                    <motion.div
+                      key={activeLink.name}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      style={{ color: activeLink.color }}
+                      className="flex items-center justify-center"
+                    >
+                      {React.cloneElement(activeLink.icon, {
+                        size: 400,
+                        strokeWidth: 2,
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

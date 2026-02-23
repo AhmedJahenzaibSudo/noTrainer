@@ -21,8 +21,6 @@ import {
   Columns3,
   Gamepad2,
   Trophy,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 import FrontView from "@/components/anatomy/FrontView";

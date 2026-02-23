@@ -41,7 +41,7 @@ const UI = {
   btnGhost:
     "bg-transparent text-white border-2 border-white hover:bg-slate-900",
   btnDanger: "bg-red-600 text-white border-2 border-red-600 hover:bg-red-500",
-  tag: "px-4 py-2 border-2 font-black text-sm uppercase tracking-wider",
+  tag: "px-3 py-1.5 border-2 font-black text-xs md:text-sm uppercase tracking-wider",
   accentBlue: "text-blue-300",
 };
 
@@ -134,8 +134,8 @@ function BMIRangeBar({ bmi }) {
   const pos = ((clamp(bmi, min, max) - min) / (max - min)) * 100;
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-8">
-      <div className="relative h-6 bg-slate-900 border-2 border-white overflow-hidden">
+    <div className="w-full max-w-3xl mx-auto mt-4 md:mt-6">
+      <div className="relative h-5 md:h-6 bg-slate-900 border-2 border-white overflow-hidden">
         <div className="absolute inset-0 flex">
           <div className="w-[23%] bg-sky-400" />
           <div className="w-[23%] bg-emerald-400" />
@@ -143,12 +143,12 @@ function BMIRangeBar({ bmi }) {
           <div className="flex-1 bg-red-500" />
         </div>
         <div
-          className="absolute top-0 bottom-0 w-[8px] bg-black border-2 border-white z-10"
+          className="absolute top-0 bottom-0 w-[6px] bg-black border-2 border-white z-10"
           style={{ left: `${pos}%` }}
         />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
         {[
           {
             name: "Underweight",
@@ -183,14 +183,18 @@ function BMIRangeBar({ bmi }) {
           return (
             <div
               key={c.name}
-              className={`p-4 text-center transition border-2 ${
+              className={`p-3 text-center transition border-2 ${
                 isActive
                   ? c.active
                   : "bg-slate-900 text-white border-white hover:bg-slate-800"
               }`}
             >
-              <div className="font-black uppercase text-sm">{c.name}</div>
-              <div className="text-xs font-semibold mt-1">BMI: {c.range}</div>
+              <div className="font-black uppercase text-xs md:text-sm">
+                {c.name}
+              </div>
+              <div className="text-[10px] md:text-xs font-semibold mt-1">
+                Score: {c.range}
+              </div>
             </div>
           );
         })}
@@ -208,20 +212,22 @@ function SquareStat({
   bg = "bg-slate-900",
 }) {
   return (
-    <div className={`border-2 ${tone} ${bg} p-6`}>
-      <div className="flex items-center gap-3">
-        <div className="h-12 w-12 flex items-center justify-center">
-          <Icon size={22} className="text-white" />
+    <div
+      className={`border-2 ${tone} ${bg} p-4 flex flex-col justify-center h-full`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="h-10 w-10 flex shrink-0 items-center justify-center">
+          <Icon size={20} className="text-white" />
         </div>
-        <div className="text-left">
-          <div className="text-xs font-black uppercase tracking-widest text-slate-200">
+        <div className="text-left w-full">
+          <div className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-200">
             {title}
           </div>
-          <div className="text-3xl md:text-4xl font-black text-white leading-tight">
+          <div className="text-2xl md:text-3xl font-black text-white leading-tight mt-1">
             {value}
           </div>
           {hint ? (
-            <div className="text-sm font-semibold text-slate-200 mt-1">
+            <div className="text-[10px] md:text-[11px] font-medium text-slate-300 mt-2 leading-snug">
               {hint}
             </div>
           ) : null}
@@ -257,7 +263,7 @@ export default function HealthCalculators() {
 
   const inputStyle = useMemo(
     () =>
-      `w-full bg-transparent text-white text-center text-5xl md:text-7xl font-black outline-none border-b-4 border-white focus:border-blue-300 transition-all py-4 placeholder:text-slate-200 ${numberInputNoSpinner}`,
+      `w-full bg-transparent text-white text-center text-4xl md:text-6xl font-black outline-none border-b-4 border-white focus:border-blue-300 transition-all py-2 placeholder:text-slate-200 ${numberInputNoSpinner}`,
     [numberInputNoSpinner],
   );
 
@@ -276,10 +282,14 @@ export default function HealthCalculators() {
 
   const canNext = useMemo(() => {
     if (step === 0) return inputs.gender !== "";
-    if (step === 1) return inputs.age !== "" && inputs.age > 0;
-    if (step === 2) return inputs.weight !== "" && inputs.weight > 0;
-    if (step === 3) return inputs.feet !== "" && inputs.feet > 0;
-    if (step === 4) return inputs.activity !== "" && inputs.activity > 0;
+    if (step === 1) return inputs.age >= 5 && inputs.age <= 120;
+    if (step === 2) return inputs.weight >= 20 && inputs.weight <= 400;
+    if (step === 3) {
+      if (inputs.feet === "") return false;
+      const totalInches = inputs.feet * 12 + (inputs.inches || 0);
+      return totalInches >= 36 && totalInches <= 96; // Between 3'0" and 8'0"
+    }
+    if (step === 4) return inputs.activity !== "";
     if (step === 5) return inputs.goal !== "";
     return false;
   }, [step, inputs]);
@@ -313,6 +323,7 @@ export default function HealthCalculators() {
   }, []);
 
   const validateInputs = () => {
+    // Failsafe validation mirroring canNext constraints
     const age = inputs.age;
     const weightKg = inputs.weight;
     const feet = inputs.feet;
@@ -333,7 +344,7 @@ export default function HealthCalculators() {
 
   const goalLabel =
     inputs.goal === 0
-      ? "Maintain"
+      ? "Maintain Weight"
       : inputs.goal > 0
         ? "Build Muscle"
         : "Lose Weight";
@@ -392,6 +403,8 @@ export default function HealthCalculators() {
     setResults({
       bmi,
       cat,
+      bmr: Math.round(bmr),
+      tdee: dailyBurn,
       targetCalories,
       protein,
       carbs,
@@ -463,7 +476,7 @@ export default function HealthCalculators() {
 
     const content = `
 HEALTH REPORT
-generated on ${new Date().toLocaleDateString()}
+Generated on ${new Date().toLocaleDateString()}
 ----------------------------------------
 
 PROFILE INPUTS:
@@ -479,28 +492,40 @@ PROFILE INPUTS:
 YOUR RESULTS:
 
 1. BMI (Body Mass Index)
+   Formula: Weight (kg) / Height (m)²
    Score: ${results.bmi}
    Category: ${results.cat.label}
 
-2. IDEAL BODY WEIGHT
-   Range: ${results.idealRangeMin}kg - ${results.idealRangeMax}kg
+2. IBW (Ideal Body Weight)
+   Formula: Devine Formula (1974)
+   Recommended: ${results.idealRangeMin}kg - ${results.idealRangeMax}kg
    Target Adjustment: ${
      results.diffToTarget > 0.5
        ? `Lose ${Math.abs(results.diffToTarget)}kg`
        : results.diffToTarget < -0.5
          ? `Gain ${Math.abs(results.diffToTarget)}kg`
-         : "Maintain"
+         : "Maintain Weight"
    }
 
-3. NUTRITION
-   Daily Target: ${results.targetCalories} Calories
-   • Protein: ${results.protein}g
-   • Carbs: ${results.carbs}g
-   • Fats: ${results.fat}g
+3. BMR, TDEE & MACROS
+   Formulas: Mifflin-St Jeor (BMR), Activity Multiplier (TDEE)
+   
+   BMR (Basal Metabolic Rate): ${results.bmr} kcal 
+   -> Calories your body burns simply existing at rest.
+   
+   TDEE (Total Daily Energy Expenditure): ${results.tdee} kcal
+   -> Maintenance calories based on your activity level.
+   
+   Your Target Calorie Goal: ${results.targetCalories} kcal
+   
+   • Protein (${results.protein}g) -> Builds/repairs muscle. Found in: Chicken, eggs, lentils, tofu.
+   • Carbs (${results.carbs}g) -> Primary energy source. Found in: Rice, oats, potatoes, fruits.
+   • Fats (${results.fat}g) -> Regulates hormones & brain health. Found in: Nuts, olive oil, fish, avocado.
 
-4. HYDRATION
-   Daily Water: ${results.waterL} Liters
-   (~${results.glasses} glasses)
+4. HYDRATION TARGET
+   Formula: Weight (kg) * 0.035 Liters
+   Amount Needed: ${results.waterL} Liters
+   (~${results.glasses} standard 250ml glasses)
 
 ----------------------------------------
     `;
@@ -549,12 +574,12 @@ YOUR RESULTS:
           className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.hero}`}
         >
           <div className="text-center max-w-4xl">
-            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-4">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
               Health <span className={UI.accentBlue}>Calculators</span>
             </h1>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              {["BMI", "IBW", "Macros", "Hydration"].map((t) => (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 md:gap-3">
+              {["BMI", "BMR", "TDEE", "IBW", "Macros", "Hydration"].map((t) => (
                 <span
                   key={t}
                   className={`${UI.tag} bg-slate-900 border-white text-white`}
@@ -564,10 +589,10 @@ YOUR RESULTS:
               ))}
             </div>
 
-            <div className="mt-10 flex justify-center">
+            <div className="mt-8 flex justify-center">
               <button
                 onClick={() => scrollToPage(1)}
-                className={`px-10 py-4 border-2 border-white font-black text-lg ${UI.btn} active:scale-95 transition`}
+                className={`px-8 py-3 border-2 border-white font-black text-base md:text-lg ${UI.btn} active:scale-95 transition`}
               >
                 Start
               </button>
@@ -578,45 +603,45 @@ YOUR RESULTS:
         {/* 2) INPUTS */}
         <section
           style={{ height: SECTION_HEIGHT }}
-          className={`w-full snap-start relative flex flex-col items-center justify-center px-6 ${PANEL.inputs}`}
+          className={`w-full snap-start relative flex flex-col items-center justify-center px-4 md:px-6 ${PANEL.inputs}`}
         >
-          <div className="absolute top-8 left-0 right-0 px-6 md:px-10 flex justify-center">
+          <div className="absolute top-6 left-0 right-0 px-4 md:px-10 flex justify-center">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => step > 0 && setStep((s) => s - 1)}
                 disabled={step === 0}
                 aria-label="Back"
-                className={`p-2.5 border-2 font-black transition active:scale-95 ${
+                className={`p-2 border-2 font-black transition active:scale-95 ${
                   step === 0
                     ? "border-slate-600 text-slate-500 cursor-not-allowed bg-transparent"
                     : UI.btnGhost
                 }`}
                 title="Back"
               >
-                <ArrowLeft size={18} strokeWidth={2} />
+                <ArrowLeft size={16} strokeWidth={2} />
               </button>
 
               <button
                 onClick={resetAll}
                 aria-label="Reset all"
-                className={`p-2.5 font-black transition active:scale-95 ${UI.btnDanger}`}
+                className={`p-2 font-black transition active:scale-95 ${UI.btnDanger}`}
                 title="Reset All"
               >
-                <RotateCcw size={18} strokeWidth={2} />
+                <RotateCcw size={16} strokeWidth={2} />
               </button>
 
               <button
                 onClick={() => canNext && step < 5 && setStep((s) => s + 1)}
                 disabled={!canNext || step >= 5}
                 aria-label="Next"
-                className={`p-2.5 border-2 font-black transition active:scale-95 ${
+                className={`p-2 border-2 font-black transition active:scale-95 ${
                   canNext && step < 5
                     ? "border-white bg-white text-black hover:bg-slate-200"
                     : "border-slate-600 text-slate-500 cursor-not-allowed bg-transparent"
                 }`}
                 title="Next"
               >
-                <ArrowRight size={18} strokeWidth={2.5} />
+                <ArrowRight size={16} strokeWidth={2.5} />
               </button>
             </div>
           </div>
@@ -628,26 +653,24 @@ YOUR RESULTS:
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
-                className="w-full max-w-4xl"
+                className="w-full max-w-2xl"
               >
-                <h2 className="text-3xl md:text-4xl font-black mb-4 text-center text-blue-200">
+                <h2 className="text-2xl md:text-3xl font-black mb-6 text-center text-blue-200">
                   Select Your Gender
                 </h2>
 
-                <div className="grid grid-cols-2 gap-6 md:gap-8 w-full">
+                <div className="grid grid-cols-2 gap-4 md:gap-6 w-full">
                   <button
                     onClick={() => setInputs((p) => ({ ...p, gender: "male" }))}
                     aria-pressed={inputs.gender === "male"}
-                    className={`p-10 md:p-14 border-2 flex flex-col items-center gap-5 transition-all active:scale-[0.99] ${
+                    className={`p-6 md:p-10 border-2 flex flex-col items-center gap-3 md:gap-4 transition-all active:scale-[0.99] ${
                       inputs.gender === "male"
                         ? "bg-blue-600 border-white text-white"
                         : "bg-blue-900 border-blue-300 text-white hover:border-white"
                     }`}
                   >
-                    <Mars size={52} strokeWidth={1.5} className="text-white" />
-                    <span className="text-2xl md:text-3xl font-black">
-                      Male
-                    </span>
+                    <Mars size={40} strokeWidth={1.5} className="text-white" />
+                    <span className="text-lg md:text-xl font-black">Male</span>
                   </button>
 
                   <button
@@ -655,14 +678,14 @@ YOUR RESULTS:
                       setInputs((p) => ({ ...p, gender: "female" }))
                     }
                     aria-pressed={inputs.gender === "female"}
-                    className={`p-10 md:p-14 border-2 flex flex-col items-center gap-5 transition-all active:scale-[0.99] ${
+                    className={`p-6 md:p-10 border-2 flex flex-col items-center gap-3 md:gap-4 transition-all active:scale-[0.99] ${
                       inputs.gender === "female"
                         ? "bg-pink-600 border-white text-white"
                         : "bg-pink-900 border-pink-300 text-white hover:border-white"
                     }`}
                   >
-                    <Venus size={52} strokeWidth={1.5} className="text-white" />
-                    <span className="text-2xl md:text-3xl font-black">
+                    <Venus size={40} strokeWidth={1.5} className="text-white" />
+                    <span className="text-lg md:text-xl font-black">
                       Female
                     </span>
                   </button>
@@ -676,9 +699,9 @@ YOUR RESULTS:
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
-                className="w-full max-w-3xl text-center"
+                className="w-full max-w-2xl text-center"
               >
-                <h2 className="text-3xl md:text-4xl font-black mb-4 text-blue-200">
+                <h2 className="text-2xl md:text-3xl font-black mb-4 text-blue-200">
                   Age (years)
                 </h2>
                 <input
@@ -696,6 +719,11 @@ YOUR RESULTS:
                   className={inputStyle}
                   aria-label="Age in years"
                 />
+                {inputs.age !== "" && (inputs.age < 5 || inputs.age > 120) && (
+                  <p className="text-red-400 font-bold mt-4 animate-pulse">
+                    Please enter an age between 5 and 120.
+                  </p>
+                )}
               </motion.div>
             )}
 
@@ -705,9 +733,9 @@ YOUR RESULTS:
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
-                className="w-full max-w-3xl text-center"
+                className="w-full max-w-2xl text-center"
               >
-                <h2 className="text-3xl md:text-4xl font-black mb-4 text-blue-200">
+                <h2 className="text-2xl md:text-3xl font-black mb-4 text-blue-200">
                   Weight (Kg)
                 </h2>
                 <input
@@ -725,6 +753,12 @@ YOUR RESULTS:
                   className={inputStyle}
                   aria-label="Weight in kilograms"
                 />
+                {inputs.weight !== "" &&
+                  (inputs.weight < 20 || inputs.weight > 400) && (
+                    <p className="text-red-400 font-bold mt-4 animate-pulse">
+                      Please enter a weight between 20kg and 400kg.
+                    </p>
+                  )}
               </motion.div>
             )}
 
@@ -734,15 +768,15 @@ YOUR RESULTS:
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
-                className="w-full max-w-4xl mx-auto"
+                className="w-full max-w-3xl mx-auto"
               >
-                <h2 className="text-3xl md:text-4xl font-black mb-4 text-center text-blue-200">
+                <h2 className="text-2xl md:text-3xl font-black mb-6 text-center text-blue-200">
                   Height
                 </h2>
 
-                <div className="grid grid-cols-2 gap-8 md:gap-12">
+                <div className="grid grid-cols-2 gap-6 md:gap-10">
                   <div className="text-center">
-                    <p className="text-slate-200 font-black mb-3 uppercase tracking-widest text-sm">
+                    <p className="text-slate-200 font-black mb-2 uppercase tracking-widest text-xs">
                       Feet
                     </p>
                     <input
@@ -763,7 +797,7 @@ YOUR RESULTS:
                   </div>
 
                   <div className="text-center">
-                    <p className="text-slate-200 font-black mb-3 uppercase tracking-widest text-sm">
+                    <p className="text-slate-200 font-black mb-2 uppercase tracking-widest text-xs">
                       Inches
                     </p>
 
@@ -784,6 +818,13 @@ YOUR RESULTS:
                     />
                   </div>
                 </div>
+                {inputs.feet !== "" &&
+                  (inputs.feet * 12 + (inputs.inches || 0) < 36 ||
+                    inputs.feet * 12 + (inputs.inches || 0) > 96) && (
+                    <p className="text-red-400 font-bold mt-6 text-center animate-pulse">
+                      Please enter a height between 3'0" and 8'0".
+                    </p>
+                  )}
               </motion.div>
             )}
 
@@ -793,13 +834,13 @@ YOUR RESULTS:
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
-                className="w-full max-w-6xl"
+                className="w-full max-w-5xl"
               >
-                <h2 className="text-3xl md:text-4xl font-black mb-4 text-center text-blue-200">
+                <h2 className="text-2xl md:text-3xl font-black mb-6 text-center text-blue-200">
                   Activity Level
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-5 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
                   {ACTIVITY_LEVELS.map((lvl) => {
                     const isActive = inputs.activity === lvl.val;
                     return (
@@ -809,20 +850,22 @@ YOUR RESULTS:
                           setInputs((p) => ({ ...p, activity: lvl.val }))
                         }
                         aria-pressed={isActive}
-                        className={`p-7 md:p-8 min-h-[170px] border-2 flex flex-col items-center justify-center gap-4 font-black transition-all text-center active:scale-[0.99] ${
+                        className={`p-4 md:p-6 min-h-[130px] border-2 flex flex-col items-center justify-center gap-2 font-black transition-all text-center active:scale-[0.99] ${
                           isActive
                             ? `${lvl.active} text-white`
                             : `${lvl.idle} text-white hover:border-white`
                         }`}
                       >
                         <lvl.icon
-                          size={34}
+                          size={28}
                           strokeWidth={1.7}
                           className="text-white"
                         />
                         <div>
-                          <div className="text-lg">{lvl.label}</div>
-                          <div className="text-xs text-slate-200 font-semibold mt-1">
+                          <div className="text-base md:text-lg">
+                            {lvl.label}
+                          </div>
+                          <div className="text-[10px] md:text-xs text-slate-200 font-semibold mt-1">
                             {lvl.desc}
                           </div>
                         </div>
@@ -839,13 +882,13 @@ YOUR RESULTS:
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
-                className="w-full max-w-5xl"
+                className="w-full max-w-4xl"
               >
-                <h2 className="text-3xl md:text-4xl font-black mb-4 text-center text-blue-200">
+                <h2 className="text-2xl md:text-3xl font-black mb-6 text-center text-blue-200">
                   Primary Goal
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
                   {GOALS.map((g) => {
                     const isActive = inputs.goal === g.val;
                     return (
@@ -855,28 +898,28 @@ YOUR RESULTS:
                           setInputs((p) => ({ ...p, goal: g.val }))
                         }
                         aria-pressed={isActive}
-                        className={`p-10 md:p-12 min-h-[170px] border-2 flex flex-col items-center justify-center gap-4 font-black transition-all active:scale-[0.99] ${
+                        className={`p-6 md:p-8 min-h-[140px] border-2 flex flex-col items-center justify-center gap-3 font-black transition-all active:scale-[0.99] ${
                           isActive
                             ? `${g.active} text-white`
                             : `${g.idle} text-white hover:border-white`
                         }`}
                       >
                         <g.icon
-                          size={38}
+                          size={32}
                           strokeWidth={1.6}
                           className="text-white"
                         />
-                        {g.label}
+                        <span className="text-lg md:text-xl">{g.label}</span>
                       </button>
                     );
                   })}
                 </div>
 
-                <div className="mt-12 flex justify-center">
+                <div className="mt-10 flex justify-center">
                   <button
                     onClick={() => canNext && calculate()}
                     disabled={!canNext}
-                    className={`px-12 py-4 border-2 font-black text-lg transition active:scale-95 ${
+                    className={`px-10 py-3 border-2 font-black text-base md:text-lg transition active:scale-95 ${
                       canNext
                         ? "border-white bg-white text-black hover:bg-slate-200"
                         : "border-slate-600 text-slate-500 cursor-not-allowed bg-transparent"
@@ -894,24 +937,27 @@ YOUR RESULTS:
         {results && (
           <section
             style={{ height: SECTION_HEIGHT }}
-            className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.bmi}`}
+            className={`w-full snap-start flex flex-col items-center justify-center px-4 md:px-6 ${PANEL.bmi}`}
           >
-            <div className="text-center max-w-4xl">
-              <h2 className="text-4xl md:text-5xl font-black mb-3">
-                Body Mass Index
+            <div className="text-center max-w-3xl w-full">
+              <h2 className="text-3xl md:text-4xl font-black mb-1">
+                Body Mass Index (BMI)
               </h2>
-              <p className="text-lg md:text-xl font-semibold text-slate-200 mb-10">
-                Based on height and weight
+              <p className="text-sm md:text-base font-semibold text-slate-200 mb-1">
+                An estimate of body fat based on height and weight.
+              </p>
+              <p className="text-[10px] md:text-xs font-medium text-slate-400 mb-6">
+                Formula used: Weight (kg) / Height (m)²
               </p>
 
               <div
-                className={`text-8xl md:text-9xl font-black tracking-tight mb-6 ${bmiColor}`}
+                className={`text-7xl md:text-8xl font-black tracking-tight mb-4 ${bmiColor}`}
               >
                 {results.bmi}
               </div>
 
-              <div className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white bg-slate-900 mb-10">
-                <span className="text-2xl font-black text-white">
+              <div className="inline-flex items-center gap-2 px-5 py-2 border-2 border-white bg-slate-900 mb-6">
+                <span className="text-xl font-black text-white">
                   {results.cat.label}
                 </span>
               </div>
@@ -925,22 +971,25 @@ YOUR RESULTS:
         {results && (
           <section
             style={{ height: SECTION_HEIGHT }}
-            className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.ibw}`}
+            className={`w-full snap-start flex flex-col items-center justify-center px-4 md:px-6 ${PANEL.ibw}`}
           >
-            <div className="text-center max-w-5xl w-full">
-              <h2 className="text-4xl md:text-5xl font-black mb-3">
-                Ideal Body Weight
+            <div className="text-center max-w-4xl w-full">
+              <h2 className="text-3xl md:text-4xl font-black mb-1">
+                Ideal Body Weight (IBW)
               </h2>
-              <p className="text-lg md:text-xl font-semibold text-slate-200 mb-10">
-                Based on Devine formula (1974)
+              <p className="text-sm md:text-base font-semibold text-slate-200 mb-1">
+                The recommended healthy weight range for your height.
+              </p>
+              <p className="text-[10px] md:text-xs font-medium text-slate-400 mb-8">
+                Formula used: Devine Formula (1974)
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <SquareStat
                   icon={TrendingDown}
                   title="Min Weight"
                   value={`${results.idealRangeMin} kg`}
-                  hint="Lower boundary"
+                  hint="The lower boundary of your healthy range."
                   tone="border-indigo-300"
                   bg="bg-indigo-900"
                 />
@@ -948,25 +997,25 @@ YOUR RESULTS:
                   icon={TrendingUp}
                   title="Max Weight"
                   value={`${results.idealRangeMax} kg`}
-                  hint="Upper boundary"
+                  hint="The upper boundary of your healthy range."
                   tone="border-indigo-300"
                   bg="bg-indigo-900"
                 />
               </div>
 
-              <div className="mt-10 border-2 border-white bg-slate-900 p-6">
+              <div className="mt-6 border-2 border-white bg-slate-900 p-5 md:p-6">
                 <div
-                  className={`text-2xl md:text-3xl font-black ${goalSentence.cls}`}
+                  className={`text-xl md:text-2xl font-black ${goalSentence.cls}`}
                 >
                   {goalSentence.text}
                 </div>
               </div>
 
-              <div className="mt-8 border-2 border-white bg-slate-900 p-6">
+              <div className="mt-6 border-2 border-white bg-slate-900 p-5 md:p-6">
                 <div className="text-xs font-black uppercase tracking-widest text-slate-200">
                   Current Weight
                 </div>
-                <div className="text-4xl md:text-5xl font-black text-white mt-2">
+                <div className="text-3xl md:text-4xl font-black text-white mt-1">
                   {inputs.weight} kg
                 </div>
               </div>
@@ -974,120 +1023,132 @@ YOUR RESULTS:
           </section>
         )}
 
-        {/* 5) MACROS */}
+        {/* 5) BMR, TDEE, MACROS */}
         {results && (
           <section
             style={{ height: SECTION_HEIGHT }}
-            className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.macros}`}
+            className={`w-full snap-start flex flex-col items-center justify-center px-4 md:px-6 ${PANEL.macros}`}
           >
             <div className="text-center max-w-5xl w-full">
-              <h2 className="text-4xl md:text-5xl font-black mb-3">
-                Daily Nutrition Targets
+              <h2 className="text-3xl md:text-4xl font-black mb-1">
+                BMR, TDEE & Macros
               </h2>
-              <p className="text-lg md:text-xl font-semibold text-slate-200 mb-10">
-                Based on calorie target and your goal
+              <p className="text-sm md:text-base font-semibold text-slate-200 mb-1">
+                Your basal burn, maintenance burn, and nutrient split.
+              </p>
+              <p className="text-[10px] md:text-xs font-medium text-slate-400 mb-6">
+                Formula used: Mifflin-St Jeor (BMR), BMR × Activity Multiplier
+                (TDEE). Macros split 30% / 40% / 30%.
               </p>
 
-              <div className="border-2 border-white bg-slate-900 p-5 mb-6">
-                <div className="text-xs font-black uppercase tracking-widest text-slate-200">
-                  Goal
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <SquareStat
+                  icon={Coffee}
+                  title="BMR (Basal Metabolic Rate)"
+                  value={`${results.bmr} kcal`}
+                  hint="Calories your body burns simply existing at rest."
+                  tone="border-amber-400"
+                  bg="bg-amber-900"
+                />
+                <SquareStat
+                  icon={Zap}
+                  title="TDEE (Total Daily Energy Exp.)"
+                  value={`${results.tdee} kcal`}
+                  hint="Maintenance calories based on your physical activity."
+                  tone="border-amber-400"
+                  bg="bg-amber-900"
+                />
+              </div>
+
+              <div className="border-2 border-white bg-slate-900 p-4 md:p-6 mb-4 relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-white text-black px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-widest">
+                  {goalLabel} Goal
                 </div>
-                <div
-                  className={`text-3xl md:text-4xl font-black mt-2 ${
-                    inputs.goal < 0
-                      ? "text-red-300"
-                      : inputs.goal > 0
-                        ? "text-emerald-300"
-                        : "text-blue-300"
-                  }`}
-                >
-                  {goalLabel}
+                <div className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-200 mb-1 mt-1">
+                  Your Adjusted Daily Calorie Target
+                </div>
+                <div className="text-4xl md:text-5xl font-black text-white">
+                  {results.targetCalories}{" "}
+                  <span className="text-lg font-bold text-slate-300">kcal</span>
                 </div>
               </div>
 
-              <div className="border-2 border-white bg-slate-900 p-8 md:p-10 mb-8">
-                <div className="text-xs font-black uppercase tracking-widest text-slate-200 mb-2">
-                  Daily Calorie Target
-                </div>
-                <div className="text-6xl md:text-7xl font-black text-white">
-                  {results.targetCalories}
-                </div>
-                <div className="text-slate-200 font-semibold mt-2">
-                  Calories
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-3 gap-3 md:gap-4">
                 <SquareStat
                   icon={Utensils}
                   title="Protein"
                   value={`${results.protein} g`}
-                  hint="Chicken, eggs, lentils, yogurt"
+                  hint="Builds and repairs muscle tissue. Found in: Chicken, eggs, lentils, fish, tofu."
                   tone="border-amber-200"
-                  bg="bg-amber-900"
+                  bg="bg-amber-800"
                 />
                 <SquareStat
                   icon={Flame}
                   title="Carbs"
                   value={`${results.carbs} g`}
-                  hint="Rice, oats, potatoes, fruits"
+                  hint="Your body's primary energy source. Found in: Rice, oats, potatoes, fruits."
                   tone="border-amber-200"
-                  bg="bg-amber-900"
+                  bg="bg-amber-800"
                 />
                 <SquareStat
                   icon={Droplets}
                   title="Fats"
                   value={`${results.fat} g`}
-                  hint="Nuts, olive oil, eggs, fish"
+                  hint="Regulates hormones and brain health. Found in: Nuts, olive oil, fish, avocado."
                   tone="border-amber-200"
-                  bg="bg-amber-900"
+                  bg="bg-amber-800"
                 />
               </div>
             </div>
           </section>
         )}
 
-        {/* 6) HYDRATION - REMOVED VIEW SUMMARY LINK */}
+        {/* 6) HYDRATION */}
         {results && (
           <section
             style={{ height: SECTION_HEIGHT }}
-            className={`w-full snap-start flex flex-col items-center justify-center px-6 ${PANEL.water}`}
+            className={`w-full snap-start flex flex-col items-center justify-center px-4 md:px-6 ${PANEL.water}`}
           >
-            <div className="text-center max-w-4xl w-full">
-              <h2 className="text-4xl md:text-5xl font-black mb-3">
+            <div className="text-center max-w-3xl w-full">
+              <h2 className="text-3xl md:text-4xl font-black mb-1">
                 Hydration Target
               </h2>
-              <p className="text-lg md:text-xl font-semibold text-slate-200 mb-10">
-                Based on body weight
+              <p className="text-sm md:text-base font-semibold text-slate-200 mb-1">
+                The total amount of water you should drink daily.
+              </p>
+              <p className="text-[10px] md:text-xs font-medium text-slate-400 mb-8">
+                Formula used: 35ml of water per kg of body weight.
               </p>
 
-              <div className="border-2 border-white bg-sky-900 p-8 md:p-10">
-                <div className="text-6xl md:text-7xl font-black text-white mb-2">
-                  {results.waterL} L
+              <div className="border-2 border-white bg-sky-900 p-6 md:p-10">
+                <div className="text-5xl md:text-6xl font-black text-white mb-2">
+                  {results.waterL} Liters
                 </div>
-                <div className="text-slate-200 font-semibold mb-6">
-                  (~{results.glasses} glasses, 250ml each)
+                <div className="text-sm md:text-base text-slate-200 font-semibold mb-6">
+                  (~{results.glasses} standard 250ml glasses)
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-6 mb-6">
+                <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-6">
                   {Array.from({ length: Math.min(results.glasses, 12) }).map(
                     (_, i) => (
                       <div key={i} className="flex flex-col items-center">
                         <GlassWater
-                          size={44}
-                          strokeWidth={1.6}
+                          size={28}
+                          strokeWidth={1.8}
                           className="text-white"
                         />
-                        <span className="text-sm text-slate-200 font-semibold mt-2">
-                          Glass {i + 1}
-                        </span>
                       </div>
                     ),
                   )}
+                  {results.glasses > 12 && (
+                    <div className="flex flex-col items-center justify-center font-black text-xl">
+                      +{results.glasses - 12}
+                    </div>
+                  )}
                 </div>
 
-                <div className="text-slate-200 font-semibold">
-                  Based on{" "}
+                <div className="text-sm md:text-base text-slate-200 font-semibold">
+                  Calculated using your weight of{" "}
                   <span className="text-white font-black">
                     {inputs.weight} kg
                   </span>
@@ -1097,32 +1158,31 @@ YOUR RESULTS:
           </section>
         )}
 
-        {/* 7) SUMMARY & DOWNLOAD - SCALED DOWN */}
+        {/* 7) SUMMARY & DOWNLOAD */}
         {results && (
           <section
             style={{ height: SECTION_HEIGHT }}
-            className={`w-full snap-start flex flex-col items-center justify-center px-4 ${PANEL.summary}`}
+            className={`w-full snap-start flex flex-col items-center justify-center px-4 md:px-6 ${PANEL.summary}`}
           >
-            <div className="text-center max-w-5xl w-full">
+            <div className="text-center max-w-4xl w-full">
               <CheckCircle2
-                size={48}
-                className="mx-auto text-violet-300 mb-3"
+                size={40}
+                className="mx-auto text-violet-300 mb-2"
               />
-              <h2 className="text-3xl md:text-5xl font-black mb-2">
+              <h2 className="text-2xl md:text-4xl font-black mb-2">
                 Your Health Report
               </h2>
-              <p className="text-base md:text-lg font-semibold text-violet-200 mb-6">
-                A summary of your inputs and calculated targets.
+              <p className="text-sm md:text-base font-semibold text-violet-200 mb-6">
+                A technical summary of your calculated targets.
               </p>
 
-              {/* Scaled down grid with tighter padding */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-4xl mx-auto mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-3xl mx-auto mb-6">
                 {/* Inputs Summary */}
-                <div className="bg-violet-900 border-2 border-violet-300 p-5 md:p-6">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-violet-200 border-b border-violet-700 pb-2 mb-3">
-                    Profile Inputs
+                <div className="bg-violet-900 border-2 border-violet-300 p-4 md:p-5">
+                  <h3 className="text-[10px] md:text-xs font-black uppercase tracking-widest text-violet-200 border-b border-violet-700 pb-2 mb-3">
+                    Your Profile
                   </h3>
-                  <div className="space-y-2 text-sm md:text-base font-bold">
+                  <div className="space-y-2 text-xs md:text-sm font-bold">
                     <div className="flex justify-between">
                       <span className="text-violet-200">Gender</span>
                       <span className="capitalize">{inputs.gender}</span>
@@ -1157,34 +1217,43 @@ YOUR RESULTS:
                   </div>
                 </div>
 
-                {/* Results Summary - FIXED MACROS */}
-                <div className="bg-white text-black border-2 border-white p-5 md:p-6">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 border-b border-slate-200 pb-2 mb-3">
-                    Calculated Results
+                {/* Results Summary */}
+                <div className="bg-white text-black border-2 border-white p-4 md:p-5">
+                  <h3 className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-500 border-b border-slate-200 pb-2 mb-3">
+                    Calculated Targets
                   </h3>
-                  <div className="space-y-2 text-sm md:text-base font-bold">
+                  <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm font-bold">
                     <div className="flex justify-between items-center">
                       <span className="text-slate-500">BMI</span>
-                      <span className="bg-black text-white px-2 py-0.5 text-xs md:text-sm">
+                      <span className="bg-black text-white px-2 py-0.5 text-[10px] md:text-xs">
                         {results.bmi} ({results.cat.label})
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Ideal Weight</span>
+                      <span className="text-slate-500">IBW Range</span>
                       <span>
                         {results.idealRangeMin}-{results.idealRangeMax} kg
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Calories</span>
-                      <span>{results.targetCalories} kcal</span>
+                      <span className="text-slate-500">BMR</span>
+                      <span>{results.bmr} kcal</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Water</span>
+                      <span className="text-slate-500">TDEE</span>
+                      <span>{results.tdee} kcal</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Target Calories</span>
+                      <span className="text-black font-black">
+                        {results.targetCalories} kcal
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Hydration</span>
                       <span className="text-blue-600">{results.waterL} L</span>
                     </div>
 
-                    {/* Full labels with colors */}
                     <div className="pt-2 mt-2 border-t border-slate-200 space-y-1">
                       <div className="flex justify-between">
                         <span className="text-slate-500">Protein</span>
@@ -1210,15 +1279,15 @@ YOUR RESULTS:
               <div className="flex justify-center gap-3">
                 <button
                   onClick={resetAll}
-                  className="px-6 py-3 text-sm md:text-base font-black border-2 border-violet-400 text-violet-200 hover:bg-violet-900 transition active:scale-95"
+                  className="px-5 py-2.5 text-xs md:text-sm font-black border-2 border-violet-400 text-violet-200 hover:bg-violet-900 transition active:scale-95"
                 >
                   Start Over
                 </button>
                 <button
                   onClick={downloadReport}
-                  className="px-6 py-3 text-sm md:text-base bg-white text-black font-black border-2 border-white hover:bg-slate-200 transition flex items-center gap-2 active:scale-95"
+                  className="px-5 py-2.5 text-xs md:text-sm bg-white text-black font-black border-2 border-white hover:bg-slate-200 transition flex items-center gap-2 active:scale-95"
                 >
-                  <Download size={18} />
+                  <Download size={16} />
                   Download
                 </button>
               </div>
