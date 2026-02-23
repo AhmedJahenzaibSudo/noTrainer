@@ -1,510 +1,851 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FrontView from "@/components/anatomy/FrontView";
+import BackView from "@/components/anatomy/BackView";
+import exercisesData from "@/public/exercises.json";
 import {
-  Zap,
   Dumbbell,
-  LayoutDashboard,
-  Calculator,
-  MessageSquare,
-  Target,
-  Info,
-  MapPin,
-  Package,
+  Weight,
+  GitPullRequest,
   Activity,
+  Barbell,
+  Users,
+  RotateCcw,
   ChevronDown,
-  Wand2,
-  UserCircle,
-  Database,
-  Columns3,
-  Gamepad2,
-  Trophy,
-  ArrowRight,
+  Trash2,
+  X,
+  Zap,
+  LayoutList,
+  CircleDot,
+  ArrowBigRight,
 } from "lucide-react";
 
-import FrontView from "@/components/anatomy/FrontView";
-
-// ============================================
-// DARKER & SOLID COLOR THEME (NO OPACITY)
-// ============================================
-const theme = {
-  primary: "#0284c7", // Deep Sky Blue
-  secondary: "#7c3aed", // Deep Violet
-  accent: {
-    success: "#059669", // Deep Emerald
-    orange: "#ea580c", // Deep Orange
-    pink: "#db2777", // Deep Pink
-    yellow: "#ca8a04", // Deep Yellow
-  },
+const equipIcons = {
+  dumbbell: Dumbbell,
+  barbell: Barbell,
+  machine: Weight,
+  cable: GitPullRequest,
+  bodyweight: Activity,
+  kettlebell: CircleDot,
+  "pull-up bar": Users,
 };
 
-const features = [
-  {
-    title: "Custom Workout Wizard",
-    description:
-      "Select body muscles from an interactive diagram and generate relevant workouts instantly.",
-    icon: <Wand2 className="w-8 h-8 text-white" />,
-    color: theme.primary,
-  },
-  {
-    title: "SVG Muscle Selection",
-    description:
-      "Interactive human body diagram lets you visually select muscle groups for intuitive discovery.",
-    icon: <UserCircle className="w-8 h-8 text-white" />,
-    color: theme.secondary,
-  },
-  {
-    title: "Rich Workout Dataset",
-    description:
-      "A continuously growing collection of exercises categorized by muscle and goals.",
-    icon: <Database className="w-8 h-8 text-white" />,
-    color: theme.accent.pink,
-  },
-  {
-    title: "Health Calculators",
-    description:
-      "BMI, calorie needs, and protein intake calculated instantly with modern formulas.",
-    icon: <Calculator className="w-8 h-8 text-white" />,
-    color: theme.accent.success,
-  },
-  {
-    title: "24/7 Fitness Chatbot",
-    description:
-      "Ask fitness or nutrition questions anytime with an intelligent assistant.",
-    icon: <MessageSquare className="w-8 h-8 text-white" />,
-    color: theme.accent.orange,
-  },
-  {
-    title: "Workout Kanban Board",
-    description:
-      "Organize workouts and fitness tasks using a visual Kanban board.",
-    icon: <Columns3 className="w-8 h-8 text-white" />,
-    color: theme.primary,
-  },
-  {
-    title: "Mini Games",
-    description:
-      "Simple games designed to improve focus and keep motivation high between workouts.",
-    icon: <Gamepad2 className="w-8 h-8 text-white" />,
-    color: theme.secondary,
-  },
-];
-
-const words = ["Home Gym", "Workout Guide", "AI Trainer", "Fitness Hub"];
-
-const Hero = () => {
-  const [mounted, setMounted] = useState(false);
-  const [selectedMuscle, setSelectedMuscle] = useState(null);
-  const [highlightedMuscle, setHighlightedMuscle] = useState(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [selectedExcuseId, setSelectedExcuseId] = useState(1);
-  const [wordIndex, setWordIndex] = useState(0);
-
-  const anatomyBoxRef = useRef(null);
-  const snapContainerRef = useRef(null);
+// ============================================
+// UTILITY: ROTATING IMAGE (FIXED)
+// ============================================
+const RotatingImage = ({ images = [], name, className = "" }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    setMounted(true);
-    const textInterval = setInterval(() => {
-      setWordIndex((prev) => (prev + 1) % words.length);
-    }, 2500);
-    return () => clearInterval(textInterval);
-  }, []);
+    setCurrentIndex(0);
+  }, [name, images]);
 
-  const problems = useMemo(
-    () => [
-      {
-        id: 1,
-        text: "No gym access",
-        solution:
-          "Train anywhere with bodyweight workouts and home equipment routines.",
-        icon: <MapPin size={24} />,
-        color: theme.accent.orange,
-      },
-      {
-        id: 2,
-        text: "Too expensive",
-        solution: "Free workout plans and nutrition calculators.",
-        icon: <Calculator size={24} />,
-        color: theme.primary,
-      },
-      {
-        id: 3,
-        text: "Don't know how",
-        solution: "Step-by-step exercise guides with photos.",
-        icon: <Info size={24} />,
-        color: theme.secondary,
-      },
-      {
-        id: 4,
-        text: "Need privacy",
-        solution: "AI trainer available 24/7 with no judgment.",
-        icon: <MessageSquare size={24} />,
-        color: theme.accent.pink,
-      },
-      {
-        id: 5,
-        text: "Lack of knowledge",
-        solution:
-          "800+ exercises with difficulty levels and detailed instructions.",
-        icon: <Dumbbell size={24} />,
-        color: theme.secondary,
-      },
-      {
-        id: 6,
-        text: "Can't go out",
-        solution: "Effective home workouts designed for any space.",
-        icon: <Zap size={24} />,
-        color: theme.accent.yellow,
-      },
-      {
-        id: 7,
-        text: "Need structure",
-        solution: "Organized workout plans with Kanban Board tracking.",
-        icon: <LayoutDashboard size={24} />,
-        color: theme.primary,
-      },
-      {
-        id: 8,
-        text: "No motivation",
-        solution: "Motivation Marquee wont let you rest.",
-        icon: <Target size={24} />,
-        color: theme.accent.orange,
-      },
-      {
-        id: 9,
-        text: "No equipment",
-        solution: "Build strength with proven bodyweight training programs.",
-        icon: <Package size={24} />,
-        color: theme.accent.success,
-      },
-    ],
-    [],
-  );
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
 
-  const selectedProblem = useMemo(
-    () => problems.find((p) => p.id === selectedExcuseId) || problems[0],
-    [problems, selectedExcuseId],
-  );
+    const id = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 1500);
 
-  const handleMouseMove = (e) => {
-    if (!anatomyBoxRef.current) return;
-    const rect = anatomyBoxRef.current.getBoundingClientRect();
-    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
+    return () => clearInterval(id);
+  }, [images, name]);
 
-  if (!mounted) return null;
+  if (!images || images.length === 0) {
+    return (
+      <div
+        className={`w-full h-full flex items-center justify-center bg-slate-900 border border-slate-700 ${className}`}
+      >
+        <span className="text-slate-500 text-sm font-medium">
+          No image available
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative w-full bg-slate-900 text-white font-sans selection:bg-sky-500 selection:text-white">
-      <style>{`
-        /* Import a highly unique, bold font for the brand */
-        @import url('https://fonts.googleapis.com/css2?family=Righteous&display=swap');
-
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .force-snap {
-          scroll-snap-type: y mandatory;
-          scroll-behavior: smooth;
-        }
-        .force-snap > section {
-          scroll-snap-align: start;
-          scroll-snap-stop: always;
-        }
-
-        /* HARDCODED SVG SIZING */
-        .anatomy-svg-wrapper svg {
-          width: 420px !important;
-          height: 520px !important;
-          max-width: 100%;
-          display: block;
-          margin: 0 auto;
-          cursor: pointer;
-        }
-      `}</style>
-
-      {/* SNAP CONTAINER */}
-      <div
-        ref={snapContainerRef}
-        className="force-snap overflow-y-scroll no-scrollbar relative z-10"
-        style={{ height: "93.5vh" }}
-      >
-        {/* SECTION 1: BRAND */}
-        <section
-          className="w-full flex flex-col justify-center items-center relative px-6 bg-slate-900"
-          style={{ height: "93.5vh" }}
+    <div className={`relative w-full h-full overflow-hidden ${className}`}>
+      {images.map((image, index) => (
+        <div
+          key={`${name}-${image}-${index}`}
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            index === currentIndex ? "opacity-100" : "opacity-0"
+          }`}
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="text-center flex flex-col items-center"
-          >
-            <h1
-              className="text-7xl md:text-9xl text-white drop-shadow-lg"
-              style={{ fontFamily: "'Righteous', cursive" }}
-            >
-              noTrainer
-            </h1>
-            <div className="h-3 w-40 mx-auto mt-8 bg-sky-500 rounded-full shadow-[0_0_15px_rgba(14,165,233,0.5)]" />
-
-            {/* Scroll Hint Arrow */}
-            <motion.div
-              animate={{ y: [0, 15, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="mt-24"
-            >
-              <ChevronDown
-                className="w-12 h-12 text-sky-500"
-                strokeWidth={2.5}
-              />
-            </motion.div>
-          </motion.div>
-        </section>
-
-        {/* SECTION 2: TEXT ROTATE */}
-        <section
-          className="w-full flex flex-col justify-center items-center relative px-4 bg-slate-800"
-          style={{ height: "93.5vh" }}
-        >
-          <div className="w-full max-w-5xl rounded-[3rem] p-12 md:p-24 text-center bg-slate-900 border-2 border-slate-700 shadow-2xl hover:border-slate-600 transition-colors duration-300">
-            <span className="text-md font-black uppercase tracking-[0.3em] text-violet-400 mb-8 block">
-              The Platform
-            </span>
-
-            <div className="h-24 md:h-32 flex justify-center items-center overflow-hidden cursor-default">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={wordIndex}
-                  initial={{ y: 50, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -50, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-white"
-                >
-                  {words[wordIndex]}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 3: ANATOMY */}
-        <section
-          className="w-full flex flex-col justify-center items-center px-6 bg-slate-900"
-          style={{ height: "93.5vh" }}
-        >
-          <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center">
-            <div className="flex flex-col justify-center">
-              {/* Force one line */}
-              <h2 className="text-4xl lg:text-5xl font-black text-white mb-6 leading-tight tracking-tight whitespace-nowrap">
-                Target Every Muscle
-              </h2>
-              <p className="text-slate-400 text-xl mb-10 font-medium">
-                Click or hover the diagram to instantly build routines focused
-                on specific muscle groups.
-              </p>
-
-              {selectedMuscle ? (
-                <div className="rounded-3xl border-4 border-emerald-500 bg-slate-800 p-8 shadow-xl inline-block self-start hover:scale-105 transition-transform cursor-default">
-                  <div className="text-sm uppercase tracking-widest text-emerald-400 font-black mb-2">
-                    Selected
-                  </div>
-                  <div className="text-4xl font-black text-white capitalize">
-                    {String(selectedMuscle)}
-                  </div>
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-3 rounded-full bg-emerald-600 px-8 py-4 text-sm font-black uppercase tracking-widest text-white shadow-lg self-start">
-                  <Activity size={20} />
-                  Hover to explore
-                </div>
-              )}
-            </div>
-
-            <div
-              ref={anatomyBoxRef}
-              onMouseMove={handleMouseMove}
-              className="relative h-[65vh] w-full flex items-center justify-center"
-            >
-              <AnimatePresence>
-                {highlightedMuscle && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{
-                      opacity: 1,
-                      scale: 1,
-                      x: mousePos.x + 20,
-                      y: mousePos.y - 40,
-                    }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute top-0 left-0 z-50 pointer-events-none px-5 py-2.5 rounded-xl bg-sky-500 text-white font-black uppercase tracking-widest text-xs shadow-xl"
-                  >
-                    {highlightedMuscle}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="anatomy-svg-wrapper h-full w-full flex items-center justify-center hover:scale-105 transition-transform duration-500">
-                <FrontView
-                  onHover={setHighlightedMuscle}
-                  onLeave={() => setHighlightedMuscle(null)}
-                  onSelect={setSelectedMuscle}
-                  selectedMuscle={selectedMuscle}
-                  highlightedMuscle={highlightedMuscle}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 4: PROBLEM -> SOLUTION */}
-        <section
-          className="w-full flex flex-col justify-center items-center px-6 bg-slate-800"
-          style={{ height: "93.5vh" }}
-        >
-          <div className="max-w-6xl w-full flex flex-col h-full max-h-[75vh] justify-center pt-8">
-            {/* FIXED HEADING */}
-            <div className="flex items-center justify-center gap-6 mb-12 shrink-0">
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white">
-                Problems
-              </h2>
-              <ArrowRight className="w-10 h-10 text-sky-500" strokeWidth={3} />
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-sky-400">
-                Solutions
-              </h2>
-            </div>
-
-            {/* SCROLLABLE GRID CONTAINER */}
-            <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {/* Left Column: Strictly Scrolling Problems */}
-              <div className="h-full overflow-y-auto no-scrollbar pr-2 pb-4 space-y-3">
-                {problems.map((problem) => {
-                  const active = problem.id === selectedExcuseId;
-                  return (
-                    <button
-                      key={problem.id}
-                      onClick={() => setSelectedExcuseId(problem.id)}
-                      className={`w-full flex items-center gap-5 p-5 rounded-2xl transition-all duration-200 text-left active:scale-[0.98] ${
-                        active
-                          ? "bg-slate-900 shadow-xl border-2"
-                          : "bg-slate-700 hover:bg-slate-600 border-2 border-transparent"
-                      }`}
-                      style={{
-                        borderColor: active ? problem.color : "transparent",
-                      }}
-                    >
-                      <div
-                        className={`p-3 rounded-xl flex items-center justify-center ${active ? "text-white" : "text-slate-300"}`}
-                        style={{
-                          backgroundColor: active ? problem.color : "#334155",
-                        }}
-                      >
-                        {React.cloneElement(problem.icon, {
-                          size: 24,
-                          strokeWidth: active ? 3 : 2,
-                        })}
-                      </div>
-                      <span
-                        className={`text-xl font-black uppercase tracking-tight ${active ? "text-white" : "text-slate-300"}`}
-                      >
-                        {problem.text}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Right Column: Fixed Solution */}
-              <div className="h-full flex flex-col">
-                <div className="flex-1 flex flex-col justify-center p-12 rounded-[2.5rem] bg-slate-900 shadow-2xl border border-slate-700 transition-colors duration-300 relative overflow-hidden cursor-default">
-                  <div
-                    className="absolute top-0 left-0 right-0 h-4"
-                    style={{ backgroundColor: selectedProblem.color }}
-                  />
-                  <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center mb-8 text-white shadow-lg transition-colors duration-300"
-                    style={{ backgroundColor: selectedProblem.color }}
-                  >
-                    {React.cloneElement(selectedProblem.icon, {
-                      size: 40,
-                      strokeWidth: 2.5,
-                    })}
-                  </div>
-                  <h3 className="text-4xl md:text-5xl font-black text-white uppercase leading-none mb-6 tracking-tight">
-                    {selectedProblem.text}
-                  </h3>
-                  <p className="text-2xl font-medium text-slate-300 leading-relaxed">
-                    {selectedProblem.solution}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 5: FEATURES */}
-        <section
-          className="w-full flex flex-col overflow-hidden bg-slate-900"
-          style={{ height: "93.5vh" }}
-        >
-          <div className="h-[25%] w-full flex items-end justify-center pb-12">
-            <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase drop-shadow-lg">
-              Features
-            </h2>
-          </div>
-
-          <div className="h-[75%] w-full relative overflow-hidden flex items-start pt-4">
-            <div className="flex animate-scroll-features hover:[animation-play-state:paused]">
-              {[...features, ...features].map((feature, idx) => (
-                <div
-                  key={idx}
-                  className="h-[400px] w-[340px] md:w-[400px] mx-6 flex-shrink-0 group cursor-pointer transition-all duration-300 hover:-translate-y-4 hover:shadow-2xl rounded-[2.5rem] p-10 flex flex-col relative overflow-hidden text-white shadow-xl"
-                  style={{ backgroundColor: feature.color }}
-                >
-                  <div className="mb-auto z-10">
-                    <div className="bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-md transition-transform group-hover:scale-110 group-hover:rotate-3">
-                      {feature.icon}
-                    </div>
-                    <h3 className="text-3xl font-black uppercase leading-tight mb-4 tracking-tight">
-                      {feature.title}
-                    </h3>
-                  </div>
-
-                  <div className="mt-auto z-10">
-                    <p className="text-white/90 font-medium text-lg leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </div>
-
-                  <span className="absolute -bottom-8 -right-4 text-[180px] font-black text-slate-900/20 leading-none select-none pointer-events-none transition-transform group-hover:scale-110">
-                    {(idx % features.length) + 1}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <style jsx>{`
-            @keyframes scrollFeatures {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(-50%);
-              }
-            }
-            .animate-scroll-features {
-              animation: scrollFeatures 45s linear infinite;
-              width: max-content;
-            }
-          `}</style>
-        </section>
-      </div>
+          <img
+            src={`/exercises/${image || "placeholder.png"}`}
+            alt={`${name} view ${index + 1}`}
+            className="w-full h-full object-contain"
+            loading="lazy"
+          />
+        </div>
+      ))}
     </div>
   );
 };
 
-export default Hero;
+// ============================================
+// MAIN COMPONENT
+// ============================================
+export default function WorkoutWizard() {
+  const WIZARD_H = "h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3rem)]";
+
+  // --- STATE ---
+  const containerRef = useRef(null);
+  const [activeSection, setActiveSection] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const [view, setView] = useState("front");
+  const [muscle, setMuscle] = useState(null);
+  const [equipment, setEquipment] = useState(null);
+  const [category, setCategory] = useState(null);
+  const [level, setLevel] = useState(null);
+
+  const [routine, setRoutine] = useState([]);
+  const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
+
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [highlightedMuscle, setHighlightedMuscle] = useState(null);
+
+  // --- PROGRESSIVE LOGIC & COUNTS ---
+  const exercisesForMuscle = useMemo(() => {
+    if (!muscle) return [];
+    return exercisesData.filter(
+      (ex) =>
+        ex.primaryMuscles?.includes(muscle) ||
+        ex.secondaryMuscles?.includes(muscle),
+    );
+  }, [muscle]);
+
+  const availableEquipment = useMemo(
+    () =>
+      [
+        ...new Set(
+          exercisesForMuscle.map((ex) => ex.equipment).filter(Boolean),
+        ),
+      ].sort(),
+    [exercisesForMuscle],
+  );
+
+  const equipmentCounts = useMemo(() => {
+    const counts = {};
+    availableEquipment.forEach((eq) => {
+      counts[eq] = exercisesForMuscle.filter(
+        (ex) => ex.equipment === eq,
+      ).length;
+    });
+    return counts;
+  }, [availableEquipment, exercisesForMuscle]);
+
+  const exercisesForEquipment = useMemo(
+    () =>
+      exercisesForMuscle.filter(
+        (ex) => !equipment || ex.equipment === equipment,
+      ),
+    [exercisesForMuscle, equipment],
+  );
+
+  const availableCategories = useMemo(
+    () =>
+      [
+        ...new Set(
+          exercisesForEquipment.map((ex) => ex.category).filter(Boolean),
+        ),
+      ].sort(),
+    [exercisesForEquipment],
+  );
+
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+    availableCategories.forEach((cat) => {
+      counts[cat] = exercisesForEquipment.filter(
+        (ex) => ex.category === cat,
+      ).length;
+    });
+    return counts;
+  }, [availableCategories, exercisesForEquipment]);
+
+  const exercisesForCategory = useMemo(
+    () =>
+      exercisesForEquipment.filter(
+        (ex) => !category || ex.category === category,
+      ),
+    [exercisesForEquipment, category],
+  );
+
+  const availableLevels = useMemo(
+    () => [
+      ...new Set(exercisesForCategory.map((ex) => ex.level).filter(Boolean)),
+    ],
+    [exercisesForCategory],
+  );
+
+  const levelCounts = useMemo(() => {
+    const counts = {};
+    availableLevels.forEach((lvl) => {
+      counts[lvl] = exercisesForCategory.filter(
+        (ex) => ex.level === lvl,
+      ).length;
+    });
+    return counts;
+  }, [availableLevels, exercisesForCategory]);
+
+  const finalExercises = useMemo(
+    () => exercisesForCategory.filter((ex) => !level || ex.level === level),
+    [exercisesForCategory, level],
+  );
+
+  // --- HANDLERS ---
+  const scrollTo = (index) => {
+    const h = containerRef.current?.clientHeight || window.innerHeight;
+    containerRef.current?.scrollTo({ top: index * h, behavior: "smooth" });
+  };
+
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    setActiveSection(
+      Math.round(
+        containerRef.current.scrollTop / containerRef.current.clientHeight,
+      ),
+    );
+  };
+
+  const toggleRoutine = (ex) => {
+    if (!ex) return;
+    setRoutine((prev) =>
+      prev.some((item) => item.id === ex.id)
+        ? prev.filter((item) => item.id !== ex.id)
+        : [...prev, ex],
+    );
+  };
+
+  const resetWizard = () => {
+    setMuscle(null);
+    setEquipment(null);
+    setCategory(null);
+    setLevel(null);
+    setSelectedExercise(null);
+    scrollTo(0);
+  };
+
+  return (
+    <div
+      className={`relative w-full ${WIZARD_H} bg-[#020617] text-white font-sans overflow-hidden selection:bg-cyan-500/30`}
+    >
+      <style>{`
+        .anatomy-svg-wrapper svg { width: 100% !important; height: 100% !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      {/* GLOBAL HUD */}
+      <div className="fixed top-8 left-0 right-0 px-6 py-4 z-[60] pointer-events-none flex justify-between items-start">
+        <div className="pointer-events-auto flex flex-col gap-2 ml-12 md:ml-20">
+          <h1 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+            Workout<span className="text-cyan-400">Wizard</span>
+          </h1>
+          <div className="flex gap-2 flex-wrap">
+            {muscle && <Badge label={muscle} color="cyan" />}
+            {equipment && <Badge label={equipment} color="purple" />}
+            {category && <Badge label={category} color="emerald" />}
+            {level && <Badge label={level} color="orange" />}
+          </div>
+        </div>
+
+        <div className="pointer-events-auto flex items-center gap-3">
+          <button
+            onClick={() => setIsRoutineModalOpen(true)}
+            className="px-5 py-2.5 bg-cyan-500 text-black font-black uppercase text-[11px] flex items-center gap-2 hover:bg-cyan-400 transition-all shadow-[0_0_15px_rgba(34,211,238,0.4)]"
+          >
+            <LayoutList size={16} /> Routine ({routine.length})
+          </button>
+
+          {activeSection > 0 && (
+            <button
+              onClick={resetWizard}
+              className="px-5 py-2.5 bg-white text-black font-black uppercase text-[11px] flex items-center gap-2"
+            >
+              <RotateCcw size={16} /> Reset
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* TOOLTIP */}
+      <AnimatePresence>
+        {highlightedMuscle && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, x: mousePos.x + 20, y: mousePos.y - 20 }}
+            exit={{ opacity: 0 }}
+            className="fixed z-[100] px-4 py-2 bg-cyan-400 text-black font-black uppercase text-[11px] pointer-events-none border border-white/40 shadow-xl"
+          >
+            {highlightedMuscle}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth no-scrollbar"
+        onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
+      >
+        {/* PANEL 1: INTRO */}
+        <section
+          className="h-full w-full snap-start relative flex flex-col items-center justify-center bg-[#020617]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 20% 30%, rgba(56, 89, 198, 0.84), transparent 40%), radial-gradient(circle at 70% 60%, rgba(17, 68, 177, 0.91), transparent 40%)",
+          }}
+        >
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] max-w-[500px] bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            className="text-center px-4 relative z-10"
+          >
+            <h1 className="text-6xl md:text-7xl font-black uppercase tracking-tighter leading-none text-white mb-6">
+              Workout
+              <span className="text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+                Wizard
+              </span>
+            </h1>
+
+            <p className="text-slate-400 font-bold text-md md:text-lg">
+              <span className="flex justify-center items-center gap-2">
+                Your Choice <ArrowBigRight size={20} /> Your Workouts
+              </span>
+            </p>
+          </motion.div>
+
+          <motion.button
+            onClick={() => scrollTo(1)}
+            className="absolute bottom-10 flex flex-col items-center gap-3 cursor-pointer group"
+          >
+            <span className="text-[20px] font-black uppercase text-cyan-400 group-hover:text-white transition-colors">
+              Scroll Down
+            </span>
+            <ChevronDown size={28} className="animate-bounce" />
+          </motion.button>
+        </section>
+
+        {/* PANEL 2: MUSCLE */}
+        <section className="h-full w-full snap-start relative flex items-center justify-center bg-[#020617] p-8">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.05),transparent_70%)] pointer-events-none" />
+
+          <div className="w-full max-w-6xl flex flex-col lg:grid lg:grid-cols-2 lg:gap-12 items-center pt-20">
+            <div className="text-center lg:text-left space-y-4">
+              <h2 className="text-5xl md:text-4xl font-black uppercase text-white">
+                Select a Muscle
+              </h2>
+
+              <div className="flex justify-center lg:justify-start gap-4 pt-6">
+                {["front", "back"].map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`px-10 py-3 font-black uppercase text-xs border-2 transition-all ${
+                      view === v
+                        ? "bg-cyan-500 text-black border-cyan-500 shadow-[0_0_20px_rgba(34,211,238,0.4)]"
+                        : "bg-transparent border-white/10 text-white hover:border-white"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative h-[50vh] md:h-[65vh] w-full flex items-center justify-center bg-zinc-900 border border-white/10 rounded-none shadow-2xl anatomy-svg-wrapper">
+              {view === "front" ? (
+                <FrontView
+                  onSelect={(m) => {
+                    setMuscle(m);
+                    setEquipment(null);
+                    setCategory(null);
+                    setLevel(null);
+                    setSelectedExercise(null);
+                  }}
+                  selectedMuscle={muscle}
+                  onHover={setHighlightedMuscle}
+                  onLeave={() => setHighlightedMuscle(null)}
+                />
+              ) : (
+                <BackView
+                  onSelect={(m) => {
+                    setMuscle(m);
+                    setEquipment(null);
+                    setCategory(null);
+                    setLevel(null);
+                    setSelectedExercise(null);
+                  }}
+                  selectedMuscle={muscle}
+                  onHover={setHighlightedMuscle}
+                  onLeave={() => setHighlightedMuscle(null)}
+                />
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* PANEL 3: EQUIPMENT */}
+        <section
+          className={`h-full w-full snap-start flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-500 ${
+            muscle ? "opacity-100" : "opacity-20 pointer-events-none"
+          }`}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsla(265,86%,46%,0.93),transparent_70%)] pointer-events-none" />
+
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-4xl font-black uppercase leading-none">
+              <span className="text-white">Step 2</span>{" "}
+              <span className="text-purple-500">Select Equipment</span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full max-w-5xl px-2 relative z-10">
+            {availableEquipment.map((item) => {
+              const Icon = equipIcons[item] || Dumbbell;
+
+              return (
+                <button
+                  key={item}
+                  onClick={() => {
+                    setEquipment(item);
+                    setCategory(null);
+                    setLevel(null);
+                    setSelectedExercise(null);
+                  }}
+                  className={`p-8 border-2 transition-all group flex flex-col items-center gap-4 ${
+                    equipment === item
+                      ? "bg-purple-600 border-purple-400 scale-105 shadow-[0_0_30px_rgba(168,85,247,0.3)]"
+                      : "bg-purple-900/40 border-white/10 hover:border-purple-500"
+                  }`}
+                >
+                  <Icon
+                    className={
+                      equipment === item
+                        ? "text-white"
+                        : "text-purple-500 group-hover:text-purple-400"
+                    }
+                    size={48}
+                    strokeWidth={2}
+                  />
+
+                  <div className="text-center">
+                    <span className="font-black uppercase text-md block text-white">
+                      {item}
+                    </span>
+                    <span
+                      className={`text-[11px] font-black uppercase block ${
+                        equipment === item
+                          ? "text-purple-100"
+                          : "text-purple-500"
+                      }`}
+                    >
+                      {equipmentCounts[item]}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* PANEL 4: FILTERS */}
+        <section
+          className={`h-full w-full snap-start flex items-center justify-center bg-black transition-opacity ${
+            equipment ? "opacity-100" : "opacity-20 pointer-events-none"
+          }`}
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 20% 50%, rgba(56, 89, 198, 0.84), transparent 100%), radial-gradient(circle at 80% 80%, rgba(17, 68, 177, 0.91), transparent 70%)",
+          }}
+        >
+          <div className="grid md:grid-cols-2 gap-12 w-full max-w-6xl px-8 relative z-10">
+            {/* Category */}
+            <div className="space-y-6">
+              <h3 className="text-base font-black uppercase text-emerald-400 tracking-[0.2em] flex items-center gap-3">
+                <Activity size={50} /> Mode
+              </h3>
+
+              <div className="space-y-3">
+                {availableCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      setCategory(cat);
+                      setLevel(null);
+                      setSelectedExercise(null);
+                    }}
+                    className={`w-full p-7 text-left border-2 transition-all flex justify-between items-center ${
+                      category === cat
+                        ? "bg-emerald-600 border-emerald-400 scale-[1.02] shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                        : "bg-zinc-900/50 border-white/10 hover:border-emerald-500/50"
+                    }`}
+                  >
+                    <span className="text-2xl font-black uppercase italic text-white">
+                      {cat}
+                    </span>
+                    <span className="font-black text-xs text-white bg-black/50 px-4 py-1.5">
+                      {categoryCounts[cat]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Level */}
+            <div className="space-y-6">
+              <h3 className="text-base font-black uppercase text-orange-500 tracking-[0.2em] flex items-center gap-3">
+                <Zap size={50} /> Intensity
+              </h3>
+
+              <div className="space-y-3">
+                {availableLevels.map((lvl) => (
+                  <button
+                    key={lvl}
+                    onClick={() => {
+                      setLevel(lvl);
+                      setSelectedExercise(null);
+                    }}
+                    className={`w-full p-7 text-left border-2 transition-all flex justify-between items-center ${
+                      level === lvl
+                        ? "bg-orange-600 border-orange-400 scale-[1.02] shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                        : "bg-zinc-900/50 border-white/10 hover:border-orange-500/50"
+                    }`}
+                  >
+                    <span className="text-2xl font-black uppercase italic text-white">
+                      {lvl}
+                    </span>
+                    <span className="font-black text-xs text-white bg-black/50 px-4 py-1.5">
+                      {levelCounts[lvl]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PANEL 5: EXERCISES LIST + MODAL (DARK) */}
+        <section
+          className={`h-screen w-full snap-start bg-slate-950 flex flex-col transition-opacity ${
+            category && level ? "opacity-100" : "opacity-50 pointer-events-none"
+          }`}
+        >
+          {/* Header */}
+          <div className="pt-16 px-10 pb-6 border-b border-slate-800 bg-slate-900 shrink-0">
+            <h2 className="text-3xl font-bold text-white">Exercises</h2>
+            <p className="text-sm text-slate-400 mt-1">
+              {finalExercises.length} exercises found
+            </p>
+          </div>
+
+          {/* List */}
+          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-3 no-scrollbar">
+            {!category || !level ? (
+              <div className="h-full flex items-center justify-center">
+                <div className="px-6 py-4 border border-slate-700 bg-slate-900 text-slate-300 rounded-xl text-sm font-medium">
+                  Select category and level first
+                </div>
+              </div>
+            ) : finalExercises.length === 0 ? (
+              <div className="h-full flex items-center justify-center">
+                <div className="px-6 py-4 border border-slate-700 bg-slate-900 text-slate-300 rounded-xl text-sm font-medium">
+                  No exercises found
+                </div>
+              </div>
+            ) : (
+              finalExercises.map((ex, idx) => {
+                const added = routine.some((r) => r.id === ex.id);
+
+                return (
+                  <button
+                    key={ex.id}
+                    onClick={() => setSelectedExercise(ex)}
+                    className="w-full px-6 py-5 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between transition-all hover:border-cyan-500 hover:shadow-lg hover:shadow-cyan-500/10 text-left"
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <span className="text-sm font-medium text-slate-500 tabular-nums shrink-0">
+                        {(idx + 1).toString().padStart(2, "0")}
+                      </span>
+                      <span className="text-lg font-semibold text-slate-100 truncate">
+                        {ex.name}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-4 shrink-0">
+                      {added && (
+                        <span className="text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full text-xs font-bold">
+                          Added ✓
+                        </span>
+                      )}
+                      <span className="text-sm text-slate-400 font-medium hover:text-white transition-colors">
+                        View Details →
+                      </span>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          {/* Exercise Modal */}
+          {selectedExercise && (
+            <div
+              className="fixed inset-0 z-300 flex items-center justify-center bg-slate-950/85 p-4 md:p-8 backdrop-blur-sm"
+              onClick={() => setSelectedExercise(null)}
+            >
+              <div
+                className="bg-slate-900 w-full max-w-6xl h-[88vh] rounded-2xl shadow-2xl border border-slate-700 flex flex-col md:flex-row overflow-hidden relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close */}
+                <button
+                  onClick={() => setSelectedExercise(null)}
+                  className="absolute top-4 right-4 z-20 w-10 h-10 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 rounded-full flex items-center justify-center transition-colors"
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
+
+                {/* Left: Image */}
+                <div className="w-full md:w-1/2 h-[38%] md:h-full overflow-hidden border-b md:border-b-0 md:border-r border-slate-800 bg-slate-950 p-4 md:p-8 flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-full max-w-md h-[260px] sm:h-[320px] md:h-[420px]">
+                      <RotatingImage
+                        key={`${selectedExercise.id}-${selectedExercise.name}`}
+                        images={selectedExercise.images || []}
+                        name={selectedExercise.name}
+                        className="rounded-xl border border-slate-700 bg-slate-900"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: Details */}
+                <div className="w-full md:w-1/2 h-[62%] md:h-full flex flex-col bg-slate-900">
+                  {/* Header */}
+                  <div className="px-6 md:px-8 py-5 md:py-6 border-b border-slate-800 shrink-0 pr-16">
+                    <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight leading-tight">
+                      {selectedExercise.name}
+                    </h3>
+
+                    <div className="flex flex-wrap gap-3 mt-3">
+                      <span className="bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                        {selectedExercise.equipment || "bodyweight"}
+                      </span>
+                      <span className="bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                        {selectedExercise.level || "unknown"}
+                      </span>
+                      {selectedExercise.category && (
+                        <span className="bg-purple-500/10 border border-purple-500/30 text-purple-300 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                          {selectedExercise.category}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col gap-8 no-scrollbar">
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-cyan-400 tracking-widest mb-3">
+                        Primary Muscles
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedExercise.primaryMuscles?.length ? (
+                          selectedExercise.primaryMuscles.map((m) => (
+                            <span
+                              key={m}
+                              className="border border-slate-700 bg-slate-800 text-slate-200 px-4 py-2 rounded-lg text-xs font-semibold uppercase"
+                            >
+                              {m}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-sm text-slate-500">
+                            No primary muscles listed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {selectedExercise.secondaryMuscles?.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-black uppercase text-purple-400 tracking-widest mb-3">
+                          Secondary Muscles
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedExercise.secondaryMuscles.map((m) => (
+                            <span
+                              key={m}
+                              className="border border-slate-700 bg-slate-800 text-slate-200 px-4 py-2 rounded-lg text-xs font-semibold uppercase"
+                            >
+                              {m}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-cyan-400 tracking-widest mb-4">
+                        Action Sequence
+                      </p>
+
+                      <div className="space-y-4">
+                        {selectedExercise.instructions?.length ? (
+                          selectedExercise.instructions.map((step, i) => (
+                            <div
+                              key={i}
+                              className="flex gap-4 p-3 rounded-lg border border-slate-800 bg-slate-950/60"
+                            >
+                              <span className="w-6 h-6 shrink-0 rounded bg-slate-800 border border-slate-700 text-cyan-400 flex items-center justify-center text-xs font-bold mt-0.5">
+                                {i + 1}
+                              </span>
+                              <p className="text-slate-300 text-sm leading-relaxed">
+                                {step}
+                              </p>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-sm text-slate-500">
+                            No instructions available.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-5 md:p-6 border-t border-slate-800 bg-slate-900 shrink-0">
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setSelectedExercise(null)}
+                        className="px-4 py-3 rounded-xl border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors font-semibold"
+                      >
+                        Close
+                      </button>
+
+                      <button
+                        onClick={() => toggleRoutine(selectedExercise)}
+                        className={`flex-1 py-3 rounded-xl font-bold uppercase text-sm tracking-widest transition-all ${
+                          routine.some((r) => r.id === selectedExercise.id)
+                            ? "bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20"
+                            : "bg-cyan-500 text-slate-900 hover:bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.25)]"
+                        }`}
+                      >
+                        {routine.some((r) => r.id === selectedExercise.id)
+                          ? "Remove from Routine"
+                          : "Add to Routine"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* ROUTINE MANAGER MODAL */}
+      <AnimatePresence>
+        {isRoutineModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-6 backdrop-blur-md"
+          >
+            <div className="bg-[#0a0a0a] border border-white/20 w-full max-w-xl h-[75vh] flex flex-col relative">
+              <div className="p-8 border-b border-white/10 flex justify-between items-center bg-[#111]">
+                <h2 className="text-3xl font-black uppercase italic text-white tracking-tighter">
+                  My <span className="text-cyan-400">Routine</span>
+                </h2>
+
+                <div className="flex gap-6 items-center">
+                  <button
+                    onClick={() => setRoutine([])}
+                    className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:text-white transition-colors"
+                  >
+                    Clear All
+                  </button>
+
+                  <button
+                    onClick={() => setIsRoutineModalOpen(false)}
+                    className="bg-white text-black p-2 hover:bg-cyan-500 transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-black no-scrollbar">
+                {routine.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-700 font-black uppercase text-xs tracking-widest">
+                    No Sequences Defined
+                  </div>
+                ) : (
+                  routine.map((ex) => (
+                    <div
+                      key={ex.id}
+                      className="bg-zinc-900/50 p-5 flex justify-between items-center border border-white/5 hover:border-cyan-500/30 transition-all"
+                    >
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-white font-black uppercase italic text-sm truncate">
+                          {ex.name}
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                          {ex.equipment} • {ex.level}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => toggleRoutine(ex)}
+                        className="text-red-500 hover:bg-red-500 hover:text-white p-2 transition-all"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="p-8 border-t border-white/10 bg-[#111]">
+                <button className="w-full bg-cyan-500 py-5 text-black font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_30px_rgba(34,211,238,0.2)]">
+                  Export Sequence (.CSV)
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ============================================
+// BADGE UTILITY
+// ============================================
+const Badge = ({ label, color }) => {
+  const colors = {
+    cyan: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+    purple: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    orange: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  };
+
+  return (
+    <span
+      className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest border border-t-2 ${
+        colors[color] || colors.cyan
+      }`}
+    >
+      {label}
+    </span>
+  );
+};

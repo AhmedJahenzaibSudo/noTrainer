@@ -66,10 +66,11 @@ const RotatingImage = ({ images = [], name, className = "" }) => {
             index === currentIndex ? "opacity-100" : "opacity-0"
           }`}
         >
+          {/* FIX: Changed object-cover to object-contain so images aren't cropped */}
           <img
             src={`/exercises/${image || "placeholder.png"}`}
             alt={`${name} view ${index + 1}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         </div>
       ))}
@@ -87,7 +88,7 @@ export default function WorkoutWizard() {
   const containerRef = useRef(null);
   const [activeSection, setActiveSection] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [view, setView] = useState("front");
   const [muscle, setMuscle] = useState(null);
   const [equipment, setEquipment] = useState(null);
@@ -225,11 +226,6 @@ export default function WorkoutWizard() {
           <h1 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
             Workout<span className="text-cyan-400">Wizard</span>
           </h1>
-          <div className="flex gap-2">
-            {muscle && <Badge label={muscle} color="cyan" />}
-            {equipment && <Badge label={equipment} color="purple" />}
-            {category && <Badge label={category} color="emerald" />}
-          </div>
         </div>
 
         <div className="pointer-events-auto flex items-center gap-3">
@@ -355,41 +351,65 @@ export default function WorkoutWizard() {
 
         {/* PANEL 3: EQUIPMENT */}
         <section
-          className={`h-full w-full snap-start flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-500 ${muscle ? "opacity-100" : "opacity-20"}`}
+          className={`h-full w-full snap-start flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-500 ${
+            muscle ? "opacity-100" : "opacity-20 pointer-events-none"
+          }`}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsla(265, 86%, 46%, 0.93),transparent_70%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_70%)] pointer-events-none" />
+
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-4xl font-black uppercase leading-none">
-              <span className="text-white">Step 2</span>{" "}
-              <span className="text-purple-500">Select Equipment</span>
+            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight leading-none">
+              <span className="text-white block mb-2 text-xl md:text-2xl opacity-50">
+                Step 2
+              </span>
+              <span className="text-blue-500">Select Equipment</span>
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full max-w-5xl px-2 relative z-10">
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 w-full max-w-6xl px-6 relative z-10">
             {availableEquipment.map((item) => {
-              const Icon = equipIcons[item] || Dumbbell;
+              const isActive = equipment === item;
+
               return (
                 <button
                   key={item}
                   onClick={() => setEquipment(item)}
-                  className={`p-8 border-2 transition-all group flex flex-col items-center gap-4 ${equipment === item ? "bg-purple-600 border-purple-400 scale-105 shadow-[0_0_30px_rgba(168,85,247,0.3)]" : "bg-purple-900/40 border-white/10 hover:border-purple-500"}`}
+                  className={`relative px-6 py-10 rounded-2xl border-2 transition-all duration-300 group flex flex-col items-center justify-center overflow-hidden ${
+                    isActive
+                      ? "bg-blue-600 border-blue-400 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.5)] z-10"
+                      : "bg-gradient-to-br from-slate-700 to-slate-800 border-slate-500 hover:border-blue-400 hover:from-slate-600 hover:to-slate-700 shadow-lg"
+                  }`}
                 >
-                  <Icon
-                    className={
-                      equipment === item
-                        ? "text-white"
-                        : "text-purple-500 group-hover:text-purple-400"
-                    }
-                    size={48}
-                    strokeWidth={2}
+                  {/* Subtle light reflection - now partially visible on unselected cards too */}
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none transition-opacity duration-300 ${
+                      isActive
+                        ? "opacity-100"
+                        : "opacity-40 group-hover:opacity-70"
+                    }`}
                   />
-                  <div className="text-center">
-                    <span className="font-black uppercase text-md block text-white">
+
+                  <div className="text-center relative z-10">
+                    {/* Equipment Name */}
+                    <span
+                      className={`font-black uppercase tracking-wide text-lg block transition-colors ${
+                        isActive
+                          ? "text-white"
+                          : "text-slate-100 group-hover:text-white"
+                      }`}
+                    >
                       {item}
                     </span>
+
+                    {/* Exercise Count Pill */}
                     <span
-                      className={`text-[11px] font-black uppercase  block ${equipment === item ? "text-purple-100" : "text-purple-500"}`}
+                      className={`text-[10px] font-bold uppercase tracking-widest block mt-4 px-3 py-1.5 rounded-full border transition-colors ${
+                        isActive
+                          ? "bg-blue-500/50 border-blue-300/50 text-blue-50"
+                          : "bg-slate-900/40 border-slate-400/50 text-slate-200 group-hover:border-blue-400/60 group-hover:text-blue-100 group-hover:bg-slate-800/50"
+                      }`}
                     >
-                      {equipmentCounts[item]}
+                      {equipmentCounts[item]} Exercises
                     </span>
                   </div>
                 </button>
@@ -454,159 +474,135 @@ export default function WorkoutWizard() {
 
         {/* PANEL 5: EXERCISES DASHBOARD */}
         <section
-          className={`h-screen w-full snap-start bg-[#020617] flex flex-col transition-opacity ${
-            category && level ? "opacity-100" : "opacity-20 pointer-events-none"
+          className={`h-screen w-full snap-start bg-slate-900 flex flex-col transition-opacity ${
+            category && level ? "opacity-100" : "opacity-50 pointer-events-none"
           }`}
         >
           {/* HEADER */}
-          <div className="pt-20 px-10 pb-6 border-b border-white/10">
+          <div className="pt-16 px-10 pb-6 border-b border-slate-800 bg-slate-900 shrink-0">
             <h2 className="text-3xl font-bold text-white">Exercises</h2>
             <p className="text-sm text-slate-400 mt-1">
               {finalExercises.length} exercises found
             </p>
           </div>
 
-          <div className="flex-1 flex overflow-hidden">
-            {/* LEFT: LIST */}
-            <div className="w-1/4 bg-[#050505] border-r border-white/10 overflow-y-auto no-scrollbar">
-              {finalExercises.map((ex, idx) => {
-                const active = activeIndex === idx;
-                const added = routine.some((r) => r.id === ex.id);
+          {/* MAIN SCROLLABLE LIST */}
+          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-3 no-scrollbar">
+            {finalExercises.map((ex, idx) => {
+              const added = routine.some((r) => r.id === ex.id);
 
-                return (
-                  <button
-                    key={ex.id}
-                    onClick={() => setActiveIndex(idx)}
-                    className={`w-full px-6 py-4 text-left border-b border-white/5 flex items-center gap-3 transition-colors ${
-                      active
-                        ? "bg-white/5 border-l-4 border-cyan-500 text-white"
-                        : "text-slate-300 hover:bg-white/5"
-                    }`}
-                  >
-                    <span className="text-xs opacity-40 tabular-nums">
+              return (
+                <button
+                  key={ex.id}
+                  onClick={() => {
+                    setActiveIndex(idx);
+                    setIsModalOpen(true);
+                  }}
+                  className="w-full px-6 py-5 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-between transition-all hover:border-cyan-500 hover:shadow-lg hover:shadow-cyan-500/10 text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-medium text-slate-500 tabular-nums">
                       {(idx + 1).toString().padStart(2, "0")}
                     </span>
-
-                    <span className="text-sm font-semibold truncate">
+                    <span className="text-lg font-semibold text-slate-100">
                       {ex.name}
                     </span>
+                  </div>
 
+                  <div className="flex items-center gap-4">
                     {added && (
-                      <span className="ml-auto text-cyan-500 text-xs font-semibold">
-                        ✓
+                      <span className="text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full text-xs font-bold">
+                        Added ✓
                       </span>
                     )}
-                  </button>
-                );
-              })}
-            </div>
+                    <span className="text-sm text-slate-400 font-medium hover:text-white transition-colors">
+                      View Details →
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
 
-            {/* CENTER: IMAGE */}
-            <div className="w-2/5 bg-black flex items-center justify-center border-r border-white/10">
-              {finalExercises[activeIndex] && (
-                <RotatingImage
-                  images={finalExercises[activeIndex].images}
-                  name={finalExercises[activeIndex].name}
-                />
-              )}
-            </div>
+          {/* POPUP MODAL */}
+          {isModalOpen && finalExercises[activeIndex] && (
+            <div className="fixed inset-0 z-300 flex items-center justify-center bg-slate-950/80 p-4 md:p-8 backdrop-blur-sm">
+              {/* MODAL CONTAINER 
+        Fixed height to 85vh to prevent top/bottom cutoff. 
+      */}
+              <div className="bg-slate-900 w-full max-w-6xl h-[85vh] rounded-2xl shadow-2xl border border-slate-700 flex flex-col md:flex-row overflow-hidden relative">
+                {/* CLOSE BUTTON */}
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="absolute top-4 right-4 z-20 w-10 h-10 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 rounded-full flex items-center justify-center font-bold transition-colors"
+                >
+                  ✕
+                </button>
 
-            {/* RIGHT: DETAILS PANEL */}
-            <div className="flex-1 bg-[#020617] flex flex-col overflow-hidden">
-              {finalExercises[activeIndex] ? (
-                <>
-                  {/* 1. TOP STATUS BAR (Name) */}
-                  <div className="w-full bg-white text-black px-8 py-10 flex items-center justify-between border-b border-white/10 flex-shrink-0">
-                    <h3 className="text-5xl font-black uppercase italic tracking-tighter leading-none">
+                {/* SECTION 1: IMAGES (Scrollable) */}
+                <div className="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto no-scrollbar border-b md:border-b-0 md:border-r border-slate-800 bg-slate-800/30 p-4 md:p-8 flex items-center justify-center">
+                  {/* FIX: Added relative, aspect-square, and min-h to ensure the wrapper forces the images to render */}
+                  <div className="relative w-full aspect-square min-h-[250px] max-w-md mx-auto flex items-center justify-center">
+                    <RotatingImage
+                      images={finalExercises[activeIndex].images}
+                      name={finalExercises[activeIndex].name}
+                    />
+                  </div>
+                </div>
+
+                {/* SECTION 2: DETAILS 
+          Takes up the other half. Includes a fixed header/footer and a scrollable body.
+        */}
+                <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col bg-slate-900">
+                  {/* Details Header (Fixed) */}
+                  <div className="px-8 py-6 border-b border-slate-800 shrink-0 pr-16">
+                    <h3 className="text-3xl font-black text-white uppercase tracking-tight">
                       {finalExercises[activeIndex].name}
                     </h3>
-                    <div className="text-right">
-                      <p className="text-[9px] font-black uppercase tracking-widest opacity-50">
-                        Status
-                      </p>
-                      <p className="text-xs font-bold uppercase">
-                        Ready for export
-                      </p>
+                    <div className="flex gap-4 mt-3">
+                      <span className="bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                        {finalExercises[activeIndex].equipment}
+                      </span>
+                      <span className="bg-slate-800 border border-slate-700 text-cyan-400 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                        {finalExercises[activeIndex].level}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="flex-1 flex overflow-hidden">
-                    {/* 2. LEFT COLUMN: SPECS (Stacked Blocks) */}
-                    <div className="w-1/3 border-r border-white/10 flex flex-col">
-                      {/* Equipment */}
-                      <div className="p-8 border-b border-white/10 bg-zinc-900/50">
-                        <p className="text-[9px] font-black uppercase text-cyan-500 tracking-[0.2em] mb-3">
-                          Equipment
-                        </p>
-                        <p className="text-sm font-bold text-white uppercase">
-                          {finalExercises[activeIndex].equipment}
-                        </p>
+                  {/* Details Body (Scrollable) */}
+                  <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-8 no-scrollbar">
+                    {/* Muscles */}
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-cyan-500 tracking-widest mb-3">
+                        Primary Muscles
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {finalExercises[activeIndex].primaryMuscles?.map(
+                          (m) => (
+                            <span
+                              key={m}
+                              className="border border-slate-700 bg-slate-800 text-slate-200 px-4 py-2 rounded-lg text-xs font-semibold uppercase"
+                            >
+                              {m}
+                            </span>
+                          ),
+                        )}
                       </div>
-                      {/* Level */}
-                      <div className="p-8 border-b border-white/10">
-                        <p className="text-[9px] font-black uppercase text-cyan-500 tracking-[0.2em] mb-3">
-                          Intensity
-                        </p>
-                        <p className="text-sm font-bold text-white uppercase">
-                          {finalExercises[activeIndex].level}
-                        </p>
-                      </div>
-                      {/* Muscles */}
-                      <div className="p-8 flex-1">
-                        <p className="text-[9px] font-black uppercase text-cyan-500 tracking-[0.2em] mb-4">
-                          Focus Areas
-                        </p>
-                        <div className="flex flex-col gap-3">
-                          {finalExercises[activeIndex].primaryMuscles?.map(
-                            (m) => (
-                              <div key={m} className="flex items-center gap-3">
-                                <div className="w-1 h-1 bg-cyan-500 rounded-full" />
-                                <span className="text-[10px] font-bold text-white uppercase tracking-wider">
-                                  {m}
-                                </span>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      </div>
-
-                      {/* ADD/REMOVE BUTTON - Integrated into sidebar */}
-                      <button
-                        onClick={() =>
-                          toggleRoutine(finalExercises[activeIndex])
-                        }
-                        className={`w-full py-10 font-black uppercase text-[10px] tracking-[0.4em] transition-all ${
-                          routine.some(
-                            (r) => r.id === finalExercises[activeIndex].id,
-                          )
-                            ? "bg-red-600 text-white hover:bg-red-700"
-                            : "bg-cyan-500 text-black hover:bg-white"
-                        }`}
-                      >
-                        {routine.some(
-                          (r) => r.id === finalExercises[activeIndex].id,
-                        )
-                          ? "Remove"
-                          : "Add to Workout"}
-                      </button>
                     </div>
 
-                    {/* 3. RIGHT COLUMN: INSTRUCTIONS (Clean List) */}
-                    <div className="w-2/3 overflow-y-auto no-scrollbar bg-[#050505] p-12">
-                      <p className="text-[9px] font-black uppercase text-slate-500 tracking-[0.3em] mb-12">
+                    {/* Instructions */}
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-cyan-500 tracking-widest mb-4">
                         Action Sequence
                       </p>
-                      <div className="space-y-12">
+                      <div className="space-y-6">
                         {finalExercises[activeIndex].instructions?.map(
                           (step, i) => (
-                            <div
-                              key={i}
-                              className="relative pl-12 border-l border-white/5"
-                            >
-                              <span className="absolute -left-3 top-0 bg-[#050505] py-1 text-[10px] font-black text-cyan-500">
+                            <div key={i} className="flex gap-4">
+                              <span className="w-6 h-6 shrink-0 rounded bg-slate-800 border border-slate-700 text-cyan-500 flex items-center justify-center text-xs font-bold">
                                 {i + 1}
                               </span>
-                              <p className="text-sm text-slate-400 leading-relaxed font-medium">
+                              <p className="text-slate-400 text-sm leading-relaxed mt-0.5">
                                 {step}
                               </p>
                             </div>
@@ -615,14 +611,30 @@ export default function WorkoutWizard() {
                       </div>
                     </div>
                   </div>
-                </>
-              ) : (
-                <div className="h-full flex items-center justify-center text-slate-800 font-black uppercase tracking-[1em]">
-                  Select Module
+
+                  {/* Details Footer / Action Bar (Fixed) */}
+                  <div className="p-6 border-t border-slate-800 bg-slate-900 shrink-0">
+                    <button
+                      onClick={() => toggleRoutine(finalExercises[activeIndex])}
+                      className={`w-full py-4 rounded-xl font-bold uppercase text-sm tracking-widest transition-all ${
+                        routine.some(
+                          (r) => r.id === finalExercises[activeIndex].id,
+                        )
+                          ? "bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20"
+                          : "bg-cyan-500 text-slate-900 hover:bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                      }`}
+                    >
+                      {routine.some(
+                        (r) => r.id === finalExercises[activeIndex].id,
+                      )
+                        ? "Remove from Routine"
+                        : "Add to Routine"}
+                    </button>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </section>
       </div>
 
@@ -696,22 +708,3 @@ export default function WorkoutWizard() {
     </div>
   );
 }
-
-// ============================================
-// BADGE UTILITY
-// ============================================
-const Badge = ({ label, color }) => {
-  const colors = {
-    cyan: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-    purple: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-    emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-    orange: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  };
-  return (
-    <span
-      className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest border border-t-2 ${colors[color] || colors.cyan}`}
-    >
-      {label}
-    </span>
-  );
-};
