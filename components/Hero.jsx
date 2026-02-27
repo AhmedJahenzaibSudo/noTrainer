@@ -35,7 +35,7 @@ const theme = {
     success: "#059669", // Deep Emerald
     orange: "#ea580c", // Deep Orange
     pink: "#db2777", // Deep Pink
-    yellow: "#ca8a04", // Deep Yellow
+    yellow: "#85bc0fff", // Deep Yellow
   },
 };
 
@@ -197,7 +197,7 @@ const Hero = () => {
   if (!mounted) return null;
 
   return (
-    <div className="relative w-full bg-slate-900 text-white font-sans selection:bg-sky-500 selection:text-white">
+    <div className="relative w-full bg-slate-900 text-white font-sans selection:bg-sky-500 selection:text-black">
       <style>{`
         /* Import a highly unique, bold font for the brand */
         @import url('https://fonts.googleapis.com/css2?family=Righteous&display=swap');
@@ -233,31 +233,70 @@ const Hero = () => {
       >
         {/* SECTION 1: BRAND */}
         <section
-          className="w-full flex flex-col justify-center items-center relative px-6 bg-slate-900"
+          className="w-full flex flex-col justify-center items-center relative px-6 overflow-hidden bg-cyan-900"
           style={{ height: "93.5vh" }}
         >
+          {/* Soft Background Shape*/}
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
+            {/* Cyan Breathing Blob */}
+            <motion.div
+              animate={{
+                scale: [1, 3, 1],
+                opacity: [0.7, 0.3, 0.7],
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 10,
+                ease: "easeInOut",
+              }}
+              className="w-[400px] h-[400px] rounded-full bg-cyan-600 blur-3xl"
+            />
+          </div>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center flex flex-col items-center"
+            className="text-center flex flex-col items-center relative z-10"
           >
-            <h1
-              className="text-7xl md:text-9xl text-white drop-shadow-lg"
+            {/* Title */}
+            <motion.h1
+              initial={{ y: 40, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.7 }}
+              className="text-7xl md:text-9xl text-white drop-shadow-xl"
               style={{ fontFamily: "'Righteous', cursive" }}
             >
               noTrainer
-            </h1>
-            <div className="h-3 w-40 mx-auto mt-8 bg-sky-500 rounded-full shadow-[0_0_15px_rgba(14,165,233,0.5)]" />
+            </motion.h1>
 
-            {/* Scroll Hint Arrow */}
+            {/* Glowing Line */}
             <motion.div
-              animate={{ y: [0, 15, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              initial={{ width: 0 }}
+              whileInView={{ width: 160 }}
+              transition={{ delay: 0.6, duration: 0.7 }}
+              className="h-3 mt-8 bg-sky-400 rounded-full shadow-[0_0_30px_rgba(56,189,248,0.9)]"
+            />
+
+            {/* Subtitle (Makes it feel alive instantly) */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="mt-8 text-xl md:text-2xl text-cyan-100 font-medium"
+            >
+              Train Anywhere. No Trainer Needed.
+            </motion.p>
+
+            {/* Scroll Arrow */}
+            <motion.div
+              animate={{ y: [0, 18, 0] }}
+              transition={{ repeat: Infinity, duration: 1.8 }}
               className="mt-24"
             >
               <ChevronDown
-                className="w-12 h-12 text-sky-500"
+                className="w-12 h-12 text-sky-400"
                 strokeWidth={2.5}
               />
             </motion.div>
@@ -270,7 +309,7 @@ const Hero = () => {
           style={{ height: "93.5vh" }}
         >
           <div className="w-full max-w-5xl rounded-[3rem] p-12 md:p-24 text-center bg-slate-900 border-2 border-slate-700 shadow-2xl hover:border-slate-600 transition-colors duration-300">
-            <span className="text-md font-black uppercase tracking-[0.3em] text-violet-400 mb-8 block">
+            <span className="text-md font-black uppercase text-violet-400 mb-8 block">
               The Platform
             </span>
 
@@ -302,10 +341,6 @@ const Hero = () => {
               <h2 className="text-4xl lg:text-5xl font-black text-white mb-6 leading-tight tracking-tight whitespace-nowrap">
                 Target Every Muscle
               </h2>
-              <p className="text-slate-400 text-xl mb-10 font-medium">
-                Click or hover the diagram to instantly build routines focused
-                on specific muscle groups.
-              </p>
 
               {selectedMuscle ? (
                 <div className="rounded-3xl border-4 border-emerald-500 bg-slate-800 p-8 shadow-xl inline-block self-start hover:scale-105 transition-transform cursor-default">
@@ -368,38 +403,38 @@ const Hero = () => {
           <div className="max-w-6xl w-full flex flex-col h-full max-h-[75vh] justify-center pt-8">
             {/* FIXED HEADING */}
             <div className="flex items-center justify-center gap-6 mb-12 shrink-0">
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white">
+              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-red-400">
                 Problems
               </h2>
               <ArrowRight className="w-10 h-10 text-sky-500" strokeWidth={3} />
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-sky-400">
+              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-green-400">
                 Solutions
               </h2>
             </div>
 
             {/* SCROLLABLE GRID CONTAINER */}
             <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {/* Left Column: Strictly Scrolling Problems */}
+              {/* Left Column: Scrollable Problems */}
               <div className="h-full overflow-y-auto no-scrollbar pr-2 pb-4 space-y-3">
                 {problems.map((problem) => {
                   const active = problem.id === selectedExcuseId;
+
                   return (
                     <button
                       key={problem.id}
                       onClick={() => setSelectedExcuseId(problem.id)}
-                      className={`w-full flex items-center gap-5 p-5 rounded-2xl transition-all duration-200 text-left active:scale-[0.98] ${
-                        active
-                          ? "bg-slate-900 shadow-xl border-2"
-                          : "bg-slate-700 hover:bg-slate-600 border-2 border-transparent"
-                      }`}
+                      className="w-full flex items-center gap-5 p-5 rounded-2xl transition-all duration-200 text-left active:scale-[0.98] border-2"
                       style={{
-                        borderColor: active ? problem.color : "transparent",
+                        backgroundColor: problem.color,
+                        borderColor: active ? "#ffffff" : problem.color,
+                        opacity: active ? 1 : 0.7,
                       }}
                     >
+                      {/* Icon */}
                       <div
-                        className={`p-3 rounded-xl flex items-center justify-center ${active ? "text-white" : "text-slate-300"}`}
+                        className="p-3 rounded-xl flex items-center justify-center text-white"
                         style={{
-                          backgroundColor: active ? problem.color : "#334155",
+                          backgroundColor: problem.color,
                         }}
                       >
                         {React.cloneElement(problem.icon, {
@@ -407,9 +442,9 @@ const Hero = () => {
                           strokeWidth: active ? 3 : 2,
                         })}
                       </div>
-                      <span
-                        className={`text-xl font-black uppercase tracking-tight ${active ? "text-white" : "text-slate-300"}`}
-                      >
+
+                      {/* Text */}
+                      <span className="text-xl font-black uppercase tracking-tight text-white">
                         {problem.text}
                       </span>
                     </button>
@@ -417,26 +452,35 @@ const Hero = () => {
                 })}
               </div>
 
-              {/* Right Column: Fixed Solution */}
+              {/* Right Column: Selected Solution Card */}
               <div className="h-full flex flex-col">
-                <div className="flex-1 flex flex-col justify-center p-12 rounded-[2.5rem] bg-slate-900 shadow-2xl border border-slate-700 transition-colors duration-300 relative overflow-hidden cursor-default">
+                <div
+                  className="flex-1 flex flex-col justify-center p-12 rounded-[2.5rem] shadow-2xl border transition-colors duration-300 relative overflow-hidden"
+                  style={{
+                    backgroundColor: selectedProblem.color,
+                    borderColor: selectedProblem.color,
+                  }}
+                >
+                  {/* Large Icon */}
                   <div
-                    className="absolute top-0 left-0 right-0 h-4"
-                    style={{ backgroundColor: selectedProblem.color }}
-                  />
-                  <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center mb-8 text-white shadow-lg transition-colors duration-300"
-                    style={{ backgroundColor: selectedProblem.color }}
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center mb-8 text-white"
+                    style={{
+                      backgroundColor: selectedProblem.color,
+                    }}
                   >
                     {React.cloneElement(selectedProblem.icon, {
-                      size: 40,
-                      strokeWidth: 2.5,
+                      size: 70,
+                      strokeWidth: 2,
                     })}
                   </div>
+
+                  {/* Title */}
                   <h3 className="text-4xl md:text-5xl font-black text-white uppercase leading-none mb-6 tracking-tight">
                     {selectedProblem.text}
                   </h3>
-                  <p className="text-2xl font-medium text-slate-300 leading-relaxed">
+
+                  {/* Description */}
+                  <p className="text-2xl font-medium text-white leading-relaxed">
                     {selectedProblem.solution}
                   </p>
                 </div>

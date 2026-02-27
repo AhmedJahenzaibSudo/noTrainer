@@ -46,7 +46,7 @@ function Navbar() {
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-8 left-8 z-[100] w-14 h-14 rounded-full flex flex-col items-center justify-center gap-1.5 transition-all duration-300 active:scale-90 hover:scale-105"
         style={{
-          backgroundColor: isOpen ? "#1e1b4b" : "#0d27beff",
+          backgroundColor: isOpen ? "#0d27beff" : "#0d27beff",
           border: isOpen
             ? "2px solid rgba(255,255,255,0.15)"
             : "2px solid rgba(70, 96, 190, 0.83)",
