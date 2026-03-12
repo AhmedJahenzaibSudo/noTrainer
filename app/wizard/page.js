@@ -11,7 +11,6 @@ import {
   Trash2,
   X,
   LayoutList,
-  ArrowBigRight,
   Download,
 } from "lucide-react";
 
@@ -27,9 +26,6 @@ const theme = {
     textSecondary: "#D7E3FF",
     textMuted: "#B7C7FF",
     textOnAccent: "#04114F",
-  },
-  heights: {
-    fullPage: "93.6dvh",
   },
 };
 
@@ -403,10 +399,7 @@ export default function WorkoutWizard() {
     .join(" > ");
 
   return (
-    <div
-      className="relative w-full overflow-hidden bg-[#04114F] text-white"
-      style={{ height: theme.heights.fullPage }}
-    >
+    <div className="relative w-full overflow-hidden bg-[#04114F] text-white h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)]">
       <style>{`
         .anatomy-svg-wrapper svg {
           width: 100% !important;
@@ -421,10 +414,17 @@ export default function WorkoutWizard() {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .wizard-panel {
-          height: ${theme.heights.fullPage};
-          min-height: ${theme.heights.fullPage};
+          height: calc(100dvh - 40px);
+          min-height: calc(100dvh - 40px);
           scroll-snap-align: start;
           overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+          .wizard-panel {
+            height: calc(100dvh - 48px);
+            min-height: calc(100dvh - 48px);
+          }
         }
       `}</style>
 
@@ -545,7 +545,7 @@ export default function WorkoutWizard() {
               ))}
             </div>
 
-            <div className="flex-1 overflow-hidden">
+            <div className="min-h-0 flex-1 overflow-hidden">
               <div className="anatomy-svg-wrapper flex h-full w-full items-center justify-center overflow-hidden">
                 <div className="flex h-full w-full items-center justify-center scale-[0.94] sm:scale-[0.98] md:scale-[1.04]">
                   {view === "front" ? (
@@ -600,7 +600,7 @@ export default function WorkoutWizard() {
               }
             />
 
-            <div className="section-scroll no-scrollbar flex-1 overflow-y-auto pr-1">
+            <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
               <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
                 {availableEquipment.map((item) => {
                   const isActive = equipment === item;
@@ -644,7 +644,7 @@ export default function WorkoutWizard() {
               }
             />
 
-            <div className="section-scroll no-scrollbar flex-1 overflow-y-auto pr-1">
+            <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
               <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
                 {availableCategories.map((cat) => (
                   <SelectionCard
@@ -683,7 +683,7 @@ export default function WorkoutWizard() {
               }
             />
 
-            <div className="section-scroll no-scrollbar flex-1 overflow-y-auto pr-1">
+            <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
               <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
                 {availableLevels.map((lvl) => (
                   <SelectionCard
@@ -794,7 +794,7 @@ export default function WorkoutWizard() {
                   </div>
                 </div>
 
-                <div className="flex h-[62%] w-full flex-col bg-[#04114F] md:h-full md:w-1/2">
+                <div className="flex min-h-0 h-[62%] w-full flex-col bg-[#04114F] md:h-full md:w-1/2">
                   <div className="shrink-0 border-b border-white/10 px-5 py-5 pr-16 md:px-8 md:py-6">
                     <h3 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
                       {currentPreview.name}
@@ -813,7 +813,7 @@ export default function WorkoutWizard() {
                     </div>
                   </div>
 
-                  <div className="section-scroll no-scrollbar flex-1 overflow-y-auto px-5 py-5 md:px-8 md:py-6">
+                  <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-8 md:py-6">
                     <div>
                       <p className="mb-3 text-[11px] font-semibold text-[#22FFD1]">
                         Primary muscles
@@ -902,7 +902,7 @@ export default function WorkoutWizard() {
                 </div>
               </div>
 
-              <div className="section-scroll no-scrollbar flex-1 overflow-y-auto bg-[#04114F] p-4 md:p-6">
+              <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto bg-[#04114F] p-4 md:p-6">
                 {routine.length === 0 ? (
                   <div className="flex h-full flex-col items-center justify-center text-center">
                     <p className="text-sm font-black uppercase tracking-[0.18em] text-slate-300 md:text-base">
