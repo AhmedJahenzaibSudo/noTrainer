@@ -1,9 +1,26 @@
 "use client";
 
-import Navbar from "./Navbar";
-import React, { useEffect, useState, useRef } from "react";
-import { Pause, Play, Flame, Maximize, Minimize } from "lucide-react";
-import AuthButton from "@/components/AuthButton"; // ✅ add this
+import React, { useState, useEffect } from "react";
+import {
+  Pause,
+  Play,
+  Maximize,
+  Minimize,
+} from "lucide-react";
+import Navbar from "@/components/Navbar";
+import AuthButton from "@/components/AuthButton";
+
+// ============================================
+// CONFIGURATION
+// ============================================
+const config = {
+  colors: {
+    bgPrimary: "#051061",
+    bgDark: "#020a21",
+    accent: "#1AF0BE",
+    textPrimary: "#ffffff",
+  },
+};
 
 const QUOTES = [
   "Shut Up and Lift",
@@ -19,14 +36,8 @@ const QUOTES = [
 ];
 
 export default function Marquee() {
-  const [quoteIndex, setQuoteIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [charIndex, setCharIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [showCursor, setShowCursor] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const typingTimer = useRef(null);
 
   // Fullscreen Logic
   const toggleFullscreen = () => {
@@ -41,7 +52,6 @@ export default function Marquee() {
     }
   };
 
-  // Sync state with browser (handles 'Esc' key)
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -51,115 +61,140 @@ export default function Marquee() {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  // Blinking cursor effect
-  useEffect(() => {
-    const cursorInterval = setInterval(() => {
-      setShowCursor((prev) => !prev);
-    }, 500);
-    return () => clearInterval(cursorInterval);
-  }, []);
-
-  // Typing Logic
-  useEffect(() => {
-    if (isPaused) return;
-
-    const currentQuote = QUOTES[quoteIndex];
-
-    if (charIndex < currentQuote.length) {
-      typingTimer.current = setTimeout(() => {
-        setDisplayText((prev) => prev + currentQuote[charIndex]);
-        setCharIndex((prev) => prev + 1);
-      }, 50);
-    } else {
-      typingTimer.current = setTimeout(() => {
-        setDisplayText("");
-        setCharIndex(0);
-        setQuoteIndex((prev) => (prev + 1) % QUOTES.length);
-      }, 3000);
-    }
-
-    return () => {
-      if (typingTimer.current) clearTimeout(typingTimer.current);
-    };
-  }, [charIndex, quoteIndex, isPaused]);
-
   return (
-    <div className="sticky top-0 z-[100] w-full h-10 md:h-12 bg-neutral-900 border-b border-yellow-500/30 flex items-center justify-center shadow-lg">
-      
-      <div className="w-full max-w-7xl mx-auto px-4 flex items-center justify-between relative h-full">
-        {/* LEFT: Badge */}
+    <div
+      className="sticky top-0 z-[100] w-full h-10 md:h-12 flex items-center border-b shadow-lg"
+      style={{
+        backgroundColor: config.colors.bgDark,
+        borderColor: `${config.colors.accent}30`,
+      }}
+    >
+      <div className="w-full max-w-7xl mx-auto px-3 md:px-4 flex items-center justify-between relative h-full">
+        
+        {/* LEFT */}
+        <div className="flex items-center gap-2 flex-shrink-0 z-20 relative">
+          <Navbar />
+        </div>
+
+        {/* CENTER: Ticker */}
+        <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
+          <div
+            className={`ticker-mask flex gap-8 md:gap-12 whitespace-nowrap ${
+              isPaused ? "pause-marquee" : "animate-marquee"
+            }`}
+            style={{
+              fontFamily: "'Krona One', sans-serif",
+              color: config.colors.accent,
+            }}
+          >
+            {[...QUOTES, ...QUOTES].map((quote, i) => (
+              <span
+                key={i}
+                className="text-[10px] md:text-sm font-bold uppercase tracking-wider drop-shadow-sm px-2"
+              >
+                {quote}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT */}
         <div className="flex-shrink-0 flex items-center gap-2 z-20">
-          <div className="flex items-center gap-2 bg-red-600 px-2.5 py-1 rounded shadow-sm">
-            <Flame size={12} className="text-white fill-white" />
-            <span className="text-[10px] font-black text-white uppercase tracking-widest hidden sm:block">
-              MODE
-            </span>
-          </div>
-        </div>
 
-        {/* CENTER: Text (Yellow) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <h2 className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-yellow-400 truncate max-w-[60%] md:max-w-[70%] text-center drop-shadow-sm">
-            {displayText}
-            <span
-              className={`inline-block w-2 md:w-2.5 h-4 md:h-5 ml-1 align-middle bg-yellow-400 ${
-                showCursor ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          </h2>
-        </div>
+          {/* Auth Button */}
+          <AuthButton />
 
-        {/* RIGHT: Controls */}
-        <div className="flex-shrink-0 flex items-center gap-2 md:gap-3 z-20">
-          {/* ✅ Auth button (popup) */}
-          <div>
-            <AuthButton />
-          </div>
-
-          {/* NEW: Fullscreen Button */}
+          {/* Fullscreen Button */}
           <button
             onClick={toggleFullscreen}
-            className="w-8 h-8 flex items-center justify-center rounded border bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-700 hover:border-zinc-500 transition-all active:scale-90"
+            className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border text-white transition-all active:scale-90"
+            style={{
+              backgroundColor: "rgba(54, 73, 218, 0.9)",
+              borderColor: "rgba(26, 240, 190, 0.3)",
+            }}
             aria-label="Toggle Fullscreen"
           >
             {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
           </button>
 
-          {/* Divider */}
-          <div className="hidden md:block h-5 w-[1px] bg-white/20" />
-
+          {/* Pause Button */}
           <button
             onClick={() => setIsPaused((p) => !p)}
-            className="group flex items-center gap-3 focus:outline-none"
+            className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border transition-all duration-200 shadow-sm focus:outline-none"
+            style={{
+              backgroundColor: isPaused ? "#22c55e" : "#2563eb",
+              borderColor: isPaused ? "#86efac" : "#60a5fa",
+              color: "#ffffff",
+              boxShadow: isPaused
+                ? "0 0 12px rgba(34,197,94,0.45)"
+                : "0 0 12px rgba(37,99,235,0.45)",
+            }}
             aria-label={isPaused ? "Play" : "Pause"}
           >
-            <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest hidden md:block group-hover:text-white transition-colors">
-              {isPaused ? "RESUME" : "PAUSE"}
-            </span>
-
-            <div
-              className={`
-              w-8 h-8 flex items-center justify-center rounded border transition-all duration-200 shadow-sm
-              ${
-                isPaused
-                  ? "bg-yellow-500 border-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)]"
-                  : "bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 hover:border-zinc-500"
-              }
-            `}
-            >
-              {isPaused ? (
-                <Play size={12} className="fill-current ml-0.5" />
-              ) : (
-                <Pause size={12} className="fill-current" />
-              )}
-            </div>
+            {isPaused ? (
+              <Play size={12} className="fill-current ml-0.5" />
+            ) : (
+              <Pause size={12} className="fill-current" />
+            )}
           </button>
-
-          {/* ✅ Mobile: Auth icon/button (optional)
-              If you want AuthButton visible on mobile too, remove the "hidden sm:block"
-              wrapper above. */}
         </div>
       </div>
+
+      {/* Global Styles */}
+      <style jsx global>{`
+        .animate-marquee {
+          animation: ticker 40s linear infinite;
+        }
+
+        .pause-marquee {
+          animation-play-state: paused;
+        }
+
+        @keyframes ticker {
+          0% {
+            transform: translateX(0%);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+
+        .ticker-mask {
+          mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 90px,
+            black calc(100% - 90px),
+            transparent
+          );
+          -webkit-mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 90px,
+            black calc(100% - 90px),
+            transparent
+          );
+        }
+
+        @media (max-width: 767px) {
+          .ticker-mask {
+            mask-image: linear-gradient(
+              to right,
+              transparent,
+              black 76px,
+              black calc(100% - 76px),
+              transparent
+            );
+            -webkit-mask-image: linear-gradient(
+              to right,
+              transparent,
+              black 76px,
+              black calc(100% - 76px),
+              transparent
+            );
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -1,45 +1,38 @@
 "use client";
+
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FrontView from "@/components/anatomy/FrontView";
 import BackView from "@/components/anatomy/BackView";
 import exercisesData from "@/public/exercises.json";
 import {
-  Dumbbell,
-  Weight,
-  GitPullRequest,
-  Activity,
-  Barbell,
-  Users,
-  Plus,
-  Download,
   RotateCcw,
   ChevronDown,
   Trash2,
   X,
-  Target,
-  Check,
-  Zap,
   LayoutList,
-  Maximize2,
-  CircleDot,
-  Dna,
   ArrowBigRight,
+  Download,
 } from "lucide-react";
 
-const equipIcons = {
-  dumbbell: Dumbbell,
-  barbell: Barbell,
-  machine: Weight,
-  cable: GitPullRequest,
-  bodyweight: Activity,
-  kettlebell: CircleDot,
-  "pull-up bar": Users,
+const theme = {
+  colors: {
+    bgPrimary: "#0A2A9B",
+    bgDark: "#04114F",
+    panel: "#1B43C4",
+    panelHover: "#2550E0",
+    accent: "#22FFD1",
+    accentSoft: "#54FFDC",
+    textPrimary: "#FFFFFF",
+    textSecondary: "#D7E3FF",
+    textMuted: "#B7C7FF",
+    textOnAccent: "#04114F",
+  },
+  heights: {
+    fullPage: "93.6dvh",
+  },
 };
 
-// ============================================
-// UTILITY: ROTATING IMAGE (Full Fit)
-// ============================================
 const RotatingImage = ({ images = [], name, className = "" }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const intervalRef = useRef(null);
@@ -52,13 +45,13 @@ const RotatingImage = ({ images = [], name, className = "" }) => {
     if (images.length > 1) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % images.length);
-      }, 1500);
+      }, 1800);
     }
     return () => clearInterval(intervalRef.current);
   }, [images.length]);
 
   return (
-    <div className={`relative w-full h-full overflow-hidden ${className}`}>
+    <div className={`relative h-full w-full overflow-hidden ${className}`}>
       {images.map((image, index) => (
         <div
           key={`${image}-${index}`}
@@ -66,11 +59,10 @@ const RotatingImage = ({ images = [], name, className = "" }) => {
             index === currentIndex ? "opacity-100" : "opacity-0"
           }`}
         >
-          {/* FIX: Changed object-cover to object-contain so images aren't cropped */}
           <img
             src={`/exercises/${image || "placeholder.png"}`}
             alt={`${name} view ${index + 1}`}
-            className="w-full h-full object-contain"
+            className="h-full w-full object-contain"
           />
         </div>
       ))}
@@ -78,17 +70,79 @@ const RotatingImage = ({ images = [], name, className = "" }) => {
   );
 };
 
-// ============================================
-// MAIN COMPONENT
-// ============================================
-export default function WorkoutWizard() {
-  const WIZARD_H = "h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3rem)]";
+const SectionHeading = ({ step, title, subtitle, center = true }) => (
+  <div className={`${center ? "text-center" : "text-left"} mb-4 md:mb-5`}>
+    {step && (
+      <div className="mb-1 text-[11px] font-semibold tracking-[0.18em] text-[#22FFD1] md:text-xs">
+        {step}
+      </div>
+    )}
+    <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
+      {title}
+    </h2>
+    {subtitle && (
+      <p className="mt-2 text-sm font-medium text-[#D7E3FF] md:text-base">
+        {subtitle}
+      </p>
+    )}
+  </div>
+);
 
-  // --- STATE ---
+const SelectionCard = ({ title, count, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`w-full border p-4 text-left transition-all duration-200 md:p-5 ${
+      active
+        ? "border-[#22FFD1] bg-[#22FFD1] text-[#04114F] shadow-[0_0_24px_rgba(34,255,209,0.18)]"
+        : "border-[#6D8DFF]/30 bg-[#1B43C4] text-white hover:border-[#22FFD1] hover:bg-[#2550E0]"
+    }`}
+  >
+    <div className="flex h-full flex-col justify-between gap-4">
+      <div>
+        <h3
+          className={`text-base font-semibold tracking-tight capitalize md:text-lg ${
+            active ? "text-[#04114F]" : "text-white"
+          }`}
+        >
+          {title}
+        </h3>
+      </div>
+
+      <div>
+        <span
+          className={`inline-flex px-3 py-1 text-[11px] font-semibold ${
+            active ? "bg-[#04114F] text-[#22FFD1]" : "bg-[#0A2A9B] text-white"
+          }`}
+        >
+          {count}
+        </span>
+      </div>
+    </div>
+  </button>
+);
+
+const CleanTag = ({ children, accent = false }) => (
+  <span
+    className={`px-2.5 py-1 text-[11px] font-medium capitalize ${
+      accent
+        ? "bg-[#22FFD1] text-[#04114F]"
+        : "border border-[#6D8DFF]/30 bg-[#0A2A9B] text-white"
+    }`}
+  >
+    {children}
+  </span>
+);
+
+export default function WorkoutWizard() {
   const containerRef = useRef(null);
+  const touchStartY = useRef(null);
+
   const [activeSection, setActiveSection] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
+
   const [view, setView] = useState("front");
   const [muscle, setMuscle] = useState(null);
   const [equipment, setEquipment] = useState(null);
@@ -96,12 +150,9 @@ export default function WorkoutWizard() {
   const [level, setLevel] = useState(null);
 
   const [routine, setRoutine] = useState([]);
-  const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
-  const [selectedExercise, setSelectedExercise] = useState(null);
   const [highlightedMuscle, setHighlightedMuscle] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // --- PROGRESSIVE LOGIC & COUNTS ---
   const exercisesForMuscle = useMemo(() => {
     if (!muscle) return [];
     return exercisesData.filter(
@@ -189,20 +240,115 @@ export default function WorkoutWizard() {
     [exercisesForCategory, level],
   );
 
-  // --- HANDLERS ---
+  const currentPreview = finalExercises[activeIndex];
+
+  const maxUnlockedSection = useMemo(() => {
+    if (!muscle) return 1;
+    if (!equipment) return 2;
+    if (!category) return 3;
+    if (!level) return 4;
+    return 5;
+  }, [muscle, equipment, category, level]);
+
   const scrollTo = (index) => {
+    const clamped = Math.max(0, Math.min(index, maxUnlockedSection));
     const h = containerRef.current?.clientHeight || window.innerHeight;
-    containerRef.current?.scrollTo({ top: index * h, behavior: "smooth" });
+    containerRef.current?.scrollTo({ top: clamped * h, behavior: "smooth" });
   };
 
   const handleScroll = () => {
     if (!containerRef.current) return;
-    setActiveSection(
-      Math.round(
-        containerRef.current.scrollTop / containerRef.current.clientHeight,
-      ),
-    );
+
+    const h = containerRef.current.clientHeight;
+    const rawIndex = Math.round(containerRef.current.scrollTop / h);
+    const boundedIndex = Math.min(rawIndex, maxUnlockedSection);
+
+    if (rawIndex > maxUnlockedSection) {
+      containerRef.current.scrollTo({
+        top: maxUnlockedSection * h,
+        behavior: "auto",
+      });
+      setActiveSection(maxUnlockedSection);
+      return;
+    }
+
+    setActiveSection(boundedIndex);
   };
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const h = containerRef.current.clientHeight;
+    const currentIndex = Math.round(containerRef.current.scrollTop / h);
+    if (currentIndex > maxUnlockedSection) {
+      containerRef.current.scrollTo({
+        top: maxUnlockedSection * h,
+        behavior: "smooth",
+      });
+      setActiveSection(maxUnlockedSection);
+    }
+  }, [maxUnlockedSection]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const canScrollInner = (target, deltaY) => {
+      const scrollable = target.closest(".section-scroll");
+      if (!scrollable) return false;
+
+      const { scrollTop, scrollHeight, clientHeight } = scrollable;
+      const atTop = scrollTop <= 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+
+      if (deltaY > 0 && !atBottom) return true;
+      if (deltaY < 0 && !atTop) return true;
+      return false;
+    };
+
+    const onWheel = (e) => {
+      if (canScrollInner(e.target, e.deltaY)) return;
+
+      const goingDown = e.deltaY > 0;
+      const goingUp = e.deltaY < 0;
+
+      if (goingDown && activeSection >= maxUnlockedSection) {
+        e.preventDefault();
+        return;
+      }
+
+      if (goingUp && activeSection <= 0) {
+        e.preventDefault();
+      }
+    };
+
+    const onTouchStart = (e) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const onTouchMove = (e) => {
+      const scrollable = e.target.closest(".section-scroll");
+      if (scrollable) return;
+
+      if (touchStartY.current == null) return;
+      const currentY = e.touches[0].clientY;
+      const delta = touchStartY.current - currentY;
+      const goingDown = delta > 0.5;
+
+      if (goingDown && activeSection >= maxUnlockedSection) {
+        e.preventDefault();
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+    };
+  }, [activeSection, maxUnlockedSection]);
 
   const toggleRoutine = (ex) => {
     setRoutine((prev) =>
@@ -212,54 +358,115 @@ export default function WorkoutWizard() {
     );
   };
 
-  const currentPreview = finalExercises[activeIndex];
+  const resetWizard = () => {
+    setMuscle(null);
+    setEquipment(null);
+    setCategory(null);
+    setLevel(null);
+    setActiveIndex(0);
+    scrollTo(0);
+  };
+
+  const exportRoutineCSV = () => {
+    if (!routine.length) return;
+
+    const rows = [
+      ["Name", "Equipment", "Category", "Difficulty", "Primary Muscles"],
+      ...routine.map((ex) => [
+        ex.name || "",
+        ex.equipment || "",
+        ex.category || "",
+        ex.level || "",
+        (ex.primaryMuscles || []).join(", "),
+      ]),
+    ];
+
+    const csv = rows
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "notrainer-routine.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const breadcrumbText = [muscle, equipment, category, level]
+    .filter(Boolean)
+    .join(" > ");
 
   return (
     <div
-      className={`relative w-full ${WIZARD_H} bg-[#020617] text-white font-sans overflow-hidden selection:bg-cyan-500/30`}
+      className="relative w-full overflow-hidden bg-[#04114F] text-white"
+      style={{ height: theme.heights.fullPage }}
     >
-      <style>{`.anatomy-svg-wrapper svg { width: 100% !important; height: 100% !important; } .no-scrollbar::-webkit-scrollbar { display: none; }`}</style>
+      <style>{`
+        .anatomy-svg-wrapper svg {
+          width: 100% !important;
+          height: 100% !important;
+          max-width: 100%;
+          max-height: 100%;
+          display: block;
+          margin: 0 auto;
+        }
 
-      {/* GLOBAL HUD */}
-      <div className="fixed top-8 left-0 right-0 px-6 py-4 z-[60] pointer-events-none flex justify-between items-start">
-        <div className="pointer-events-auto flex flex-col gap-2 ml-12 md:ml-20">
-          <h1 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
-            Workout<span className="text-cyan-400">Wizard</span>
-          </h1>
-        </div>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        <div className="pointer-events-auto flex items-center gap-3">
-          <button
-            onClick={() => setIsRoutineModalOpen(true)}
-            className="px-5 py-2.5 bg-cyan-500 text-black font-black uppercase text-[11px] flex items-center gap-2 hover:bg-cyan-400 transition-all shadow-[0_0_15px_rgba(34,211,238,0.4)]"
-          >
-            <LayoutList size={16} /> Routine ({routine.length})
-          </button>
-          {activeSection > 0 && (
+        .wizard-panel {
+          height: ${theme.heights.fullPage};
+          min-height: ${theme.heights.fullPage};
+          scroll-snap-align: start;
+          overflow: hidden;
+        }
+      `}</style>
+
+      <div className="pointer-events-none fixed left-0 right-0 top-0 z-[60] h-20 bg-gradient-to-b from-[#04114F] via-[#04114F]/90 to-transparent" />
+
+      <div className="fixed left-0 right-0 top-14 z-[80] px-3 md:top-16 md:px-6">
+        <div className="mx-auto flex max-w-7xl items-start justify-end gap-3">
+          <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
             <button
-              onClick={() => {
-                setMuscle(null);
-                setEquipment(null);
-                setCategory(null);
-                setLevel(null);
-                scrollTo(0);
-              }}
-              className="px-5 py-2.5 bg-white text-black font-black uppercase text-[11px] flex items-center gap-2"
+              onClick={() => setIsRoutineModalOpen(true)}
+              className="flex items-center gap-2 bg-[#22FFD1] px-4 py-3 text-[11px] font-black tracking-[0.16em] text-[#04114F] transition-all hover:bg-[#54FFDC] md:px-5"
             >
-              <RotateCcw size={16} /> Reset
+              <LayoutList size={16} />
+              Routine ({routine.length})
             </button>
-          )}
+
+            {breadcrumbText && (
+              <div className="hidden items-center bg-[#1B43C4] px-4 py-3 text-[11px] font-semibold text-white xl:flex">
+                <span className="capitalize">{breadcrumbText}</span>
+              </div>
+            )}
+
+            {activeSection > 0 && (
+              <button
+                onClick={resetWizard}
+                className="flex items-center gap-2 border border-[#22FFD1]/30 bg-[#16359E] px-4 py-3 text-[11px] font-black tracking-[0.16em] text-white transition-all hover:border-[#22FFD1] hover:bg-[#1B43C4] md:px-5"
+              >
+                <RotateCcw size={16} />
+                Reset
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* TOOLTIP */}
       <AnimatePresence>
         {highlightedMuscle && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, x: mousePos.x + 20, y: mousePos.y - 20 }}
-            exit={{ opacity: 0 }}
-            className="fixed z-[100] px-4 py-2 bg-cyan-400 text-black font-black uppercase text-[11px] pointer-events-none border border-white/40 shadow-xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, x: mousePos.x + 18, y: mousePos.y - 28 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed z-[100] hidden bg-[#22FFD1] px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-[#04114F] shadow-xl md:block"
           >
             {highlightedMuscle}
           </motion.div>
@@ -269,366 +476,391 @@ export default function WorkoutWizard() {
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth no-scrollbar"
         onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
+        className="no-scrollbar h-full w-full snap-y snap-mandatory overflow-y-auto scroll-smooth"
       >
-        {/* PANEL 1: INTRO */}
-        <section
-          className="h-full w-full snap-start relative flex flex-col items-center justify-center bg-[#020617]"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 20% 30%, rgba(56, 89, 198, 0.84), transparent 40%), radial-gradient(circle at 70% 60%, rgba(17, 68, 177, 0.91), transparent 40%)",
-          }}
-        >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] max-w-[500px] bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
+        {/* HERO */}
+        <section className="wizard-panel relative flex items-center justify-center bg-[#04114F] px-4">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute left-[-10%] top-[-10%] h-[420px] w-[420px] bg-[#0A2A9B] blur-[130px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] h-[320px] w-[320px] bg-[#22FFD1] opacity-25 blur-[120px]" />
+          </div>
+
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            className="text-center px-4 relative z-10"
+            transition={{ duration: 0.6 }}
+            className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center"
           >
-            <h1 className="text-6xl md:text-7xl font-black uppercase tracking-tighter leading-none text-white mb-6">
-              Workout
-              <span className="text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]">
-                Wizard
-              </span>
+            <h1 className="text-5xl font-black uppercase tracking-tighter text-white sm:text-6xl md:text-8xl">
+              Workout <span className="text-[#22FFD1]">Wizard</span>
             </h1>
-            <p className="text-slate-400 font-bold text-md md:text-lg">
-              <span className="flex justify-center items-center gap-2">
-                Your Choice <ArrowBigRight size={20} /> Your Workouts
-              </span>
+
+            <div className="mt-4 h-1.5 w-20 bg-[#22FFD1]" />
+
+            <p className="mt-6 max-w-xl text-sm font-semibold text-[#D7E3FF] sm:text-base md:text-lg">
+              Choose your target and get matching workouts
             </p>
           </motion.div>
-          <motion.button
+
+          <button
             onClick={() => scrollTo(1)}
-            className="absolute bottom-10 flex flex-col items-center gap-3 cursor-pointer group"
+            className="absolute bottom-6 flex flex-col items-center gap-2 text-[#22FFD1] transition-colors hover:text-white md:bottom-8"
           >
-            <span className="text-[20px] font-black uppercase  text-cyan-400 group-hover:text-white transition-colors">
-              Scroll Down
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] md:text-xs">
+              Start
             </span>
             <ChevronDown size={28} className="animate-bounce" />
-          </motion.button>
+          </button>
         </section>
 
-        {/* PANEL 2: MUSCLE */}
-        <section className="h-full w-full snap-start relative flex items-center justify-center bg-[#020617] p-8">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.05),transparent_70%)] pointer-events-none" />
-          <div className="w-full max-w-6xl flex flex-col lg:grid lg:grid-cols-2 lg:gap-12 items-center pt-20">
-            <div className="text-center lg:text-left space-y-4">
-              <h2 className="text-5xl md:text-4xl font-black uppercase text-white">
-                Select a Muscle
-              </h2>
-              <div className="flex justify-center lg:justify-start gap-4 pt-6">
-                {["front", "back"].map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setView(v)}
-                    className={`px-10 py-3 font-black uppercase text-xs border-2 transition-all ${view === v ? "bg-cyan-500 text-black border-cyan-500 shadow-[0_0_20px_rgba(34,211,238,0.4)]" : "bg-transparent border-white/10 text-white hover:border-white"}`}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="relative h-[50vh] md:h-[65vh] w-full flex items-center justify-center bg-zinc-900 border border-white/10 rounded-none shadow-2xl anatomy-svg-wrapper">
-              {view === "front" ? (
-                <FrontView
-                  onSelect={setMuscle}
-                  selectedMuscle={muscle}
-                  onHover={setHighlightedMuscle}
-                  onLeave={() => setHighlightedMuscle(null)}
-                />
-              ) : (
-                <BackView
-                  onSelect={setMuscle}
-                  selectedMuscle={muscle}
-                  onHover={setHighlightedMuscle}
-                  onLeave={() => setHighlightedMuscle(null)}
-                />
-              )}
-            </div>
-          </div>
-        </section>
+        {/* MUSCLE */}
+        <section className="wizard-panel relative bg-[#0A2A9B] px-4 pt-20 pb-4 md:px-6 md:pt-24">
+          <div className="absolute inset-0 bg-[#0A2A9B]" />
+          <div className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 bg-[#22FFD1] opacity-10 blur-[140px]" />
 
-        {/* PANEL 3: EQUIPMENT */}
-        <section
-          className={`h-full w-full snap-start flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-500 ${
-            muscle ? "opacity-100" : "opacity-20 pointer-events-none"
-          }`}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_70%)] pointer-events-none" />
+          <div className="relative z-10 flex h-full flex-col overflow-hidden">
+            <SectionHeading
+              step="STEP 1"
+              title={
+                <>
+                  Select a <span className="text-[#22FFD1]">Muscle</span>
+                </>
+              }
+            />
 
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight leading-none">
-              <span className="text-white block mb-2 text-xl md:text-2xl opacity-50">
-                Step 2
-              </span>
-              <span className="text-blue-500">Select Equipment</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 w-full max-w-6xl px-6 relative z-10">
-            {availableEquipment.map((item) => {
-              const isActive = equipment === item;
-
-              return (
+            <div className="mb-3 flex justify-center gap-3">
+              {["front", "back"].map((v) => (
                 <button
-                  key={item}
-                  onClick={() => setEquipment(item)}
-                  className={`relative px-6 py-10 rounded-2xl border-2 transition-all duration-300 group flex flex-col items-center justify-center overflow-hidden ${
-                    isActive
-                      ? "bg-blue-600 border-blue-400 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.5)] z-10"
-                      : "bg-gradient-to-br from-slate-700 to-slate-800 border-slate-500 hover:border-blue-400 hover:from-slate-600 hover:to-slate-700 shadow-lg"
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`min-w-[120px] px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] transition-all md:text-xs ${
+                    view === v
+                      ? "bg-[#22FFD1] text-[#04114F]"
+                      : "border border-white/15 bg-[#1B43C4] text-white hover:border-[#22FFD1]"
                   }`}
                 >
-                  {/* Subtle light reflection - now partially visible on unselected cards too */}
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none transition-opacity duration-300 ${
-                      isActive
-                        ? "opacity-100"
-                        : "opacity-40 group-hover:opacity-70"
-                    }`}
-                  />
-
-                  <div className="text-center relative z-10">
-                    {/* Equipment Name */}
-                    <span
-                      className={`font-black uppercase tracking-wide text-lg block transition-colors ${
-                        isActive
-                          ? "text-white"
-                          : "text-slate-100 group-hover:text-white"
-                      }`}
-                    >
-                      {item}
-                    </span>
-
-                    {/* Exercise Count Pill */}
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-widest block mt-4 px-3 py-1.5 rounded-full border transition-colors ${
-                        isActive
-                          ? "bg-blue-500/50 border-blue-300/50 text-blue-50"
-                          : "bg-slate-900/40 border-slate-400/50 text-slate-200 group-hover:border-blue-400/60 group-hover:text-blue-100 group-hover:bg-slate-800/50"
-                      }`}
-                    >
-                      {equipmentCounts[item]} Exercises
-                    </span>
-                  </div>
+                  {v} view
                 </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* PANEL 4: FILTERS */}
-        <section
-          className={`h-full w-full snap-start flex items-center justify-center bg-black transition-opacity ${equipment ? "opacity-100" : "opacity-20"}`}
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 20% 50%, rgba(56, 89, 198, 0.84), transparent 100%), radial-gradient(circle at 80% 80%, rgba(17, 68, 177, 0.91), transparent 70%)",
-          }}
-        >
-          <div className="grid md:grid-cols-2 gap-12 w-full max-w-6xl px-8 relative z-10">
-            <div className="space-y-6">
-              <h3 className="text-base font-black uppercase text-emerald-400 tracking-[0.2em] flex items-center gap-3">
-                <Activity size={50} /> Mode
-              </h3>
-              <div className="space-y-3">
-                {availableCategories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setCategory(cat)}
-                    className={`w-full p-7 text-left border-2 transition-all flex justify-between items-center ${category === cat ? "bg-emerald-600 border-emerald-400 scale-[1.02] shadow-[0_0_20px_rgba(16,185,129,0.3)]" : "bg-zinc-900/50 border-white/10 hover:border-emerald-500/50"}`}
-                  >
-                    <span className="text-2xl font-black uppercase italic text-white">
-                      {cat}
-                    </span>
-                    <span className="font-black text-xs text-white bg-black/50 px-4 py-1.5">
-                      {categoryCounts[cat]}
-                    </span>
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
-            <div className="space-y-6">
-              <h3 className="text-base font-black uppercase text-orange-500 tracking-[0.2em] flex items-center gap-3">
-                <Zap size={50} /> Intensity
-              </h3>
-              <div className="space-y-3">
-                {availableLevels.map((lvl) => (
-                  <button
-                    key={lvl}
-                    onClick={() => setLevel(lvl)}
-                    className={`w-full p-7 text-left border-2 transition-all flex justify-between items-center ${level === lvl ? "bg-orange-600 border-orange-400 scale-[1.02] shadow-[0_0_20px_rgba(249,115,22,0.3)]" : "bg-zinc-900/50 border-white/10 hover:border-orange-500/50"}`}
-                  >
-                    <span className="text-2xl font-black uppercase italic text-white">
-                      {lvl}
-                    </span>
-                    <span className="font-black text-xs text-white bg-black/50 px-4 py-1.5">
-                      {levelCounts[lvl]}
-                    </span>
-                  </button>
-                ))}
+
+            <div className="flex-1 overflow-hidden">
+              <div className="anatomy-svg-wrapper flex h-full w-full items-center justify-center overflow-hidden">
+                <div className="flex h-full w-full items-center justify-center scale-[0.94] sm:scale-[0.98] md:scale-[1.04]">
+                  {view === "front" ? (
+                    <FrontView
+                      onSelect={(selected) => {
+                        setMuscle(selected);
+                        setEquipment(null);
+                        setCategory(null);
+                        setLevel(null);
+                        setTimeout(() => scrollTo(2), 150);
+                      }}
+                      selectedMuscle={muscle}
+                      onHover={setHighlightedMuscle}
+                      onLeave={() => setHighlightedMuscle(null)}
+                    />
+                  ) : (
+                    <BackView
+                      onSelect={(selected) => {
+                        setMuscle(selected);
+                        setEquipment(null);
+                        setCategory(null);
+                        setLevel(null);
+                        setTimeout(() => scrollTo(2), 150);
+                      }}
+                      selectedMuscle={muscle}
+                      onHover={setHighlightedMuscle}
+                      onLeave={() => setHighlightedMuscle(null)}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* PANEL 5: EXERCISES DASHBOARD */}
+        {/* EQUIPMENT */}
         <section
-          className={`h-screen w-full snap-start bg-slate-900 flex flex-col transition-opacity ${
-            category && level ? "opacity-100" : "opacity-50 pointer-events-none"
+          className={`wizard-panel relative bg-[#04114F] px-4 pt-20 pb-4 transition-opacity duration-500 md:px-6 md:pt-24 ${
+            muscle ? "opacity-100" : "pointer-events-none opacity-30"
           }`}
         >
-          {/* HEADER */}
-          <div className="pt-16 px-10 pb-6 border-b border-slate-800 bg-slate-900 shrink-0">
-            <h2 className="text-3xl font-bold text-white">Exercises</h2>
-            <p className="text-sm text-slate-400 mt-1">
-              {finalExercises.length} exercises found
-            </p>
+          <div className="absolute inset-0 bg-[#04114F]" />
+          <div className="absolute left-0 top-0 h-[380px] w-[700px] bg-[#1B43C4] opacity-70 blur-[150px]" />
+
+          <div className="relative z-10 flex h-full flex-col overflow-hidden">
+            <SectionHeading
+              step="STEP 2"
+              title={
+                <>
+                  Select <span className="text-[#22FFD1]">Equipment</span>
+                </>
+              }
+            />
+
+            <div className="section-scroll no-scrollbar flex-1 overflow-y-auto pr-1">
+              <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
+                {availableEquipment.map((item) => {
+                  const isActive = equipment === item;
+
+                  return (
+                    <SelectionCard
+                      key={item}
+                      title={item}
+                      count={`${equipmentCounts[item]} exercises`}
+                      active={isActive}
+                      onClick={() => {
+                        setEquipment(item);
+                        setCategory(null);
+                        setLevel(null);
+                        setTimeout(() => scrollTo(3), 150);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CATEGORY */}
+        <section
+          className={`wizard-panel relative bg-[#0A2A9B] px-4 pt-20 pb-4 transition-opacity duration-500 md:px-6 md:pt-24 ${
+            equipment ? "opacity-100" : "pointer-events-none opacity-30"
+          }`}
+        >
+          <div className="absolute inset-0 bg-[#0A2A9B]" />
+          <div className="absolute left-1/2 top-0 h-[380px] w-[800px] -translate-x-1/2 bg-[#22FFD1] opacity-10 blur-[150px]" />
+
+          <div className="relative z-10 flex h-full flex-col overflow-hidden">
+            <SectionHeading
+              step="STEP 3"
+              title={
+                <>
+                  Select <span className="text-[#22FFD1]">Category</span>
+                </>
+              }
+            />
+
+            <div className="section-scroll no-scrollbar flex-1 overflow-y-auto pr-1">
+              <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
+                {availableCategories.map((cat) => (
+                  <SelectionCard
+                    key={cat}
+                    title={cat}
+                    count={`${categoryCounts[cat]}`}
+                    active={category === cat}
+                    onClick={() => {
+                      setCategory(cat);
+                      setLevel(null);
+                      setTimeout(() => scrollTo(4), 150);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* DIFFICULTY */}
+        <section
+          className={`wizard-panel relative bg-[#04114F] px-4 pt-20 pb-4 transition-opacity duration-500 md:px-6 md:pt-24 ${
+            category ? "opacity-100" : "pointer-events-none opacity-30"
+          }`}
+        >
+          <div className="absolute inset-0 bg-[#04114F]" />
+          <div className="absolute right-0 top-0 h-[340px] w-[700px] bg-[#1B43C4] opacity-70 blur-[150px]" />
+
+          <div className="relative z-10 flex h-full flex-col overflow-hidden">
+            <SectionHeading
+              step="STEP 4"
+              title={
+                <>
+                  Select <span className="text-[#22FFD1]">Difficulty</span>
+                </>
+              }
+            />
+
+            <div className="section-scroll no-scrollbar flex-1 overflow-y-auto pr-1">
+              <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
+                {availableLevels.map((lvl) => (
+                  <SelectionCard
+                    key={lvl}
+                    title={lvl}
+                    count={`${levelCounts[lvl]}`}
+                    active={level === lvl}
+                    onClick={() => {
+                      setLevel(lvl);
+                      setTimeout(() => scrollTo(5), 150);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* EXERCISES */}
+        <section
+          className={`wizard-panel relative bg-[#04114F] transition-opacity duration-500 ${
+            level ? "opacity-100" : "pointer-events-none opacity-40"
+          }`}
+        >
+          <div className="absolute inset-0 bg-[#04114F]" />
+          <div className="absolute bottom-0 right-0 h-[340px] w-[700px] bg-[#1B43C4] opacity-70 blur-[150px]" />
+
+          <div className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden pt-16 md:pt-20">
+            <div className="shrink-0 border-b border-white/10 bg-[#04114F] px-4 py-5 md:px-8 md:py-6">
+              <div className="flex flex-col items-center justify-center text-center">
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-5xl">
+                  {finalExercises.length} workouts found
+                </h2>
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-hidden">
+              <div className="section-scroll no-scrollbar h-full overflow-y-auto px-3 py-3 md:px-6 md:py-5">
+                <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 lg:grid-cols-2">
+                  {finalExercises.map((ex, idx) => {
+                    const added = routine.some((r) => r.id === ex.id);
+
+                    return (
+                      <button
+                        key={ex.id}
+                        onClick={() => {
+                          setActiveIndex(idx);
+                          setIsModalOpen(true);
+                        }}
+                        className="border border-[#6D8DFF]/30 bg-[#1B43C4] p-5 text-left transition-all hover:border-[#22FFD1] hover:bg-[#2550E0]"
+                      >
+                        <div className="flex h-full flex-col gap-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <div className="mb-2 text-[11px] font-semibold tracking-[0.16em] text-[#22FFD1]">
+                                {(idx + 1).toString().padStart(2, "0")}
+                              </div>
+                              <h3 className="line-clamp-2 text-lg font-semibold tracking-tight text-white">
+                                {ex.name}
+                              </h3>
+                            </div>
+
+                            {added && (
+                              <span className="shrink-0 bg-[#22FFD1] px-3 py-1 text-[10px] font-semibold text-[#04114F]">
+                                Added
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            {ex.equipment && (
+                              <CleanTag>{ex.equipment}</CleanTag>
+                            )}
+                            {ex.category && <CleanTag>{ex.category}</CleanTag>}
+                            {ex.level && <CleanTag accent>{ex.level}</CleanTag>}
+                          </div>
+
+                          <div className="mt-auto border-t border-white/10 pt-3">
+                            <span className="text-sm font-medium text-slate-100">
+                              View exercise
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* MAIN SCROLLABLE LIST */}
-          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-3 no-scrollbar">
-            {finalExercises.map((ex, idx) => {
-              const added = routine.some((r) => r.id === ex.id);
-
-              return (
-                <button
-                  key={ex.id}
-                  onClick={() => {
-                    setActiveIndex(idx);
-                    setIsModalOpen(true);
-                  }}
-                  className="w-full px-6 py-5 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-between transition-all hover:border-cyan-500 hover:shadow-lg hover:shadow-cyan-500/10 text-left"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium text-slate-500 tabular-nums">
-                      {(idx + 1).toString().padStart(2, "0")}
-                    </span>
-                    <span className="text-lg font-semibold text-slate-100">
-                      {ex.name}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    {added && (
-                      <span className="text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full text-xs font-bold">
-                        Added ✓
-                      </span>
-                    )}
-                    <span className="text-sm text-slate-400 font-medium hover:text-white transition-colors">
-                      View Details →
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* POPUP MODAL */}
-          {isModalOpen && finalExercises[activeIndex] && (
-            <div className="fixed inset-0 z-300 flex items-center justify-center bg-slate-950/80 p-4 md:p-8 backdrop-blur-sm">
-              {/* MODAL CONTAINER 
-        Fixed height to 85vh to prevent top/bottom cutoff. 
-      */}
-              <div className="bg-slate-900 w-full max-w-6xl h-[85vh] rounded-2xl shadow-2xl border border-slate-700 flex flex-col md:flex-row overflow-hidden relative">
-                {/* CLOSE BUTTON */}
+          {isModalOpen && currentPreview && (
+            <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#04114F]/90 p-3 backdrop-blur-sm md:p-6">
+              <div className="relative flex h-[92dvh] w-full max-w-6xl flex-col overflow-hidden border border-white/10 bg-[#04114F] md:h-[88dvh] md:flex-row">
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="absolute top-4 right-4 z-20 w-10 h-10 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 rounded-full flex items-center justify-center font-bold transition-colors"
+                  className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center border border-white/10 bg-[#1B43C4] text-white transition-all hover:border-[#22FFD1] hover:text-[#22FFD1]"
                 >
-                  ✕
+                  <X size={18} />
                 </button>
 
-                {/* SECTION 1: IMAGES (Scrollable) */}
-                <div className="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto no-scrollbar border-b md:border-b-0 md:border-r border-slate-800 bg-slate-800/30 p-4 md:p-8 flex items-center justify-center">
-                  {/* FIX: Added relative, aspect-square, and min-h to ensure the wrapper forces the images to render */}
-                  <div className="relative w-full aspect-square min-h-[250px] max-w-md mx-auto flex items-center justify-center">
+                <div className="flex h-[38%] w-full items-center justify-center border-b border-white/10 bg-[#0A2A9B] p-4 md:h-full md:w-1/2 md:border-b-0 md:border-r md:p-8">
+                  <div className="relative flex h-full w-full max-w-md items-center justify-center">
                     <RotatingImage
-                      images={finalExercises[activeIndex].images}
-                      name={finalExercises[activeIndex].name}
+                      images={currentPreview.images}
+                      name={currentPreview.name}
                     />
                   </div>
                 </div>
 
-                {/* SECTION 2: DETAILS 
-          Takes up the other half. Includes a fixed header/footer and a scrollable body.
-        */}
-                <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col bg-slate-900">
-                  {/* Details Header (Fixed) */}
-                  <div className="px-8 py-6 border-b border-slate-800 shrink-0 pr-16">
-                    <h3 className="text-3xl font-black text-white uppercase tracking-tight">
-                      {finalExercises[activeIndex].name}
+                <div className="flex h-[62%] w-full flex-col bg-[#04114F] md:h-full md:w-1/2">
+                  <div className="shrink-0 border-b border-white/10 px-5 py-5 pr-16 md:px-8 md:py-6">
+                    <h3 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                      {currentPreview.name}
                     </h3>
-                    <div className="flex gap-4 mt-3">
-                      <span className="bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
-                        {finalExercises[activeIndex].equipment}
-                      </span>
-                      <span className="bg-slate-800 border border-slate-700 text-cyan-400 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
-                        {finalExercises[activeIndex].level}
-                      </span>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {currentPreview.equipment && (
+                        <CleanTag>{currentPreview.equipment}</CleanTag>
+                      )}
+                      {currentPreview.category && (
+                        <CleanTag>{currentPreview.category}</CleanTag>
+                      )}
+                      {currentPreview.level && (
+                        <CleanTag accent>{currentPreview.level}</CleanTag>
+                      )}
                     </div>
                   </div>
 
-                  {/* Details Body (Scrollable) */}
-                  <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-8 no-scrollbar">
-                    {/* Muscles */}
+                  <div className="section-scroll no-scrollbar flex-1 overflow-y-auto px-5 py-5 md:px-8 md:py-6">
                     <div>
-                      <p className="text-[10px] font-black uppercase text-cyan-500 tracking-widest mb-3">
-                        Primary Muscles
+                      <p className="mb-3 text-[11px] font-semibold text-[#22FFD1]">
+                        Primary muscles
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {finalExercises[activeIndex].primaryMuscles?.map(
-                          (m) => (
-                            <span
-                              key={m}
-                              className="border border-slate-700 bg-slate-800 text-slate-200 px-4 py-2 rounded-lg text-xs font-semibold uppercase"
-                            >
-                              {m}
-                            </span>
-                          ),
-                        )}
+                        {currentPreview.primaryMuscles?.map((m) => (
+                          <span
+                            key={m}
+                            className="border border-[#6D8DFF]/30 bg-[#1B43C4] px-3 py-2 text-[11px] font-medium capitalize text-white"
+                          >
+                            {m}
+                          </span>
+                        ))}
                       </div>
                     </div>
 
-                    {/* Instructions */}
-                    <div>
-                      <p className="text-[10px] font-black uppercase text-cyan-500 tracking-widest mb-4">
-                        Action Sequence
+                    <div className="mt-8">
+                      <p className="mb-4 text-[11px] font-semibold text-[#22FFD1]">
+                        Instructions
                       </p>
-                      <div className="space-y-6">
-                        {finalExercises[activeIndex].instructions?.map(
-                          (step, i) => (
-                            <div key={i} className="flex gap-4">
-                              <span className="w-6 h-6 shrink-0 rounded bg-slate-800 border border-slate-700 text-cyan-500 flex items-center justify-center text-xs font-bold">
-                                {i + 1}
-                              </span>
-                              <p className="text-slate-400 text-sm leading-relaxed mt-0.5">
-                                {step}
-                              </p>
-                            </div>
-                          ),
-                        )}
+                      <div className="space-y-4">
+                        {currentPreview.instructions?.map((step, i) => (
+                          <div key={i} className="flex gap-3 md:gap-4">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-[#22FFD1] text-[11px] font-semibold text-[#04114F] md:h-8 md:w-8">
+                              {i + 1}
+                            </span>
+                            <p className="pt-0.5 text-sm leading-relaxed text-slate-200 md:text-[15px]">
+                              {step}
+                            </p>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Details Footer / Action Bar (Fixed) */}
-                  <div className="p-6 border-t border-slate-800 bg-slate-900 shrink-0">
+                  <div className="shrink-0 border-t border-white/10 bg-[#04114F] p-5 md:p-6">
                     <button
-                      onClick={() => toggleRoutine(finalExercises[activeIndex])}
-                      className={`w-full py-4 rounded-xl font-bold uppercase text-sm tracking-widest transition-all ${
-                        routine.some(
-                          (r) => r.id === finalExercises[activeIndex].id,
-                        )
-                          ? "bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20"
-                          : "bg-cyan-500 text-slate-900 hover:bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                      onClick={() => toggleRoutine(currentPreview)}
+                      className={`w-full py-4 text-sm font-semibold transition-all ${
+                        routine.some((r) => r.id === currentPreview.id)
+                          ? "border border-red-400 bg-transparent text-red-400 hover:bg-red-500/10"
+                          : "bg-[#22FFD1] text-[#04114F] hover:bg-[#54FFDC]"
                       }`}
                     >
-                      {routine.some(
-                        (r) => r.id === finalExercises[activeIndex].id,
-                      )
-                        ? "Remove from Routine"
-                        : "Add to Routine"}
+                      {routine.some((r) => r.id === currentPreview.id)
+                        ? "Remove from routine"
+                        : "Add to routine"}
                     </button>
                   </div>
                 </div>
@@ -638,67 +870,84 @@ export default function WorkoutWizard() {
         </section>
       </div>
 
-      {/* ROUTINE MANAGER MODAL */}
       <AnimatePresence>
         {isRoutineModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-6 backdrop-blur-md"
+            className="fixed inset-0 z-[220] flex items-center justify-center bg-[#04114F]/95 p-3 backdrop-blur-sm md:p-6"
           >
-            <div className="bg-[#0a0a0a] border border-white/20 w-full max-w-xl h-[75vh] flex flex-col relative">
-              <div className="p-8 border-b border-white/10 flex justify-between items-center bg-[#111]">
-                <h2 className="text-3xl font-black uppercase italic text-white tracking-tighter">
-                  My <span className="text-cyan-400">Routine</span>
-                </h2>
-                <div className="flex gap-6 items-center">
+            <div className="flex h-[90dvh] w-full max-w-2xl flex-col border border-white/10 bg-[#04114F] md:h-[80dvh]">
+              <div className="flex items-center justify-between border-b border-white/10 bg-[#0A2A9B] px-5 py-5 md:px-8">
+                <div>
+                  <h2 className="text-2xl font-black uppercase tracking-tight text-white md:text-3xl">
+                    My <span className="text-[#22FFD1]">Routine</span>
+                  </h2>
+                </div>
+
+                <div className="flex items-center gap-2 md:gap-4">
                   <button
                     onClick={() => setRoutine([])}
-                    className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:text-white transition-colors"
+                    className="text-[10px] font-black uppercase tracking-[0.18em] text-red-400 transition-colors hover:text-white md:text-xs"
                   >
-                    Clear All
+                    Clear all
                   </button>
                   <button
                     onClick={() => setIsRoutineModalOpen(false)}
-                    className="bg-white text-black p-2 hover:bg-cyan-500"
+                    className="flex h-10 w-10 items-center justify-center bg-[#22FFD1] text-[#04114F]"
                   >
                     <X size={18} />
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-black">
+
+              <div className="section-scroll no-scrollbar flex-1 overflow-y-auto bg-[#04114F] p-4 md:p-6">
                 {routine.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-700 font-black uppercase text-xs tracking-widest">
-                    No Sequences Defined
+                  <div className="flex h-full flex-col items-center justify-center text-center">
+                    <p className="text-sm font-black uppercase tracking-[0.18em] text-slate-300 md:text-base">
+                      No routine items yet
+                    </p>
                   </div>
                 ) : (
-                  routine.map((ex) => (
-                    <div
-                      key={ex.id}
-                      className="bg-zinc-900/50 p-5 flex justify-between items-center border border-white/5 hover:border-cyan-500/30 transition-all"
-                    >
-                      <div className="flex flex-col">
-                        <span className="text-white font-black uppercase italic text-sm">
-                          {ex.name}
-                        </span>
-                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                          {ex.equipment} • {ex.level}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => toggleRoutine(ex)}
-                        className="text-red-500 hover:bg-red-500 hover:text-white p-2 transition-all"
+                  <div className="space-y-3">
+                    {routine.map((ex) => (
+                      <div
+                        key={ex.id}
+                        className="flex items-center justify-between border border-[#6D8DFF]/30 bg-[#1B43C4] p-4 md:p-5"
                       >
-                        <Trash2 size={20} />
-                      </button>
-                    </div>
-                  ))
+                        <div className="min-w-0">
+                          <span className="block truncate text-sm font-black uppercase tracking-tight text-white md:text-base">
+                            {ex.name}
+                          </span>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {ex.equipment && (
+                              <CleanTag>{ex.equipment}</CleanTag>
+                            )}
+                            {ex.category && <CleanTag>{ex.category}</CleanTag>}
+                            {ex.level && <CleanTag accent>{ex.level}</CleanTag>}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => toggleRoutine(ex)}
+                          className="ml-4 flex h-10 w-10 shrink-0 items-center justify-center border border-red-400 text-red-400 transition-all hover:bg-red-500/10"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-              <div className="p-8 border-t border-white/10 bg-[#111]">
-                <button className="w-full bg-cyan-500 py-5 text-black font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_30px_rgba(34,211,238,0.2)]">
-                  Export Sequence (.CSV)
+
+              <div className="border-t border-white/10 bg-[#04114F] p-4 md:p-6">
+                <button
+                  onClick={exportRoutineCSV}
+                  className="flex w-full items-center justify-center gap-2 bg-[#22FFD1] py-4 text-[11px] font-black uppercase tracking-[0.2em] text-[#04114F] transition-all hover:bg-[#54FFDC] md:text-xs"
+                >
+                  <Download size={16} />
+                  Export routine (.csv)
                 </button>
               </div>
             </div>

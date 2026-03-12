@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -13,49 +13,28 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
+// ============================================
+// CONFIGURATION
+// ============================================
+const config = {
+  colors: {
+    bgPrimary: "#051061",
+    bgDark: "#020a21",
+    accent: "#1AF0BE",
+    textPrimary: "#ffffff",
+    textOnAccent: "#051061",
+  },
+};
+
 const columns = [
-  {
-    key: "todo",
-    title: "To Do",
-    icon: Layout,
-    borderColor: "border-cyan-400",
-    columnBg: "bg-cyan-950/40",
-    cardBg: "bg-[#082f49]",
-    btnBg: "bg-cyan-400",
-    glow: "shadow-[0_0_15px_rgba(34,211,238,0.3)]",
-    accentText: "text-cyan-400",
-  },
-  {
-    key: "progress",
-    title: "In Progress",
-    icon: Calendar,
-    borderColor: "border-fuchsia-500",
-    columnBg: "bg-fuchsia-950/40",
-    cardBg: "bg-[#4c1d95]",
-    btnBg: "bg-fuchsia-500",
-    glow: "shadow-[0_0_15px_rgba(217,70,239,0.3)]",
-    accentText: "text-fuchsia-400",
-  },
-  {
-    key: "done",
-    title: "Done",
-    icon: CheckCircle2,
-    borderColor: "border-emerald-400",
-    columnBg: "bg-emerald-950/40",
-    cardBg: "bg-[#064e3b]",
-    btnBg: "bg-emerald-400",
-    glow: "shadow-[0_0_15px_rgba(52,211,153,0.3)]",
-    accentText: "text-emerald-400",
-  },
+  { key: "todo", title: "To Do", icon: Layout },
+  { key: "progress", title: "In Progress", icon: Calendar },
+  { key: "done", title: "Done", icon: CheckCircle2 },
 ];
 
-const TAGS = [
-  { name: "Organize", color: "bg-cyan-500/10 text-cyan-300 border-cyan-400" },
-  { name: "Plan", color: "bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-400" },
-  { name: "Note", color: "bg-emerald-500/10 text-emerald-300 border-emerald-400" },
-];
+const TAGS = [{ name: "Organize" }, { name: "Plan" }, { name: "Note" }];
 
-const LS_KEY = "neon-kanban-tasks";
+const LS_KEY = "notrainer-kanban-tasks";
 
 function emptyBoard() {
   return { todo: [], progress: [], done: [] };
@@ -69,9 +48,15 @@ function groupByStatus(rows) {
   return board;
 }
 
-export default function NeonKanban() {
+export default function KanbanPage() {
   const [data, setData] = useState(emptyBoard());
   const [dragging, setDragging] = useState(null);
+
+  // Refs for mobile drag
+  const mainRef = useRef(null);
+  const [touchPos, setTouchPos] = useState({ x: 0, y: 0 });
+  const longPressTimer = useRef(null);
+  const [isDragReady, setIsDragReady] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [activeColumn, setActiveColumn] = useState(null);
@@ -86,15 +71,12 @@ export default function NeonKanban() {
   // AUTH STATE
   useEffect(() => {
     let mounted = true;
-
     supabase.auth.getSession().then(({ data }) => {
       if (mounted) setSession(data.session ?? null);
     });
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) =>
-      setSession(newSession ?? null),
+    const { data: sub } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => setSession(newSession ?? null),
     );
-
     return () => {
       mounted = false;
       sub?.subscription?.unsubscribe?.();
@@ -105,16 +87,12 @@ export default function NeonKanban() {
   useEffect(() => {
     const run = async () => {
       setCloudError("");
-
-      // Logged out -> localStorage
       if (!userId) {
         const saved = localStorage.getItem(LS_KEY);
         if (saved) setData(JSON.parse(saved));
         else setData(emptyBoard());
         return;
       }
-
-      // Logged in -> Supabase
       setLoadingCloud(true);
       try {
         const { data: rows, error } = await supabase
@@ -122,21 +100,19 @@ export default function NeonKanban() {
           .select("id,title,status,created_at")
           .eq("user_id", userId)
           .order("created_at", { ascending: true });
-
         if (error) throw error;
         setData(groupByStatus(rows ?? []));
       } catch (e) {
         console.error(e);
-        setCloudError("Could not load from Supabase (check table + RLS).");
+        setCloudError("Could not load data.");
       } finally {
         setLoadingCloud(false);
       }
     };
-
     run();
   }, [userId]);
 
-  // SAVE TO LOCAL STORAGE only when logged out
+  // SAVE TO LOCAL STORAGE
   useEffect(() => {
     if (!userId) localStorage.setItem(LS_KEY, JSON.stringify(data));
   }, [data, userId]);
@@ -153,7 +129,6 @@ export default function NeonKanban() {
       .insert([{ user_id: userId, title, status }])
       .select("id,title,status")
       .limit(1);
-
     if (error) throw error;
     return rows?.[0];
   };
@@ -164,7 +139,6 @@ export default function NeonKanban() {
       .delete()
       .eq("id", id)
       .eq("user_id", userId);
-
     if (error) throw error;
   };
 
@@ -174,261 +148,393 @@ export default function NeonKanban() {
       .update({ status })
       .eq("id", id)
       .eq("user_id", userId);
-
     if (error) throw error;
   };
 
   // ACTIONS
   const addTask = async () => {
     if (!taskTitle.trim() || !activeColumn) return;
-
     const title = taskTitle.trim();
     const optimistic = { id: crypto.randomUUID(), title };
-
-    // Optimistic UI
     setData((prev) => ({
       ...prev,
       [activeColumn]: [...prev[activeColumn], optimistic],
     }));
-
     setTaskTitle("");
     setModalOpen(false);
-
-    // If logged in, also insert into Supabase and swap ID
     if (userId) {
       try {
-        const created = await insertSupabaseTask({ title, status: activeColumn });
+        const created = await insertSupabaseTask({
+          title,
+          status: activeColumn,
+        });
         if (created?.id) {
           setData((prev) => ({
             ...prev,
             [activeColumn]: prev[activeColumn].map((t) =>
-              t.id === optimistic.id ? { id: created.id, title: created.title } : t,
+              t.id === optimistic.id
+                ? { id: created.id, title: created.title }
+                : t,
             ),
           }));
         }
       } catch (e) {
         console.error(e);
-        setCloudError("Insert failed (Supabase).");
+        setCloudError("Insert failed.");
       }
     }
   };
 
   const deleteTask = async (col, id) => {
-    // Optimistic
     setData((prev) => ({
       ...prev,
       [col]: prev[col].filter((i) => i.id !== id),
     }));
-
     if (userId) {
       try {
         await deleteSupabaseTask(id);
       } catch (e) {
         console.error(e);
-        setCloudError("Delete failed (Supabase).");
+        setCloudError("Delete failed.");
       }
     }
   };
 
+  // ============================================
+  // DRAG & DROP LOGIC
+  // ============================================
+
   const onDrop = async (columnKey) => {
     if (!dragging) return;
-
     if (dragging.column === columnKey) {
       setDragging(null);
+      setIsDragReady(false);
       return;
     }
-
     const movedItem = dragging.item;
     const fromCol = dragging.column;
-
-    // Optimistic UI move
     setData((prev) => ({
       ...prev,
       [fromCol]: prev[fromCol].filter((i) => i.id !== movedItem.id),
       [columnKey]: [...prev[columnKey], movedItem],
     }));
     setDragging(null);
+    setIsDragReady(false);
 
     if (userId) {
       try {
         await updateSupabaseStatus(movedItem.id, columnKey);
       } catch (e) {
         console.error(e);
-        setCloudError("Move failed (Supabase).");
+        setCloudError("Move failed.");
       }
     }
   };
 
+  // --- Desktop Handlers ---
+  const handleDragStart = (e, item, colKey) => {
+    setDragging({ item, column: colKey });
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  // --- Mobile Handlers (Long Press) ---
+
+  const handleTouchStart = (e, item, colKey) => {
+    longPressTimer.current = setTimeout(() => {
+      setDragging({ item, column: colKey });
+      setIsDragReady(true);
+    }, 300);
+  };
+
+  const handleTouchMove = (e) => {
+    if (longPressTimer.current && !isDragReady) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+      return;
+    }
+
+    if (!dragging) return;
+
+    const touch = e.touches[0];
+    setTouchPos({ x: touch.clientX, y: touch.clientY });
+
+    if (mainRef.current) {
+      const rect = mainRef.current.getBoundingClientRect();
+      const scrollThreshold = 60;
+      const scrollSpeed = 10;
+
+      if (touch.clientY < rect.top + scrollThreshold) {
+        mainRef.current.scrollTop -= scrollSpeed;
+      } else if (touch.clientY > rect.bottom - scrollThreshold) {
+        mainRef.current.scrollTop += scrollSpeed;
+      }
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+
+    if (!dragging) return;
+
+    const dropTarget = document.elementFromPoint(touchPos.x, touchPos.y);
+    const columnElement = dropTarget?.closest("[data-column-key]");
+
+    if (columnElement) {
+      const targetKey = columnElement.getAttribute("data-column-key");
+      if (targetKey) {
+        onDrop(targetKey);
+      }
+    } else {
+      setDragging(null);
+      setIsDragReady(false);
+    }
+  };
+
   return (
-    <div
-      className="w-full flex flex-col items-center bg-[#0a0f1d] text-white font-sans overflow-hidden relative shadow-[inset_0_0_100px_rgba(59,130,246,0.1)]"
-      style={{
-        height: "93.5vh",
-        backgroundImage:
-          "radial-gradient(circle at 20% 40%, rgba(39, 77, 201, 0.74), transparent 60%), radial-gradient(circle at 70% 60%, rgba(49, 198, 146, 0.51), transparent 60%)",
-      }}
-    >
-      {/* HEADER */}
-      <header className="w-full max-w-6xl px-8 pt-8 pb-4 shrink-0 flex flex-col items-center text-center">
-        <h1 className="text-4xl font-black tracking-tighter mb-4 uppercase text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
-          Kanban Board
-        </h1>
-
-        <div className="flex gap-2 flex-wrap justify-center mb-3">
-          {TAGS.map((tag) => (
-            <span
-              key={tag.name}
-              className={`px-3 py-1 border rounded-none ${tag.color} text-[10px] font-black uppercase tracking-widest`}
-            >
-              {tag.name}
-            </span>
-          ))}
-        </div>
-
-        <div className="text-[11px] font-black uppercase tracking-widest text-white/70">
-          Mode:{" "}
-          <span className="text-white">
-            {userId ? "Supabase (Logged in)" : "LocalStorage (Logged out)"}
-          </span>
-          {loadingCloud && <span className="ml-2 text-cyan-300">Loading...</span>}
-        </div>
-
-        {cloudError && (
-          <div className="mt-2 text-[11px] font-black uppercase tracking-widest text-red-400">
-            {cloudError}
-          </div>
-        )}
-      </header>
-
-      {/* BOARD SECTION */}
-      <main
-        className="w-full max-w-7xl flex gap-4 px-8 pb-4 overflow-hidden justify-center"
-        style={{ height: "calc(100vh - 210px)" }}
-      >
-        {columns.map((col) => (
-          <div
-            key={col.key}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={() => onDrop(col.key)}
-            className={`flex-1 flex flex-col border-2 ${col.borderColor} ${col.glow} ${col.columnBg} overflow-hidden rounded-none shadow-xl`}
-          >
-            {/* COLUMN HEADER */}
-            <div
-              className={`p-4 flex items-center justify-between border-b-2 ${col.borderColor} bg-black/40 backdrop-blur-md`}
-            >
-              <div className="flex items-center gap-3">
-                <col.icon size={20} className={col.accentText} />
-                <h2 className="font-black text-sm uppercase tracking-tighter italic">
-                  {col.title}
-                </h2>
-              </div>
-              <button
-                onClick={() => {
-                  setActiveColumn(col.key);
-                  setModalOpen(true);
-                }}
-                className={`p-1 rounded-none text-black font-black ${col.btnBg} hover:brightness-110 active:scale-95 transition-all`}
-              >
-                <Plus size={18} strokeWidth={4} />
-              </button>
-            </div>
-
-            {/* CARDS SECTION */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-              <AnimatePresence mode="popLayout">
-                {data[col.key].map((item) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    draggable
-                    onDragStart={() => setDragging({ item, column: col.key })}
-                    className={`border border-white/10 ${col.cardBg} p-4 rounded-none flex flex-col cursor-grab active:cursor-grabbing hover:border-white/40 transition-all group`}
-                  >
-                    <div className="flex gap-3 items-start justify-between">
-                      <div className="flex gap-3 items-start">
-                        <GripVertical
-                          size={16}
-                          className={`${col.accentText} opacity-30 mt-1 shrink-0`}
-                        />
-                        <p className="text-[14px] font-bold text-white leading-snug uppercase tracking-tight">
-                          {item.title}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => deleteTask(col.key, item.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-white/40 hover:text-red-500 transition-all"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-        ))}
-      </main>
-
-      {/* MODAL */}
-      <AnimatePresence>
-        {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className={`relative bg-[#0f172a] border-2 ${activeColMeta?.borderColor} w-full max-w-sm p-8 rounded-none`}
-            >
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-2xl font-black uppercase tracking-tighter text-white">
-                  New Task
-                </h3>
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className="text-white hover:opacity-50 transition-opacity"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <input
-                autoFocus
-                value={taskTitle}
-                onChange={(e) => setTaskTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addTask()}
-                placeholder="Task title..."
-                className="w-full border-b border-white/20 bg-transparent rounded-none px-0 py-2 text-lg font-bold outline-none focus:border-white transition-all mb-8 placeholder:text-white/60 text-white"
-              />
-
-              <button
-                onClick={addTask}
-                className={`w-full py-3 text-sm font-black uppercase tracking-widest text-black rounded-none ${activeColMeta?.btnBg}`}
-              >
-                Create
-              </button>
-
-              <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/60">
-                {userId ? "Saved to Supabase" : "Saved to LocalStorage"}
-              </p>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
+    <>
       <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .kanban-scroll::-webkit-scrollbar {
           width: 4px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
+        .kanban-scroll::-webkit-scrollbar-thumb {
+          background: rgba(26, 240, 190, 0.3);
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
+        .kanban-scroll::-webkit-scrollbar-track {
           background: transparent;
         }
       `}</style>
-    </div>
+
+      <div
+        className="relative flex w-full flex-col items-center overflow-hidden font-sans selection:bg-[#1AF0BE] selection:text-[#051061]"
+        style={{ backgroundColor: config.colors.bgPrimary, height: "93.6dvh" }}
+      >
+        {/* Background Effects */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute top-[-20%] left-[-10%] h-[600px] w-[600px] bg-[#051061] blur-[140px]}" />
+          <motion.div
+            animate={{ x: [0, 40, 0], y: [0, -20, 0] }}
+            transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
+            className="absolute bottom-[-10%] right-[-10%] h-[550px] w-[550px] bg-[#1AF0BE] blur-[130px] opacity-20"
+          />
+        </div>
+
+        {/* Header */}
+        <header className="relative z-10 w-full max-w-6xl px-6 pt-8 pb-4 text-center md:pt-10 md:pb-6">
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-3xl font-black uppercase tracking-tight text-white md:text-5xl"
+            style={{ fontFamily: "'Krona One', sans-serif" }}
+          >
+            Kanban <span className="text-[#1AF0BE]">Board</span>
+          </motion.h1>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {TAGS.map((tag) => (
+              <span
+                key={tag.name}
+                className="px-3 py-1 border border-[#1AF0BE]/40 bg-[#1AF0BE]/10 text-[10px] font-black uppercase tracking-[0.2em] text-[#1AF0BE]"
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
+            Mode:{" "}
+            <span className="text-[#1AF0BE]">
+              {userId ? "Cloud Sync" : "Local Storage"}
+            </span>
+            {loadingCloud && (
+              <span className="ml-2 animate-pulse text-[#1AF0BE]">
+                Syncing...
+              </span>
+            )}
+          </div>
+
+          {/* Instruction Hint for Mobile */}
+          <div className="mt-2 text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 md:hidden">
+            Hold card to drag
+          </div>
+
+          {cloudError && (
+            <div className="mt-2 text-xs font-bold uppercase tracking-widest text-red-400">
+              {cloudError}
+            </div>
+          )}
+        </header>
+
+        {/* Main Grid Container */}
+        <main
+          ref={mainRef}
+          className="relative z-10 grid w-full max-w-6xl flex-1 grid-rows-3 gap-3 overflow-auto px-4 pb-6 md:grid-cols-3 md:grid-rows-1 md:gap-4 md:px-6 no-scrollbar"
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {columns.map((col, index) => (
+            <motion.div
+              key={col.key}
+              data-column-key={col.key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+              onDragOver={handleDragOver}
+              onDrop={() => onDrop(col.key)}
+              className="flex flex-col border-l-4 bg-[#020a21]/60 backdrop-blur-sm"
+              style={{ borderColor: config.colors.accent }}
+            >
+              {/* Column Header */}
+              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <col.icon size={18} className="text-[#1AF0BE]" />
+                  <h2 className="text-sm font-black uppercase tracking-tight text-white">
+                    {col.title}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => {
+                    setActiveColumn(col.key);
+                    setModalOpen(true);
+                  }}
+                  className="flex h-7 w-7 items-center justify-center bg-[#1AF0BE] text-[#051061] transition-transform hover:scale-110 active:scale-95"
+                >
+                  <Plus size={18} strokeWidth={3} />
+                </button>
+              </div>
+
+              {/* Cards Container */}
+              <div className="flex-1 space-y-3 overflow-y-auto p-3 kanban-scroll">
+                <AnimatePresence mode="popLayout">
+                  {data[col.key].length === 0 && (
+                    <div className="flex h-full items-center justify-center text-[9px] uppercase tracking-widest text-white/20 md:hidden">
+                      Drop here
+                    </div>
+                  )}
+                  {data[col.key].map((item) => {
+                    const isThisDragging =
+                      dragging?.item.id === item.id && isDragReady;
+
+                    return (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{
+                          opacity: isThisDragging ? 0.3 : 1,
+                          scale: 1,
+                        }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, item, col.key)}
+                        onTouchStart={(e) => handleTouchStart(e, item, col.key)}
+                        className={`group cursor-grab border bg-[#112B8A] p-4 active:cursor-grabbing transition-all
+                          ${isThisDragging ? "border-[#1AF0BE] opacity-30" : "border-white/10 hover:border-[#1AF0BE]/40"}
+                        `}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-3">
+                            <GripVertical
+                              size={16}
+                              className="mt-0.5 shrink-0 text-[#1AF0BE]/40"
+                            />
+                            <p className="text-sm font-bold uppercase leading-snug tracking-tight text-white">
+                              {item.title}
+                            </p>
+                          </div>
+
+                          {/* DELETE BUTTON: Visible on mobile, hover on desktop */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent triggering drag/touch logic
+                              deleteTask(col.key, item.id);
+                            }}
+                            className="text-white/40 hover:text-red-400 transition-colors md:opacity-0 md:group-hover:opacity-100"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          ))}
+        </main>
+
+        {/* Floating Ghost Element for Mobile Drag */}
+        {dragging && isDragReady && (
+          <div
+            className="fixed z-[100] pointer-events-none w-[200px] p-4 border-2 border-[#1AF0BE] bg-[#051061] text-white font-bold uppercase text-sm shadow-[0_0_20px_rgba(26,240,190,0.4)]"
+            style={{
+              left: touchPos.x - 100,
+              top: touchPos.y - 30,
+              transform: "rotate(2deg)",
+            }}
+          >
+            {dragging.item.title}
+          </div>
+        )}
+
+        {/* Modal */}
+        <AnimatePresence>
+          {modalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-sm overflow-hidden bg-[#1AF0BE] p-8 text-[#051061] shadow-xl"
+              >
+                <div className="absolute inset-x-0 top-0 h-1 bg-[#051061]" />
+                <div className="mb-6 flex items-center justify-between">
+                  <h3 className="text-2xl font-black uppercase tracking-tight">
+                    New Task
+                  </h3>
+                  <button
+                    onClick={() => setModalOpen(false)}
+                    className="text-[#051061]/60 transition-colors hover:text-[#051061]"
+                  >
+                    <X size={24} strokeWidth={3} />
+                  </button>
+                </div>
+                <input
+                  autoFocus
+                  value={taskTitle}
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addTask()}
+                  placeholder="Task title..."
+                  className="w-full border-b-2 border-[#051061]/30 bg-transparent py-3 text-lg font-bold placeholder:text-[#051061]/40 focus:border-[#051061] focus:outline-none"
+                />
+                <button
+                  onClick={addTask}
+                  className="mt-8 w-full bg-[#051061] py-3 text-sm font-black uppercase tracking-[0.2em] text-[#1AF0BE] transition-all hover:bg-[#020a21] active:scale-95"
+                >
+                  Create Task
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
   );
 }

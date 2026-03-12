@@ -19,75 +19,75 @@ import {
   Database,
   Columns3,
   Gamepad2,
-  Trophy,
   ArrowRight,
+  X,
 } from "lucide-react";
 
 import FrontView from "@/components/anatomy/FrontView";
 
 // ============================================
-// DARKER & SOLID COLOR THEME (NO OPACITY)
+// CENTRALIZED CONFIGURATION
 // ============================================
-const theme = {
-  primary: "#0284c7", // Deep Sky Blue
-  secondary: "#7c3aed", // Deep Violet
-  accent: {
-    success: "#059669", // Deep Emerald
-    orange: "#ea580c", // Deep Orange
-    pink: "#db2777", // Deep Pink
-    yellow: "#85bc0fff", // Deep Yellow
+const config = {
+  colors: {
+    bgPrimary: "#051061", // Deep Blue
+    bgDark: "#020a21", // Darker Blue/Black for contrast sections
+    accent: "#1AF0BE", // Mint Green
+
+    textPrimary: "#ffffff",
+    textOnAccent: "#051061", // Text color for inside accent cards
+    textSecondary: "#cbd5e1",
+  },
+  heights: {
+    fullPage: "93.6dvh",
+    sectionContent: "calc(100dvh - 120px)",
+  },
+  fonts: {
+    heading: "'Righteous', cursive",
+  },
+  animation: {
+    marqueeDuration: "45s",
   },
 };
 
+// ============================================
+// COMPONENT DATA
+// ============================================
 const features = [
   {
-    title: "Custom Workout Wizard",
-    description:
-      "Select body muscles from an interactive diagram and generate relevant workouts instantly.",
-    icon: <Wand2 className="w-8 h-8 text-white" />,
-    color: theme.primary,
+    title: "Workout Wizard",
+    description: "Select muscles and generate workouts instantly.",
+    icon: Wand2,
   },
   {
-    title: "SVG Muscle Selection",
-    description:
-      "Interactive human body diagram lets you visually select muscle groups for intuitive discovery.",
-    icon: <UserCircle className="w-8 h-8 text-white" />,
-    color: theme.secondary,
+    title: "Muscle Map",
+    description: "Interactive diagram for intuitive discovery.",
+    icon: UserCircle,
   },
   {
-    title: "Rich Workout Dataset",
-    description:
-      "A continuously growing collection of exercises categorized by muscle and goals.",
-    icon: <Database className="w-8 h-8 text-white" />,
-    color: theme.accent.pink,
+    title: "Rich Dataset",
+    description: "Categorized exercises for all goals.",
+    icon: Database,
   },
   {
-    title: "Health Calculators",
-    description:
-      "BMI, calorie needs, and protein intake calculated instantly with modern formulas.",
-    icon: <Calculator className="w-8 h-8 text-white" />,
-    color: theme.accent.success,
+    title: "Calculators",
+    description: "BMI, calories, and protein formulas.",
+    icon: Calculator,
   },
   {
-    title: "24/7 Fitness Chatbot",
-    description:
-      "Ask fitness or nutrition questions anytime with an intelligent assistant.",
-    icon: <MessageSquare className="w-8 h-8 text-white" />,
-    color: theme.accent.orange,
+    title: "AI Chatbot",
+    description: "24/7 intelligent fitness assistant.",
+    icon: MessageSquare,
   },
   {
-    title: "Workout Kanban Board",
-    description:
-      "Organize workouts and fitness tasks using a visual Kanban board.",
-    icon: <Columns3 className="w-8 h-8 text-white" />,
-    color: theme.primary,
+    title: "Kanban Board",
+    description: "Visual tracking for fitness tasks.",
+    icon: Columns3,
   },
   {
     title: "Mini Games",
-    description:
-      "Simple games designed to improve focus and keep motivation high between workouts.",
-    icon: <Gamepad2 className="w-8 h-8 text-white" />,
-    color: theme.secondary,
+    description: "Boost focus and motivation.",
+    icon: Gamepad2,
   },
 ];
 
@@ -100,9 +100,25 @@ const Hero = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [selectedExcuseId, setSelectedExcuseId] = useState(1);
   const [wordIndex, setWordIndex] = useState(0);
-
+  const [mobilePopupProblem, setMobilePopupProblem] = useState(null);
   const anatomyBoxRef = useRef(null);
-  const snapContainerRef = useRef(null);
+  const [activeProblem, setActiveProblem] = useState(null);
+
+  const titles = [
+    { text: "noTrainer", font: "var(--font-space)" },
+    { text: "AI Trainer", font: "var(--font-orbitron)" },
+    { text: "Train Anywhere", font: "var(--font-sora)" },
+  ];
+
+  const [titleIndex, setTitleIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTitleIndex((prev) => (prev + 1) % titles.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -112,80 +128,71 @@ const Hero = () => {
     return () => clearInterval(textInterval);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = mobilePopupProblem ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobilePopupProblem]);
+
   const problems = useMemo(
     () => [
       {
         id: 1,
         text: "No gym access",
-        solution:
-          "Train anywhere with bodyweight workouts and home equipment routines.",
-        icon: <MapPin size={24} />,
-        color: theme.accent.orange,
+        solution: "Bodyweight & home equipment routines.",
+        icon: MapPin,
       },
       {
         id: 2,
         text: "Too expensive",
-        solution: "Free workout plans and nutrition calculators.",
-        icon: <Calculator size={24} />,
-        color: theme.primary,
+        solution: "Free workout plans & calculators.",
+        icon: Calculator,
       },
       {
         id: 3,
         text: "Don't know how",
-        solution: "Step-by-step exercise guides with photos.",
-        icon: <Info size={24} />,
-        color: theme.secondary,
+        solution: "Step-by-step exercise guides.",
+        icon: Info,
       },
       {
         id: 4,
         text: "Need privacy",
-        solution: "AI trainer available 24/7 with no judgment.",
-        icon: <MessageSquare size={24} />,
-        color: theme.accent.pink,
+        solution: "24/7 AI trainer, no judgment.",
+        icon: MessageSquare,
       },
       {
         id: 5,
         text: "Lack of knowledge",
-        solution:
-          "800+ exercises with difficulty levels and detailed instructions.",
-        icon: <Dumbbell size={24} />,
-        color: theme.secondary,
+        solution: "800+ exercises with instructions.",
+        icon: Dumbbell,
       },
       {
         id: 6,
         text: "Can't go out",
-        solution: "Effective home workouts designed for any space.",
-        icon: <Zap size={24} />,
-        color: theme.accent.yellow,
+        solution: "Effective home workout programs.",
+        icon: Zap,
       },
       {
         id: 7,
         text: "Need structure",
-        solution: "Organized workout plans with Kanban Board tracking.",
-        icon: <LayoutDashboard size={24} />,
-        color: theme.primary,
+        solution: "Visual Kanban Board tracking.",
+        icon: LayoutDashboard,
       },
       {
         id: 8,
         text: "No motivation",
-        solution: "Motivation Marquee wont let you rest.",
-        icon: <Target size={24} />,
-        color: theme.accent.orange,
+        solution: "Motivation Marquee & reminders.",
+        icon: Target,
       },
       {
         id: 9,
         text: "No equipment",
-        solution: "Build strength with proven bodyweight training programs.",
-        icon: <Package size={24} />,
-        color: theme.accent.success,
+        solution: "Proven bodyweight training.",
+        icon: Package,
       },
     ],
     [],
-  );
-
-  const selectedProblem = useMemo(
-    () => problems.find((p) => p.id === selectedExcuseId) || problems[0],
-    [problems, selectedExcuseId],
   );
 
   const handleMouseMove = (e) => {
@@ -197,357 +204,500 @@ const Hero = () => {
   if (!mounted) return null;
 
   return (
-    <div className="relative w-full bg-slate-900 text-white font-sans selection:bg-sky-500 selection:text-black">
+    <>
+      {/* CSS Variables and Global Styles */}
       <style>{`
-        /* Import a highly unique, bold font for the brand */
-        @import url('https://fonts.googleapis.com/css2?family=Righteous&display=swap');
-
+        :root {
+          --font-heading: ${config.fonts.heading};
+          --height-full-page: ${config.heights.fullPage};
+          --height-section-content: ${config.heights.sectionContent};
+          --color-accent: ${config.colors.accent};
+          --color-bg-primary: ${config.colors.bgPrimary};
+        }
+        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .force-snap {
+
+        .snap-container {
+          height: 93.6dvh;
+          overflow-y: auto;
           scroll-snap-type: y mandatory;
           scroll-behavior: smooth;
         }
-        .force-snap > section {
+        .snap-section {
           scroll-snap-align: start;
-          scroll-snap-stop: always;
+          min-height: var(--height-full-page);
         }
 
-        /* HARDCODED SVG SIZING */
         .anatomy-svg-wrapper svg {
-          width: 420px !important;
-          height: 520px !important;
+          width: var(--svg-width, 420px) !important;
+          height: var(--svg-height, 520px) !important;
           max-width: 100%;
           display: block;
           margin: 0 auto;
           cursor: pointer;
         }
+
+        @keyframes scrollFeatures {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-scroll-features {
+          animation: scrollFeatures ${config.animation.marqueeDuration} linear infinite;
+        }
+
+        @media (max-width: 767px) {
+          .anatomy-svg-wrapper svg {
+            --svg-width: 300px;
+            --svg-height: 380px;
+          }
+        }
+        
+        /* Alternating Card Style: Accent Background with Blue Text */
+        .accent-card {
+          background: ${config.colors.accent};
+          border: 1px solid rgba(5, 16, 97, 0.2);
+          color: ${config.colors.textOnAccent};
+        }
+        
+        .accent-card h3, 
+        .accent-card span {
+           color: ${config.colors.textOnAccent};
+        }
+        
+        .accent-card p {
+           color: ${config.colors.bgPrimary}; /* Dark blue for body text on bright bg */
+           opacity: 0.9;
+        }
+        
+        .accent-card .icon-box {
+           background: ${config.colors.bgPrimary};
+        }
+        
+        .accent-card .icon-box svg {
+           color: ${config.colors.accent};
+        }
       `}</style>
 
-      {/* SNAP CONTAINER */}
-      <div
-        ref={snapContainerRef}
-        className="force-snap overflow-y-scroll no-scrollbar relative z-10"
-        style={{ height: "93.5vh" }}
-      >
-        {/* SECTION 1: BRAND */}
-        <section
-          className="w-full flex flex-col justify-center items-center relative px-6 overflow-hidden bg-cyan-900"
-          style={{ height: "93.5vh" }}
-        >
-          {/* Soft Background Shape*/}
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
-            {/* Cyan Breathing Blob */}
+      {/* Main Container */}
+      <div className="snap-container no-scrollbar relative w-full bg-[#020a21] text-white font-sans selection:bg-[#1AF0BE] selection:text-[#051061]">
+        {/* ==========================================
+            HERO SECTION (Level 1: Blue BG)
+        ========================================== */}
+        <section className="snap-section relative flex h-screen w-full flex-col items-center justify-center overflow-hidden px-6">
+          {/* Background Glows */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            {/* Primary Blue Glow */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 0.6, scale: 1 }}
+              transition={{ duration: 1.5 }}
+              className="absolute top-[-20%] left-[-10%] h-[600px] w-[600px] bg-[#051061] blur-[140px]"
+            />
+            {/* Accent Mint Glow */}
             <motion.div
               animate={{
-                scale: [1, 3, 1],
-                opacity: [0.7, 0.3, 0.7],
+                x: [0, 40, 0],
+                y: [0, -20, 0],
               }}
-              transition={{
-                repeat: Infinity,
-                duration: 10,
-                ease: "easeInOut",
-              }}
-              className="w-[400px] h-[400px] rounded-full bg-cyan-600 blur-3xl"
+              transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
+              className="absolute bottom-[-10%] right-[-10%] h-[550px] w-[550px] bg-[#1AF0BE] blur-[130px] opacity-40"
             />
           </div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center flex flex-col items-center relative z-10"
+            className="relative z-10 flex w-full max-w-5xl flex-col items-center text-center"
           >
-            {/* Title */}
+            {/* Main Title */}
             <motion.h1
-              initial={{ y: 40, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.7 }}
-              className="text-7xl md:text-9xl text-white drop-shadow-xl"
-              style={{ fontFamily: "'Righteous', cursive" }}
+              initial={{ opacity: 0, scale: 0.8, filter: "blur(20px)" }}
+              whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="relative text-6xl font-normal md:text-9xl"
+              style={{ fontFamily: "'Krona One', sans-serif" }}
             >
-              noTrainer
+              {/* The "Echo" Layer - Creates a ghosting effect behind the text */}
+              <motion.span
+                animate={{
+                  opacity: [0, 0.4, 0],
+                  x: [0, -5, 0],
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="absolute inset-0 z-0 text-cyan-500/30 blur-md"
+                aria-hidden="true"
+              >
+                noTrainer AI
+              </motion.span>
+
+              {/* Main Text: Chrome to Ocean Gradient */}
+              <span className="relative z-10 bg-gradient-to-b from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+                noTrainer
+              </span>
+
+              {/* AI: The "Lively" Core with a Liquid Flare effect */}
+              <motion.span
+                className="relative z-10 ml-4 bg-gradient-to-tr from-[#00ffcc] via-[#3399ff] to-[#00ffcc] bg-[length:200%_auto] bg-clip-text text-transparent"
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              >
+                AI
+                {/* A soft glowing "aura" that follows the letters */}
+                <span className="absolute -inset-2 -z-10 animate-pulse bg-cyan-400/20 blur-2xl" />
+              </motion.span>
             </motion.h1>
 
-            {/* Glowing Line */}
+            {/* Accent Line */}
             <motion.div
               initial={{ width: 0 }}
-              whileInView={{ width: 160 }}
+              whileInView={{ width: "6rem" }}
               transition={{ delay: 0.6, duration: 0.7 }}
-              className="h-3 mt-8 bg-sky-400 rounded-full shadow-[0_0_30px_rgba(56,189,248,0.9)]"
+              className="mt-4 h-1.5 bg-[#1AF0BE] shadow-[0_0_20px_rgba(26,240,190,0.8)]"
             />
 
-            {/* Subtitle (Makes it feel alive instantly) */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="mt-8 text-xl md:text-2xl text-cyan-100 font-medium"
-            >
-              Train Anywhere. No Trainer Needed.
-            </motion.p>
+            {/* Tagline */}
+            <p className="mt-5 max-w-md text-lg font-semibold text-slate-200 md:text-xl">
+              Train Anywhere.{" "}
+              <span className="font-semibold text-[#1AF0BE]">
+                No Trainer Needed.
+              </span>
+            </p>
 
-            {/* Scroll Arrow */}
+            {/* Platform Card (Level 2: Accent Card -> Level 3: Blue Text) */}
             <motion.div
-              animate={{ y: [0, 18, 0] }}
-              transition={{ repeat: Infinity, duration: 1.8 }}
-              className="mt-24"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="relative mt-12 w-full max-w-3xl overflow-hidden accent-card p-8 shadow-xl"
             >
-              <ChevronDown
-                className="w-12 h-12 text-sky-400"
-                strokeWidth={2.5}
-              />
+              {/* Top Border Accent */}
+              <div className="absolute inset-x-0 top-0 h-1 bg-[#051061]" />
+
+              <span className="mb-2 block text-left text-xs font-bold uppercase tracking-[0.2em] text-[#051061]">
+                The Platform
+              </span>
+
+              <div className="flex h-20 items-center justify-center overflow-hidden md:h-24">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={wordIndex}
+                    initial={{ y: 50, opacity: 0, rotateX: -40 }}
+                    animate={{ y: 0, opacity: 1, rotateX: 0 }}
+                    exit={{ y: -50, opacity: 0, rotateX: 40 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="text-4xl font-black uppercase tracking-tight text-[#051061] md:text-6xl"
+                  >
+                    {words[wordIndex]}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+
+            {/* Scroll indicator */}
+            <motion.div
+              animate={{ y: [0, 12, 0] }}
+              transition={{
+                repeat: Infinity,
+                duration: 1.5,
+                ease: "easeInOut",
+              }}
+              className="mt-12"
+            >
+              <ChevronDown className="h-8 w-8 text-[#1AF0BE] opacity-70" />
             </motion.div>
           </motion.div>
         </section>
 
-        {/* SECTION 2: TEXT ROTATE */}
+        {/* ==========================================
+            SECTION: MUSCLE SELECTION (Level 1: Dark BG)
+        ========================================== */}
         <section
-          className="w-full flex flex-col justify-center items-center relative px-4 bg-slate-800"
-          style={{ height: "93.5vh" }}
+          className="snap-section relative flex w-full flex-col items-center justify-center overflow-hidden px-6 py-16"
+          style={{ backgroundColor: config.colors.bgDark }}
         >
-          <div className="w-full max-w-5xl rounded-[3rem] p-12 md:p-24 text-center bg-slate-900 border-2 border-slate-700 shadow-2xl hover:border-slate-600 transition-colors duration-300">
-            <span className="text-md font-black uppercase text-violet-400 mb-8 block">
-              The Platform
-            </span>
+          {/* Background */}
+          <div className="absolute inset-0 bg-[#051061]" />
+          <div className="absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 bg-[#1AF0BE] opacity-10 blur-[140px]" />
 
-            <div className="h-24 md:h-32 flex justify-center items-center overflow-hidden cursor-default">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={wordIndex}
-                  initial={{ y: 50, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -50, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-white"
-                >
-                  {words[wordIndex]}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 3: ANATOMY */}
-        <section
-          className="w-full flex flex-col justify-center items-center px-6 bg-slate-900"
-          style={{ height: "93.5vh" }}
-        >
-          <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center">
-            <div className="flex flex-col justify-center">
-              {/* Force one line */}
-              <h2 className="text-4xl lg:text-5xl font-black text-white mb-6 leading-tight tracking-tight whitespace-nowrap">
-                Target Every Muscle
+          <div
+            className="relative flex w-full max-w-5xl flex-col items-center justify-center"
+            style={{ minHeight: "var(--height-section-content)" }}
+          >
+            {/* Heading */}
+            <div className="mb-6 text-center">
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
+                Target Every <span className="text-[#1AF0BE]">Muscle</span>
               </h2>
+              <p className="mt-3 text-sm font-semibold uppercase tracking-[0.18em] text-white/70 md:text-base">
+                Click the anatomy to explore muscle groups
+              </p>
+            </div>
 
+            {/* Selected Muscle */}
+            <div className="mb-6 flex w-full max-w-md items-center justify-center bg-[#1AF0BE] px-5 py-4">
               {selectedMuscle ? (
-                <div className="rounded-3xl border-4 border-emerald-500 bg-slate-800 p-8 shadow-xl inline-block self-start hover:scale-105 transition-transform cursor-default">
-                  <div className="text-sm uppercase tracking-widest text-emerald-400 font-black mb-2">
-                    Selected
-                  </div>
-                  <div className="text-4xl font-black text-white capitalize">
+                <div className="flex items-center gap-3 text-center">
+                  <Activity
+                    size={24}
+                    strokeWidth={2.6}
+                    className="text-[#051061]"
+                  />
+                  <span className="text-xl font-black capitalize tracking-tight text-[#051061] md:text-2xl">
                     {String(selectedMuscle)}
-                  </div>
+                  </span>
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-3 rounded-full bg-emerald-600 px-8 py-4 text-sm font-black uppercase tracking-widest text-white shadow-lg self-start">
-                  <Activity size={20} />
-                  Hover to explore
+                <div className="flex items-center gap-3 text-center">
+                  <Activity
+                    size={24}
+                    strokeWidth={2.6}
+                    className="text-[#051061]"
+                  />
+                  <span className="text-sm font-black uppercase tracking-[0.14em] text-[#051061] md:text-base">
+                    No muscle selected
+                  </span>
                 </div>
               )}
             </div>
 
+            {/* Anatomy */}
             <div
               ref={anatomyBoxRef}
               onMouseMove={handleMouseMove}
-              className="relative h-[65vh] w-full flex items-center justify-center"
+              className="relative flex h-[420px] w-full items-center justify-center md:h-[62vh]"
             >
               <AnimatePresence>
                 {highlightedMuscle && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={{
                       opacity: 1,
                       scale: 1,
-                      x: mousePos.x + 20,
-                      y: mousePos.y - 40,
+                      x: mousePos.x + 18,
+                      y: mousePos.y - 34,
                     }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute top-0 left-0 z-50 pointer-events-none px-5 py-2.5 rounded-xl bg-sky-500 text-white font-black uppercase tracking-widest text-xs shadow-xl"
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="pointer-events-none absolute left-0 top-0 z-50 bg-[#1AF0BE] px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-[#051061]"
                   >
                     {highlightedMuscle}
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <div className="anatomy-svg-wrapper h-full w-full flex items-center justify-center hover:scale-105 transition-transform duration-500">
-                <FrontView
-                  onHover={setHighlightedMuscle}
-                  onLeave={() => setHighlightedMuscle(null)}
-                  onSelect={setSelectedMuscle}
-                  selectedMuscle={selectedMuscle}
-                  highlightedMuscle={highlightedMuscle}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 4: PROBLEM -> SOLUTION */}
-        <section
-          className="w-full flex flex-col justify-center items-center px-6 bg-slate-800"
-          style={{ height: "93.5vh" }}
-        >
-          <div className="max-w-6xl w-full flex flex-col h-full max-h-[75vh] justify-center pt-8">
-            {/* FIXED HEADING */}
-            <div className="flex items-center justify-center gap-6 mb-12 shrink-0">
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-red-400">
-                Problems
-              </h2>
-              <ArrowRight className="w-10 h-10 text-sky-500" strokeWidth={3} />
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-green-400">
-                Solutions
-              </h2>
-            </div>
-
-            {/* SCROLLABLE GRID CONTAINER */}
-            <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {/* Left Column: Scrollable Problems */}
-              <div className="h-full overflow-y-auto no-scrollbar pr-2 pb-4 space-y-3">
-                {problems.map((problem) => {
-                  const active = problem.id === selectedExcuseId;
-
-                  return (
-                    <button
-                      key={problem.id}
-                      onClick={() => setSelectedExcuseId(problem.id)}
-                      className="w-full flex items-center gap-5 p-5 rounded-2xl transition-all duration-200 text-left active:scale-[0.98] border-2"
-                      style={{
-                        backgroundColor: problem.color,
-                        borderColor: active ? "#ffffff" : problem.color,
-                        opacity: active ? 1 : 0.7,
-                      }}
-                    >
-                      {/* Icon */}
-                      <div
-                        className="p-3 rounded-xl flex items-center justify-center text-white"
-                        style={{
-                          backgroundColor: problem.color,
-                        }}
-                      >
-                        {React.cloneElement(problem.icon, {
-                          size: 24,
-                          strokeWidth: active ? 3 : 2,
-                        })}
-                      </div>
-
-                      {/* Text */}
-                      <span className="text-xl font-black uppercase tracking-tight text-white">
-                        {problem.text}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Right Column: Selected Solution Card */}
-              <div className="h-full flex flex-col">
-                <div
-                  className="flex-1 flex flex-col justify-center p-12 rounded-[2.5rem] shadow-2xl border transition-colors duration-300 relative overflow-hidden"
-                  style={{
-                    backgroundColor: selectedProblem.color,
-                    borderColor: selectedProblem.color,
-                  }}
-                >
-                  {/* Large Icon */}
-                  <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center mb-8 text-white"
-                    style={{
-                      backgroundColor: selectedProblem.color,
-                    }}
-                  >
-                    {React.cloneElement(selectedProblem.icon, {
-                      size: 70,
-                      strokeWidth: 2,
-                    })}
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-4xl md:text-5xl font-black text-white uppercase leading-none mb-6 tracking-tight">
-                    {selectedProblem.text}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-2xl font-medium text-white leading-relaxed">
-                    {selectedProblem.solution}
-                  </p>
+              <div className="anatomy-svg-wrapper flex h-full w-full items-center justify-center overflow-hidden">
+                <div className="scale-[0.82] md:scale-[0.88] origin-center">
+                  <FrontView
+                    onHover={setHighlightedMuscle}
+                    onLeave={() => setHighlightedMuscle(null)}
+                    onSelect={setSelectedMuscle}
+                    selectedMuscle={selectedMuscle}
+                    highlightedMuscle={highlightedMuscle}
+                  />
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* SECTION 5: FEATURES */}
+        {/* ==========================================
+            SECTION: PROBLEMS & SOLUTIONS (Level 1: Blue BG)
+        ========================================== */}
         <section
-          className="w-full flex flex-col overflow-hidden bg-slate-900"
-          style={{ height: "93.5vh" }}
+          className="snap-section relative flex w-full flex-col items-center justify-center overflow-hidden px-6 py-16"
+          style={{ backgroundColor: config.colors.bgPrimary }}
         >
-          <div className="h-[25%] w-full flex items-end justify-center pb-12">
-            <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase drop-shadow-lg">
+          {/* Background */}
+          <div className="absolute inset-0 bg-[#051061]" />
+          <div className="absolute top-0 left-1/2 h-[400px] w-[800px] -translate-x-1/2 bg-[#1AF0BE] opacity-10 blur-[150px]" />
+
+          <div
+            className="relative flex w-full max-w-6xl flex-col justify-center"
+            style={{ minHeight: "var(--height-section-content)" }}
+          >
+            {/* Header */}
+            <div className="mb-6 flex items-center justify-center gap-3 py-2 md:gap-5">
+              <h2 className="text-2xl font-black uppercase tracking-tighter text-white sm:text-3xl md:text-4xl">
+                Problems
+              </h2>
+
+              <ArrowRight
+                className="h-5 w-5 text-[#1AF0BE] md:h-8 md:w-8"
+                strokeWidth={3}
+              />
+
+              <h2 className="text-2xl font-black uppercase tracking-tighter text-[#1AF0BE] sm:text-3xl md:text-4xl">
+                Solutions
+              </h2>
+            </div>
+
+            {/* GRID */}
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              {problems.map((problem) => {
+                const isActive = activeProblem?.id === problem.id;
+
+                return (
+                  <button
+                    key={problem.id}
+                    onClick={() => setActiveProblem(isActive ? null : problem)}
+                    className={`flex min-h-[92px] items-center gap-3 p-4 text-left transition-all duration-300
+              ${
+                isActive
+                  ? "bg-[#1AF0BE] text-[#051061] shadow-[0_0_24px_rgba(26,240,190,0.22)]"
+                  : "bg-[#112B8A] text-white hover:bg-[#1837A4]"
+              }`}
+                  >
+                    <problem.icon
+                      size={24}
+                      strokeWidth={2.6}
+                      className={`shrink-0 transition-all duration-300 ${
+                        isActive ? "text-[#051061]" : "text-[#1AF0BE]"
+                      }`}
+                    />
+
+                    <span
+                      className={`text-[11px] font-black uppercase leading-snug tracking-tight md:text-xs ${
+                        isActive ? "text-[#051061]" : "text-white"
+                      }`}
+                    >
+                      {problem.text}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Instruction */}
+            <div className="mt-4 text-center text-[10px] uppercase tracking-[0.22em] text-white/60 md:text-xs">
+              Click a problem to reveal the solution
+            </div>
+
+            {/* SOLUTION PANEL */}
+            <div
+              className={`mt-4 overflow-hidden transition-all duration-500 ${
+                activeProblem
+                  ? "max-h-[170px] opacity-100"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              {activeProblem && (
+                <div className="flex min-h-[120px] items-center justify-center bg-[#19E6B6] px-5 py-4 md:px-6 md:py-5">
+                  <div className="flex max-w-4xl items-center justify-center gap-4 text-center">
+                    <activeProblem.icon
+                      size={28}
+                      strokeWidth={2.7}
+                      className="shrink-0 text-[#051061]"
+                    />
+
+                    <div className="flex flex-col items-center justify-center">
+                      <p className="text-sm font-extrabold leading-relaxed text-[#051061] md:text-base">
+                        {activeProblem.solution}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ==========================================
+            SECTION: FEATURES (Level 1: Dark BG)
+        ========================================== */}
+        <section
+          className="snap-section relative flex w-full flex-col overflow-hidden px-6 py-20"
+          style={{ backgroundColor: config.colors.bgDark }}
+        >
+          <div className="absolute bottom-0 right-0 w-[800px] h-[400px] bg-[#1AF0BE] opacity-10 blur-[150px]" />
+
+          <div
+            className="relative flex w-full items-end justify-center pb-10 md:pb-12"
+            style={{ height: "25%" }}
+          >
+            <h2 className="text-4xl font-black uppercase tracking-tighter text-white drop-shadow-lg sm:text-5xl md:text-8xl">
               Features
             </h2>
           </div>
 
-          <div className="h-[75%] w-full relative overflow-hidden flex items-start pt-4">
-            <div className="flex animate-scroll-features hover:[animation-play-state:paused]">
-              {[...features, ...features].map((feature, idx) => (
+          {/* MOBILE TOUCH SCROLL (Level 2: Accent Cards) */}
+          <div
+            className="px-4 md:hidden relative z-10"
+            style={{ height: "75%" }}
+          >
+            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory touch-pan-x no-scrollbar">
+              {features.map((feature, idx) => (
                 <div
                   key={idx}
-                  className="h-[400px] w-[340px] md:w-[400px] mx-6 flex-shrink-0 group cursor-pointer transition-all duration-300 hover:-translate-y-4 hover:shadow-2xl rounded-[2.5rem] p-10 flex flex-col relative overflow-hidden text-white shadow-xl"
-                  style={{ backgroundColor: feature.color }}
+                  className="snap-start relative flex h-[340px] w-[280px] flex-shrink-0 flex-col overflow-hidden accent-card p-7 border-t-4 border-[#051061]"
                 >
-                  <div className="mb-auto z-10">
-                    <div className="bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-md transition-transform group-hover:scale-110 group-hover:rotate-3">
-                      {feature.icon}
+                  <div className="z-10 mb-auto">
+                    <div className="mb-5 flex h-14 w-14 items-center justify-center icon-box">
+                      <feature.icon className="w-8 h-8" />
                     </div>
-                    <h3 className="text-3xl font-black uppercase leading-tight mb-4 tracking-tight">
+                    <h3 className="mb-4 text-2xl font-black uppercase leading-tight tracking-tight">
                       {feature.title}
                     </h3>
                   </div>
 
-                  <div className="mt-auto z-10">
-                    <p className="text-white/90 font-medium text-lg leading-relaxed">
+                  <div className="z-10 mt-auto">
+                    <p className="text-base font-medium leading-relaxed">
                       {feature.description}
                     </p>
                   </div>
 
-                  <span className="absolute -bottom-8 -right-4 text-[180px] font-black text-slate-900/20 leading-none select-none pointer-events-none transition-transform group-hover:scale-110">
-                    {(idx % features.length) + 1}
+                  <span className="pointer-events-none absolute -bottom-8 -right-4 select-none text-[140px] font-black leading-none opacity-10">
+                    {idx + 1}
                   </span>
                 </div>
               ))}
             </div>
           </div>
 
-          <style jsx>{`
-            @keyframes scrollFeatures {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(-50%);
-              }
-            }
-            .animate-scroll-features {
-              animation: scrollFeatures 45s linear infinite;
-              width: max-content;
-            }
-          `}</style>
+          {/* DESKTOP MARQUEE (Level 2: Accent Cards) */}
+          <div
+            className="relative hidden w-full overflow-hidden md:flex"
+            style={{
+              height: "75%",
+              alignItems: "flex-start",
+              paddingTop: "1rem",
+            }}
+          >
+            <div className="flex w-max animate-scroll-features hover:[animation-play-state:paused]">
+              {[...features, ...features].map((feature, idx) => (
+                <div
+                  key={idx}
+                  className="group relative mx-6 flex h-[350px] w-[400px] flex-shrink-0 cursor-pointer flex-col overflow-hidden accent-card p-10 transition-all duration-300 hover:-translate-y-4 hover:bg-opacity-95 border-t-4 border-[#051061]"
+                >
+                  <div className="z-10 mb-auto">
+                    <div className="mb-6 flex h-16 w-16 items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-3 icon-box">
+                      <feature.icon className="w-8 h-8" />
+                    </div>
+
+                    <h3 className="mb-4 text-3xl font-black uppercase leading-tight tracking-tight">
+                      {feature.title}
+                    </h3>
+                  </div>
+
+                  <div className="z-10 mt-auto">
+                    <p className="text-lg font-medium leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+
+                  <span className="pointer-events-none absolute -bottom-8 -right-4 select-none text-[180px] font-black leading-none opacity-10 transition-transform group-hover:scale-110">
+                    {(idx % features.length) + 1}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
       </div>
-    </div>
+    </>
   );
 };
 

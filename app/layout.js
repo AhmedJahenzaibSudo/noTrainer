@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Marquee />
-        <Navbar />
+
         <Cursor />
 
         <main>{children}</main>
