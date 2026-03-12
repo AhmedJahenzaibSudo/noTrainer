@@ -31,26 +31,14 @@ const AboutPage = () => {
 
   const team = [
     {
-      name: "Ahmed Jahanzaib & Abdul Samad",
-      role: "Website Developers",
-      bio: "The tech duo behind noTrainer. Built this platform to make fitness accessible to everyone through code.",
+      name: "Ahmed Jahanzaib",
+      role: "Website Developer",
+      bio: "The architect behind noTrainer. Built this platform to make fitness accessible to everyone through code.",
       icon: Code,
       color: "blue",
     },
-    {
-      name: "Umar Aslam",
-      role: "Gym Trainer & Workouts Expert",
-      bio: "Certified trainer with extensive knowledge of exercises. Ensures every workout is effective and safe.",
-      icon: Dumbbell,
-      color: "blue",
-    },
-    {
-      name: "Ayesha",
-      role: "Nutrition Doctor",
-      bio: "Specializes in sports nutrition and dietary planning. Helps users achieve their goals through proper nutrition.",
-      icon: Salad,
-      color: "blue",
-    },
+    
+    
   ];
 
   const values = [
@@ -107,7 +95,7 @@ const AboutPage = () => {
 
     setFormStatus("sending");
 
-    const phoneNumber = "923244520651";
+    const phoneNumber = "923324641368";
 
     const message = `*New Contact Form Message*%0A%0A
 *Name:* ${formData.name}%0A
@@ -224,24 +212,11 @@ _Sent from noTrainer App_`;
                 intelligent, and actually enjoyable.
               </p>
 
-              <div className="flex justify-center gap-1 sm:gap-2">
-                <div className="w-6 sm:w-8 md:w-10 lg:w-12 h-0.5 sm:h-1 bg-blue-500 rounded-none" />
-                <div className="w-6 sm:w-8 md:w-10 lg:w-12 h-0.5 sm:h-1 bg-blue-500 rounded-none" />
-                <div className="w-6 sm:w-8 md:w-10 lg:w-12 h-0.5 sm:h-1 bg-blue-500 rounded-none" />
-              </div>
+              
             </motion.div>
           </div>
 
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 cursor-pointer"
-            onClick={() => scrollToSection(1)}
-          >
-            <div className="w-5 sm:w-6 h-8 sm:h-10 border-2 border-blue-500/30 rounded-none flex justify-center backdrop-blur-sm">
-              <div className="w-0.5 sm:w-1 h-1.5 sm:h-2 bg-blue-500 rounded-none mt-2 animate-pulse" />
-            </div>
-          </motion.div>
+          
         </section>
 
         {/* SECTION 2: CONTACT */}
