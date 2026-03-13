@@ -499,100 +499,106 @@ const Hero = () => {
         {/* ==========================================
             SECTION: PROBLEMS & SOLUTIONS
         ========================================== */}
-        <section
-          className="snap-section relative flex w-full flex-col items-center justify-center overflow-hidden px-6 py-16"
-          style={{ backgroundColor: config.colors.bgPrimary }}
-        >
-          {/* Background */}
-          <div className="absolute inset-0 bg-[#051061]" />
-          <div className="absolute top-0 left-1/2 h-[400px] w-[800px] -translate-x-1/2 bg-[#1AF0BE] opacity-10 blur-[150px]" />
+        {/* ==========================================
+    SECTION: PROBLEMS & SOLUTIONS
+========================================== */}
+<section
+  className="snap-section relative flex w-full flex-col items-center overflow-hidden px-6 py-10 md:py-16"
+  style={{ backgroundColor: config.colors.bgPrimary }}
+>
+  {/* Background */}
+  <div className="absolute inset-0 bg-[#051061]" />
+  <div className="absolute top-0 left-1/2 h-[400px] w-[800px] -translate-x-1/2 bg-[#1AF0BE] opacity-10 blur-[150px]" />
 
-          <div className="relative flex w-full max-w-6xl flex-col justify-center min-h-full">
-            {/* Header */}
-            <div className="mb-6 flex items-center justify-center gap-3 py-2 md:gap-5">
-              <h2 className="text-2xl font-black uppercase tracking-tighter text-white sm:text-3xl md:text-4xl">
-                Problems
-              </h2>
+  <div className="relative flex w-full max-w-6xl flex-col" style={{ height: "100%", minHeight: 0 }}>
 
-              <ArrowRight
-                className="h-5 w-5 text-[#1AF0BE] md:h-8 md:w-8"
-                strokeWidth={3}
-              />
+    {/* Header — fixed, never scrolls */}
+    <div className="mb-4 flex shrink-0 items-center justify-center gap-3 md:gap-5">
+      <h2 className="text-2xl font-black uppercase tracking-tighter text-white sm:text-3xl md:text-4xl">
+        Problems
+      </h2>
+      <ArrowRight
+        className="h-5 w-5 text-[#1AF0BE] md:h-8 md:w-8"
+        strokeWidth={3}
+      />
+      <h2 className="text-2xl font-black uppercase tracking-tighter text-[#1AF0BE] sm:text-3xl md:text-4xl">
+        Solutions
+      </h2>
+    </div>
 
-              <h2 className="text-2xl font-black uppercase tracking-tighter text-[#1AF0BE] sm:text-3xl md:text-4xl">
-                Solutions
-              </h2>
-            </div>
+    {/* Scrollable area — takes remaining height */}
+    <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
 
-            {/* GRID */}
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-              {problems.map((problem) => {
-                const isActive = activeProblem?.id === problem.id;
-
-                return (
-                  <button
-                    key={problem.id}
-                    onClick={() => setActiveProblem(isActive ? null : problem)}
-                    className={`flex min-h-[92px] items-center gap-3 p-4 text-left transition-all duration-300
+      {/* Grid */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        {problems.map((problem) => {
+          const isActive = activeProblem?.id === problem.id;
+          return (
+            <button
+              key={problem.id}
+              onClick={() => setActiveProblem(isActive ? null : problem)}
+              className={`flex min-h-[80px] items-center gap-3 p-3 text-left transition-all duration-300
               ${
                 isActive
                   ? "bg-[#1AF0BE] text-[#051061] shadow-[0_0_24px_rgba(26,240,190,0.22)]"
                   : "bg-[#112B8A] text-white hover:bg-[#1837A4]"
               }`}
-                  >
-                    <problem.icon
-                      size={24}
-                      strokeWidth={2.6}
-                      className={`shrink-0 transition-all duration-300 ${
-                        isActive ? "text-[#051061]" : "text-[#1AF0BE]"
-                      }`}
-                    />
-
-                    <span
-                      className={`text-[11px] font-black uppercase leading-snug tracking-tight md:text-xs ${
-                        isActive ? "text-[#051061]" : "text-white"
-                      }`}
-                    >
-                      {problem.text}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Instruction */}
-            <div className="mt-4 text-center text-[10px] uppercase tracking-[0.22em] text-white/60 md:text-xs">
-              Click a problem to reveal the solution
-            </div>
-
-            {/* SOLUTION PANEL */}
-            <div
-              className={`mt-4 overflow-hidden transition-all duration-500 ${
-                activeProblem
-                  ? "max-h-[170px] opacity-100"
-                  : "max-h-0 opacity-0"
-              }`}
             >
-              {activeProblem && (
-                <div className="flex min-h-[120px] items-center justify-center bg-[#19E6B6] px-5 py-4 md:px-6 md:py-5">
-                  <div className="flex max-w-4xl items-center justify-center gap-4 text-center">
-                    <activeProblem.icon
-                      size={28}
-                      strokeWidth={2.7}
-                      className="shrink-0 text-[#051061]"
-                    />
+              <problem.icon
+                size={22}
+                strokeWidth={2.6}
+                className={`shrink-0 transition-all duration-300 ${
+                  isActive ? "text-[#051061]" : "text-[#1AF0BE]"
+                }`}
+              />
+              <span
+                className={`text-[10px] font-black uppercase leading-snug tracking-tight md:text-xs ${
+                  isActive ? "text-[#051061]" : "text-white"
+                }`}
+              >
+                {problem.text}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-                    <div className="flex flex-col items-center justify-center">
-                      <p className="text-sm font-extrabold leading-relaxed text-[#051061] md:text-base">
-                        {activeProblem.solution}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
+      {/* Instruction */}
+      <div className="mt-3 text-center text-[10px] uppercase tracking-[0.22em] text-white/60 md:text-xs">
+        Tap a problem to reveal the solution
+      </div>
+
+      {/* Solution panel — always rendered inside scroll so it's reachable */}
+      <div
+        className={`mt-3 overflow-hidden transition-all duration-500 ${
+          activeProblem ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        style={{
+          maxHeight: activeProblem ? "200px" : "0px",
+          transition: "max-height 0.4s ease, opacity 0.3s ease",
+        }}
+      >
+        {activeProblem && (
+          <div className="flex items-center justify-center bg-[#19E6B6] px-5 py-4 md:px-6 md:py-5 rounded-sm">
+            <div className="flex max-w-4xl items-center justify-center gap-4 text-center">
+              <activeProblem.icon
+                size={26}
+                strokeWidth={2.7}
+                className="shrink-0 text-[#051061]"
+              />
+              <p className="text-sm font-extrabold leading-relaxed text-[#051061] md:text-base">
+                {activeProblem.solution}
+              </p>
             </div>
           </div>
-        </section>
+        )}
+      </div>
+
+      {/* Bottom padding so solution card isn't flush against scroll end */}
+      <div className="h-4" />
+    </div>
+  </div>
+</section>
 
         {/* ==========================================
             SECTION: FEATURES
