@@ -47,7 +47,7 @@ function Navbar() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
       `}</style>
 
       {/* Toggle Button - inside marquee */}
