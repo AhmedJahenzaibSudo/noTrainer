@@ -38,10 +38,6 @@ const config = {
     textOnAccent: "#051061", // Text color for inside accent cards
     textSecondary: "#cbd5e1",
   },
-  heights: {
-    fullPage: "93.6dvh",
-    sectionContent: "calc(100dvh - 120px)",
-  },
   fonts: {
     heading: "'Righteous', cursive",
   },
@@ -209,24 +205,34 @@ const Hero = () => {
       <style>{`
         :root {
           --font-heading: ${config.fonts.heading};
-          --height-full-page: ${config.heights.fullPage};
-          --height-section-content: ${config.heights.sectionContent};
           --color-accent: ${config.colors.accent};
           --color-bg-primary: ${config.colors.bgPrimary};
+          
+          /* Height calculations for global sticky header */
+          --header-height: 40px;
+          --height-available: calc(100dvh - var(--header-height));
+        }
+        
+        @media (min-width: 768px) {
+          :root {
+            --header-height: 48px;
+          }
         }
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .snap-container {
-          height: 93.6dvh;
+          /* Apply calculated height */
+          height: var(--height-available);
           overflow-y: auto;
           scroll-snap-type: y mandatory;
           scroll-behavior: smooth;
         }
         .snap-section {
           scroll-snap-align: start;
-          min-height: var(--height-full-page);
+          /* Sections fill the container's height */
+          min-height: 100%;
         }
 
         .anatomy-svg-wrapper svg {
@@ -282,9 +288,9 @@ const Hero = () => {
       {/* Main Container */}
       <div className="snap-container no-scrollbar relative w-full bg-[#020a21] text-white font-sans selection:bg-[#1AF0BE] selection:text-[#051061]">
         {/* ==========================================
-            HERO SECTION (Level 1: Blue BG)
+            HERO SECTION
         ========================================== */}
-        <section className="snap-section relative flex h-screen w-full flex-col items-center justify-center overflow-hidden px-6">
+        <section className="snap-section relative flex w-full flex-col items-center justify-center overflow-hidden px-6">
           {/* Background Glows */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             {/* Primary Blue Glow */}
@@ -368,7 +374,7 @@ const Hero = () => {
               </span>
             </p>
 
-            {/* Platform Card (Level 2: Accent Card -> Level 3: Blue Text) */}
+            {/* Platform Card */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -414,62 +420,47 @@ const Hero = () => {
         </section>
 
         {/* ==========================================
-            SECTION: MUSCLE SELECTION (Level 1: Dark BG)
+            SECTION: MUSCLE SELECTION
         ========================================== */}
         <section
-          className="snap-section relative flex w-full flex-col items-center justify-center overflow-hidden px-6 py-16"
+          className="snap-section relative flex w-full flex-col items-center justify-center overflow-hidden px-6 py-8 md:py-16"
           style={{ backgroundColor: config.colors.bgDark }}
         >
           {/* Background */}
           <div className="absolute inset-0 bg-[#051061]" />
           <div className="absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 bg-[#1AF0BE] opacity-10 blur-[140px]" />
 
-          <div
-            className="relative flex w-full max-w-5xl flex-col items-center justify-center"
-            style={{ minHeight: "var(--height-section-content)" }}
-          >
+          {/* Main Content Wrapper: Fills available height, column layout */}
+          <div className="relative flex w-full max-w-5xl flex-1 flex-col items-center justify-start min-h-0">
             {/* Heading */}
-            <div className="mb-6 text-center">
+            <div className="mb-4 text-center pt-2 md:pt-0 md:mb-6">
               <h2 className="text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
                 Target Every <span className="text-[#1AF0BE]">Muscle</span>
               </h2>
-              <p className="mt-3 text-sm font-semibold uppercase tracking-[0.18em] text-white/70 md:text-base">
-                Click the anatomy to explore muscle groups
-              </p>
             </div>
 
             {/* Selected Muscle */}
-            <div className="mb-6 flex w-full max-w-md items-center justify-center bg-[#1AF0BE] px-5 py-4">
+            <div className="mb-4 md:mb-6 flex w-full max-w-md items-center justify-center bg-[#1AF0BE] px-5 py-3 md:py-4">
               {selectedMuscle ? (
                 <div className="flex items-center gap-3 text-center">
-                  <Activity
-                    size={24}
-                    strokeWidth={2.6}
-                    className="text-[#051061]"
-                  />
-                  <span className="text-xl font-black capitalize tracking-tight text-[#051061] md:text-2xl">
+                  <span className="text-lg md:text-xl font-black capitalize tracking-tight text-[#051061]">
                     {String(selectedMuscle)}
                   </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 text-center">
-                  <Activity
-                    size={24}
-                    strokeWidth={2.6}
-                    className="text-[#051061]"
-                  />
-                  <span className="text-sm font-black uppercase tracking-[0.14em] text-[#051061] md:text-base">
-                    No muscle selected
+                  <span className="text-xs md:text-sm font-black uppercase tracking-[0.14em] text-[#051061]">
+                    Select a Muscle
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Anatomy */}
+            {/* Anatomy Container: Fills remaining vertical space */}
             <div
               ref={anatomyBoxRef}
               onMouseMove={handleMouseMove}
-              className="relative flex h-[420px] w-full items-center justify-center md:h-[62vh]"
+              className="relative flex flex-1 min-h-0 w-full items-center justify-center"
             >
               <AnimatePresence>
                 {highlightedMuscle && (
@@ -489,8 +480,9 @@ const Hero = () => {
                 )}
               </AnimatePresence>
 
-              <div className="anatomy-svg-wrapper flex h-full w-full items-center justify-center overflow-hidden">
-                <div className="scale-[0.82] md:scale-[0.88] origin-center">
+              {/* SVG Wrapper: Fits content, scales down if needed */}
+              <div className="anatomy-svg-wrapper flex h-full w-full items-center justify-center">
+                <div className="scale-[0.82] md:scale-[0.88] origin-center h-full flex items-center justify-center">
                   <FrontView
                     onHover={setHighlightedMuscle}
                     onLeave={() => setHighlightedMuscle(null)}
@@ -505,7 +497,7 @@ const Hero = () => {
         </section>
 
         {/* ==========================================
-            SECTION: PROBLEMS & SOLUTIONS (Level 1: Blue BG)
+            SECTION: PROBLEMS & SOLUTIONS
         ========================================== */}
         <section
           className="snap-section relative flex w-full flex-col items-center justify-center overflow-hidden px-6 py-16"
@@ -515,10 +507,7 @@ const Hero = () => {
           <div className="absolute inset-0 bg-[#051061]" />
           <div className="absolute top-0 left-1/2 h-[400px] w-[800px] -translate-x-1/2 bg-[#1AF0BE] opacity-10 blur-[150px]" />
 
-          <div
-            className="relative flex w-full max-w-6xl flex-col justify-center"
-            style={{ minHeight: "var(--height-section-content)" }}
-          >
+          <div className="relative flex w-full max-w-6xl flex-col justify-center min-h-full">
             {/* Header */}
             <div className="mb-6 flex items-center justify-center gap-3 py-2 md:gap-5">
               <h2 className="text-2xl font-black uppercase tracking-tighter text-white sm:text-3xl md:text-4xl">
@@ -606,7 +595,7 @@ const Hero = () => {
         </section>
 
         {/* ==========================================
-            SECTION: FEATURES (Level 1: Dark BG)
+            SECTION: FEATURES
         ========================================== */}
         <section
           className="snap-section relative flex w-full flex-col overflow-hidden px-6 py-20"
@@ -623,12 +612,12 @@ const Hero = () => {
             </h2>
           </div>
 
-          {/* MOBILE TOUCH SCROLL (Level 2: Accent Cards) */}
+          {/* MOBILE TOUCH SCROLL */}
           <div
             className="px-4 md:hidden relative z-10"
             style={{ height: "75%" }}
           >
-            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory touch-pan-x no-scrollbar">
+            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory touch-pan-x no-scrollbar h-full items-center">
               {features.map((feature, idx) => (
                 <div
                   key={idx}
@@ -657,7 +646,7 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* DESKTOP MARQUEE (Level 2: Accent Cards) */}
+          {/* DESKTOP MARQUEE */}
           <div
             className="relative hidden w-full overflow-hidden md:flex"
             style={{

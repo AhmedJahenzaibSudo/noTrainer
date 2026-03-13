@@ -318,8 +318,8 @@ export default function KanbanPage() {
       `}</style>
 
       <div
-        className="relative flex w-full flex-col items-center overflow-hidden font-sans selection:bg-[#1AF0BE] selection:text-[#051061]"
-        style={{ backgroundColor: config.colors.bgPrimary, height: "93.6dvh" }}
+        className="relative flex w-full flex-col items-center overflow-hidden font-sans selection:bg-[#1AF0BE] selection:text-[#051061] h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)]"
+        style={{ backgroundColor: config.colors.bgPrimary }}
       >
         {/* Background Effects */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -332,7 +332,7 @@ export default function KanbanPage() {
         </div>
 
         {/* Header */}
-        <header className="relative z-10 w-full max-w-6xl px-6 pt-8 pb-4 text-center md:pt-10 md:pb-6">
+        <header className="relative z-10 w-full max-w-6xl px-6 pt-8 pb-4 text-center md:pt-10 md:pb-6 shrink-0">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -380,7 +380,7 @@ export default function KanbanPage() {
         {/* Main Grid Container */}
         <main
           ref={mainRef}
-          className="relative z-10 grid w-full max-w-6xl flex-1 grid-rows-3 gap-3 overflow-auto px-4 pb-6 md:grid-cols-3 md:grid-rows-1 md:gap-4 md:px-6 no-scrollbar"
+          className="relative z-10 grid w-full max-w-6xl flex-1 min-h-0 grid-rows-3 gap-3 overflow-auto px-4 pb-6 md:grid-cols-3 md:grid-rows-1 md:gap-4 md:px-6 no-scrollbar"
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
@@ -397,7 +397,7 @@ export default function KanbanPage() {
               style={{ borderColor: config.colors.accent }}
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 shrink-0">
                 <div className="flex items-center gap-3">
                   <col.icon size={18} className="text-[#1AF0BE]" />
                   <h2 className="text-sm font-black uppercase tracking-tight text-white">
@@ -416,7 +416,7 @@ export default function KanbanPage() {
               </div>
 
               {/* Cards Container */}
-              <div className="flex-1 space-y-3 overflow-y-auto p-3 kanban-scroll">
+              <div className="flex-1 min-h-0 space-y-3 overflow-y-auto p-3 kanban-scroll">
                 <AnimatePresence mode="popLayout">
                   {data[col.key].length === 0 && (
                     <div className="flex h-full items-center justify-center text-[9px] uppercase tracking-widest text-white/20 md:hidden">
