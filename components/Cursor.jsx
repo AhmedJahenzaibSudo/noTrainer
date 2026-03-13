@@ -100,16 +100,16 @@ const Cursor = () => {
           left: 0;
           width: 18px;
           height: 18px;
-          background-color: rgba(26, 240, 190, 0.25);
+          background-color: rgba(24, 37, 224, 0.88);
           backdrop-filter: blur(4px);
           -webkit-backdrop-filter: blur(4px);
-          border: 1.5px solid rgba(26, 240, 190, 0.9);
+          border: 1.5px solid rgba(17, 228, 21, 0.79);
           border-radius: 50%;
           pointer-events: none;
           z-index: 99999;
           will-change: transform;
           opacity: 0;
-          box-shadow: 0 0 8px rgba(26, 240, 190, 0.4);
+          box-shadow: 0 0 8px rgba(43, 54, 181, 0.88);
           transition: opacity 0.2s ease;
         }
 
