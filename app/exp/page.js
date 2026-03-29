@@ -31,7 +31,7 @@ const config = {
   sections: {
     hero: {
       bg: "#020a21",
-      accent: "#1AF0BE",       // Brand mint — kept here only
+      accent: "#1AF0BE", // Brand mint — kept here only
       glow: "#1AF0BE",
       textAccent: "#1AF0BE",
       cardBg: "#1AF0BE",
@@ -39,7 +39,7 @@ const config = {
     },
     muscle: {
       bg: "#1a0010",
-      accent: "#FF2D78",        // Electric magenta
+      accent: "#FF2D78", // Electric magenta
       glow: "#FF2D78",
       textAccent: "#FF2D78",
       cardBg: "#FF2D78",
@@ -47,7 +47,7 @@ const config = {
     },
     problems: {
       bg: "#021a0e",
-      accent: "#AAFF00",        // Toxic lime
+      accent: "#AAFF00", // Toxic lime
       glow: "#AAFF00",
       textAccent: "#AAFF00",
       cardBg: "#AAFF00",
@@ -57,7 +57,7 @@ const config = {
     },
     features: {
       bg: "#08001f",
-      accent: "#BF00FF",        // Hot violet
+      accent: "#BF00FF", // Hot violet
       glow: "#BF00FF",
       textAccent: "#BF00FF",
       cardBg: "#BF00FF",
@@ -73,13 +73,41 @@ const config = {
 // COMPONENT DATA
 // ============================================
 const features = [
-  { title: "Workout Wizard", description: "Select muscles and generate workouts instantly.", icon: Wand2 },
-  { title: "Muscle Map", description: "Interactive diagram for intuitive discovery.", icon: UserCircle },
-  { title: "Rich Dataset", description: "Categorized exercises for all goals.", icon: Database },
-  { title: "Calculators", description: "BMI, calories, and protein formulas.", icon: Calculator },
-  { title: "AI Chatbot", description: "24/7 intelligent fitness assistant.", icon: MessageSquare },
-  { title: "Kanban Board", description: "Visual tracking for fitness tasks.", icon: Columns3 },
-  { title: "Mini Games", description: "Boost focus and motivation.", icon: Gamepad2 },
+  {
+    title: "Workout Wizard",
+    description: "Select muscles and generate workouts instantly.",
+    icon: Wand2,
+  },
+  {
+    title: "Muscle Map",
+    description: "Interactive diagram for intuitive discovery.",
+    icon: UserCircle,
+  },
+  {
+    title: "Rich Dataset",
+    description: "Categorized exercises for all goals.",
+    icon: Database,
+  },
+  {
+    title: "Calculators",
+    description: "BMI, calories, and protein formulas.",
+    icon: Calculator,
+  },
+  {
+    title: "AI Chatbot",
+    description: "24/7 intelligent fitness assistant.",
+    icon: MessageSquare,
+  },
+  {
+    title: "Kanban Board",
+    description: "Visual tracking for fitness tasks.",
+    icon: Columns3,
+  },
+  {
+    title: "Mini Games",
+    description: "Boost focus and motivation.",
+    icon: Gamepad2,
+  },
 ];
 
 const words = ["Home Gym", "Workout Guide", "AI Trainer", "Fitness Hub"];
@@ -98,7 +126,7 @@ const ClipSection = ({ children, bgColor }) => (
     style={{
       position: "relative",
       width: "100%",
-      height: `calc(100vh - ${HEADER_HEIGHT}px)`
+      height: `calc(100vh - ${HEADER_HEIGHT}px)`,
     }}
   >
     <div
@@ -164,17 +192,62 @@ const Hero = () => {
 
   const problems = useMemo(
     () => [
-      { id: 1, text: "No gym access", solution: "Bodyweight & home equipment routines.", icon: MapPin },
-      { id: 2, text: "Too expensive", solution: "Free workout plans & calculators.", icon: Calculator },
-      { id: 3, text: "Don't know how", solution: "Step-by-step exercise guides.", icon: Info },
-      { id: 4, text: "Need privacy", solution: "24/7 AI trainer, no judgment.", icon: MessageSquare },
-      { id: 5, text: "Lack of knowledge", solution: "800+ exercises with instructions.", icon: Dumbbell },
-      { id: 6, text: "Can't go out", solution: "Effective home workout programs.", icon: Zap },
-      { id: 7, text: "Need structure", solution: "Visual Kanban Board tracking.", icon: LayoutDashboard },
-      { id: 8, text: "No motivation", solution: "Motivation Marquee & reminders.", icon: Target },
-      { id: 9, text: "No equipment", solution: "Proven bodyweight training.", icon: Package },
+      {
+        id: 1,
+        text: "No gym access",
+        solution: "Bodyweight & home equipment routines.",
+        icon: MapPin,
+      },
+      {
+        id: 2,
+        text: "Too expensive",
+        solution: "Free workout plans & calculators.",
+        icon: Calculator,
+      },
+      {
+        id: 3,
+        text: "Don't know how",
+        solution: "Step-by-step exercise guides.",
+        icon: Info,
+      },
+      {
+        id: 4,
+        text: "Need privacy",
+        solution: "24/7 AI trainer, no judgment.",
+        icon: MessageSquare,
+      },
+      {
+        id: 5,
+        text: "Lack of knowledge",
+        solution: "800+ exercises with instructions.",
+        icon: Dumbbell,
+      },
+      {
+        id: 6,
+        text: "Can't go out",
+        solution: "Effective home workout programs.",
+        icon: Zap,
+      },
+      {
+        id: 7,
+        text: "Need structure",
+        solution: "Visual Kanban Board tracking.",
+        icon: LayoutDashboard,
+      },
+      {
+        id: 8,
+        text: "No motivation",
+        solution: "Motivation Marquee & reminders.",
+        icon: Target,
+      },
+      {
+        id: 9,
+        text: "No equipment",
+        solution: "Proven bodyweight training.",
+        icon: Package,
+      },
     ],
-    []
+    [],
   );
 
   const handleMouseMove = (e) => {
@@ -216,115 +289,124 @@ const Hero = () => {
         }
       `}</style>
 
-<div className="relative w-full snap-y snap-proximity text-white font-sans">
+      <div className="relative w-full snap-y snap-proximity text-white font-sans">
         {/* ==========================================
             HERO SECTION — Mint / #020a21
         ========================================== */}
-        <ClipSection bgColor={hero.bg}>
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 0.5, scale: 1 }}
-              transition={{ duration: 1.5 }}
-              className="absolute top-[-20%] left-[-10%] h-[600px] w-[600px] blur-[140px]"
-              style={{ backgroundColor: hero.glow }}
-            />
-            <motion.div
-              animate={{ x: [0, 40, 0], y: [0, -20, 0] }}
-              transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
-              className="absolute bottom-[-10%] right-[-10%] h-[550px] w-[550px] blur-[130px] opacity-30"
-              style={{ backgroundColor: hero.glow }}
-            />
-          </div>
+        <ClipSection
+          bgColor={hero.bg}
+          className="relative min-h-screen w-full overflow-hidden font-sans"
+        >
+          {/* Refined colored background: Deeper, richer gradient */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, #09090b 0%, #17172b 50%, #1e1b4b 100%)",
+            }}
+          />
 
-          <div className="relative z-10 flex w-full max-w-5xl flex-col items-center text-center px-6">
-            <motion.h1
-              initial={{ opacity: 0, scale: 0.8, filter: "blur(20px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="relative text-6xl font-normal md:text-9xl"
-              style={{ fontFamily: "'Krona One', sans-serif" }}
-            >
-              <motion.span
-                animate={{ opacity: [0, 0.4, 0], x: [0, -5, 0], scale: [1, 1.05, 1] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute inset-0 z-0 blur-md"
-                style={{ color: `${hero.accent}55` }}
-                aria-hidden="true"
+          {/* Subtle texture lines: Slightly cleaner sizing */}
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: `
+        linear-gradient(rgba(255,255,255,1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)
+      `,
+              backgroundSize: "64px 64px",
+            }}
+          />
+
+          {/* Content */}
+          <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center px-6 py-16 text-center">
+            <div className="mx-auto flex w-full max-w-4xl flex-col items-center">
+              {/* Title: Simplified gradient, cleaner typography */}
+              <motion.h1
+                initial={{ opacity: 0, y: 26 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="text-5xl font-extrabold tracking-tight md:text-7xl xl:text-[7rem]"
               >
-                noTrainer AI
-              </motion.span>
+                <span className="block bg-gradient-to-b from-white via-white to-white/50 bg-clip-text text-transparent drop-shadow-sm">
+                  noTrainer AI
+                </span>
+              </motion.h1>
 
-              <span className="relative z-10 bg-gradient-to-b from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-                noTrainer
-              </span>
-
-              <motion.span
-                className="relative z-10 ml-4 bg-[length:200%_auto] bg-clip-text text-transparent"
-                style={{ backgroundImage: `linear-gradient(to top right, ${hero.accent}, #3399ff, ${hero.accent})` }}
-                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              {/* Subtitle: Punchier, simpler phrasing with a modern font weight */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.7 }}
+                className="mt-6 max-w-lg text-base font-medium leading-relaxed text-zinc-300 md:text-lg"
               >
-                AI
-                <span
-                  className="absolute -inset-2 -z-10 animate-pulse blur-2xl"
-                  style={{ backgroundColor: `${hero.accent}33` }}
-                />
-              </motion.span>
-            </motion.h1>
+                Discover exercises, build smart routines, and achieve your
+                goals. All the results, zero personal trainers required.
+              </motion.p>
 
+              {/* Rotating concept: Same structure, cohesive neon theme */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.7 }}
+                className="relative mt-16 flex h-[100px] items-center justify-center"
+              >
+                {/* Sleek fading gradient lines instead of solid red/green/yellow */}
+                <div className="absolute top-0 h-[1px] w-48 bg-gradient-to-r from-transparent via-indigo-400 to-transparent md:w-64" />
+                <div className="absolute bottom-0 h-[1px] w-48 bg-gradient-to-r from-transparent via-indigo-400 to-transparent md:w-64" />
+                <div className="absolute left-1/2 top-1/2 h-10 w-[1px] -translate-x-[150px] -translate-y-1/2 bg-gradient-to-b from-transparent via-cyan-400 to-transparent md:-translate-x-[200px]" />
+                <div className="absolute left-1/2 top-1/2 h-10 w-[1px] translate-x-[150px] -translate-y-1/2 bg-gradient-to-b from-transparent via-cyan-400 to-transparent md:translate-x-[200px]" />
+
+                <div className="relative overflow-hidden px-6">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={wordIndex}
+                      initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, y: -20, filter: "blur(4px)" }}
+                      transition={{ duration: 0.4 }}
+                      className="text-2xl font-black uppercase tracking-[0.15em] text-cyan-300 md:text-4xl"
+                    >
+                      {words[wordIndex]}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Arrow cue */}
             <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: "6rem" }}
-              transition={{ delay: 0.6, duration: 0.7 }}
-              className="mt-4 h-1.5"
-              style={{
-                backgroundColor: hero.accent,
-                boxShadow: `0 0 20px ${hero.accent}cc`,
-              }}
-            />
-
-            <p className="mt-5 max-w-md text-lg font-semibold text-slate-200 md:text-xl">
-              Train Anywhere.{" "}
-              <span className="font-semibold" style={{ color: hero.accent }}>
-                No Trainer Needed.
-              </span>
-            </p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="relative mt-12 w-full max-w-3xl overflow-hidden p-8 shadow-xl"
-              style={{ backgroundColor: hero.cardBg, color: hero.cardText }}
+              transition={{ delay: 0.45, duration: 0.6 }}
+              className="absolute bottom-10 left-1/2 -translate-x-1/2"
             >
-              <div className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: hero.cardText }} />
-              <span className="mb-2 block text-left text-xs font-bold uppercase tracking-[0.2em]" style={{ color: hero.cardText }}>
-                The Platform
-              </span>
-              <div className="flex h-20 items-center justify-center overflow-hidden md:h-24">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={wordIndex}
-                    initial={{ y: 50, opacity: 0, rotateX: -40 }}
-                    animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                    exit={{ y: -50, opacity: 0, rotateX: 40 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="text-4xl font-black uppercase tracking-tight md:text-6xl"
-                    style={{ color: hero.cardText }}
-                  >
-                    {words[wordIndex]}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-              className="mt-12"
-            >
-              <ChevronDown className="h-8 w-8 opacity-70" style={{ color: hero.accent }} />
+              <motion.div
+                animate={{ y: [0, 8, 0] }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="flex items-center justify-center"
+              >
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="opacity-60 transition-opacity hover:opacity-100"
+                >
+                  <path
+                    d="M6 9L12 15L18 9"
+                    stroke="white"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </motion.div>
             </motion.div>
           </div>
         </ClipSection>
@@ -347,8 +429,8 @@ const Hero = () => {
           <div className="relative z-10 flex w-full max-w-5xl flex-col items-center px-6 mt-6">
             <div className="mb-6 text-center">
               <h2 className="text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
-                Target Every{" "}
-                <span style={{ color: muscle.accent }}>Muscle</span>
+                Learn about{" "}
+                <span style={{ color: muscle.accent }}>Muscles</span>
               </h2>
             </div>
 
@@ -382,10 +464,18 @@ const Hero = () => {
                 {highlightedMuscle && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1, x: mousePos.x + 18, y: mousePos.y - 34 }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                      x: mousePos.x + 18,
+                      y: mousePos.y - 34,
+                    }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="pointer-events-none absolute left-0 top-0 z-50 px-3 py-2 text-xs font-black uppercase tracking-[0.16em]"
-                    style={{ backgroundColor: muscle.cardBg, color: muscle.cardText }}
+                    style={{
+                      backgroundColor: muscle.cardBg,
+                      color: muscle.cardText,
+                    }}
                   >
                     {highlightedMuscle}
                   </motion.div>
@@ -447,10 +537,19 @@ const Hero = () => {
                     style={{
                       backgroundColor: isActive ? prob.cardBg : prob.buttonBg,
                       color: isActive ? prob.cardText : "#ffffff",
-                      boxShadow: isActive ? `0 0 24px ${prob.accent}44` : "none",
+                      boxShadow: isActive
+                        ? `0 0 24px ${prob.accent}44`
+                        : "none",
                     }}
-                    onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = prob.buttonHover; }}
-                    onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = prob.buttonBg; }}
+                    onMouseEnter={(e) => {
+                      if (!isActive)
+                        e.currentTarget.style.backgroundColor =
+                          prob.buttonHover;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive)
+                        e.currentTarget.style.backgroundColor = prob.buttonBg;
+                    }}
                   >
                     <problem.icon
                       size={22}
@@ -511,121 +610,313 @@ const Hero = () => {
         </ClipSection>
 
         {/* ==========================================
-            FEATURES SECTION — Violet / #08001f
+            FEATURES SECTION — Staggered 3D Stack
         ========================================== */}
-        <ClipSection bgColor={feat.bg}>
-          <div className="pointer-events-none absolute inset-0">
-            <div
-              className="absolute bottom-0 right-0 w-[800px] h-[400px] blur-[150px] opacity-20"
-              style={{ backgroundColor: feat.glow }}
-            />
-            <div
-              className="absolute top-0 left-0 w-[500px] h-[300px] blur-[120px] opacity-10"
-              style={{ backgroundColor: feat.glow }}
-            />
-          </div>
+        <div
+          className="relative w-full snap-start"
+          style={{
+            backgroundColor: feat.bg,
+            minHeight: `${features.length * 62}vh`,
+          }}
+        >
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+        .features-stack-shell {
+          width: 100%;
+          min-height: 100%;
+          color: #fff;
+          font-family: "Space Grotesk", sans-serif;
+        }
 
-          <div className="relative z-10 flex w-full flex-col overflow-hidden">
-            <div className="flex w-full items-end justify-center pb-10 md:pb-12 h-[25vh]">
-              <h2
-                className="text-4xl font-black uppercase tracking-tighter text-white drop-shadow-lg sm:text-5xl md:text-8xl"
-                style={{ textShadow: `0 0 40px ${feat.accent}66` }}
-              >
-                Features
-              </h2>
+        .features-stack-header {
+          position: sticky;
+          top: 48px;
+          z-index: 30;
+          height: 16vh;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding: 1rem 1.5rem 0 1.5rem;
+          pointer-events: none;
+          background: linear-gradient(
+            to bottom,
+            ${feat.bg} 0%,
+            ${feat.bg} 62%,
+            rgba(0, 0, 0, 0) 100%
+          );
+        }
+
+        .features-stack-title {
+          margin-top: 20px;
+          font-size: clamp(1.9rem, 4.2vw, 3.8rem);
+          line-height: 0.86;
+          text-align: center;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          font-weight: 900;
+          -webkit-text-stroke: 1.2px rgba(255, 255, 255, 0.45);
+          color: transparent;
+          background: linear-gradient(to bottom, #ffffff 0%, transparent 100%);
+          background-clip: text;
+          -webkit-background-clip: text;
+          transform-origin: center top;
+          will-change: transform, opacity;
+          animation:
+            fill-text linear both,
+            features-title-shrink linear both;
+          animation-timeline: scroll(), scroll();
+          animation-range: 0 18vh, 0 20vh;
+        }
+
+        @keyframes fill-text {
+          to {
+            -webkit-text-stroke: 0;
+            color: #fff;
+          }
+        }
+
+        @keyframes features-title-shrink {
+          from {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+          }
+          to {
+            transform: translateY(-2.8vh) scale(0.78);
+            opacity: 0.95;
+          }
+        }
+
+        .features-stack-list {
+          list-style: none;
+          padding: 1vh 1rem 18vh 1rem;
+          margin: 0 auto;
+          width: 100%;
+          max-width: 92vw;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 4vw;
+        }
+
+        .features-stack-item {
+          position: sticky;
+          top: calc(48px + 7vh);
+          height: clamp(320px, 40vw, 560px);
+          perspective: 1000px;
+          padding-top: calc(var(--index) * 1em);
+        }
+
+        .features-stack-card {
+          box-sizing: border-box;
+          width: 100%;
+          height: 100%;
+          padding: clamp(1.5rem, 3vw, 3rem);
+          border-radius: 42px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: flex-start;
+          position: relative;
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          transform-origin: 50% 0%;
+          transform-style: preserve-3d;
+          will-change: transform, filter;
+          animation: scale-card linear forwards;
+          animation-timeline: view();
+          animation-range: exit-crossing 0% exit-crossing 100%;
+        }
+
+        @keyframes scale-card {
+          to {
+            transform: scale(0.8) translateY(-10vh) rotateX(-20deg);
+            filter: brightness(0.6);
+            border-radius: 20px;
+            box-shadow: 0 50px 80px -10px var(--shadow-color);
+          }
+        }
+
+        .features-stack-icon {
+          width: 64px;
+          height: 64px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 18px;
+          margin-bottom: 1.25rem;
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          backdrop-filter: blur(8px);
+          position: relative;
+          z-index: 2;
+        }
+
+        .features-stack-heading {
+          font-size: clamp(2rem, 5vw, 4rem);
+          line-height: 0.95;
+          margin: 0 0 1rem 0;
+          font-weight: 900;
+          position: relative;
+          z-index: 2;
+          max-width: 75%;
+        }
+
+        .features-stack-text {
+          font-size: clamp(1rem, 1.6vw, 1.4rem);
+          line-height: 1.4;
+          max-width: 680px;
+          margin: 0;
+          position: relative;
+          z-index: 2;
+          opacity: 0.88;
+        }
+
+        .features-stack-number {
+          font-size: clamp(5rem, 12vw, 10rem);
+          position: absolute;
+          right: 1.5rem;
+          top: -1rem;
+          opacity: 0.28;
+          font-weight: 900;
+          line-height: 1;
+          pointer-events: none;
+          user-select: none;
+        }
+
+        @media (max-width: 768px) {
+          .features-stack-header {
+            height: 13vh;
+            padding: 0.85rem 1rem 0 1rem;
+          }
+
+          .features-stack-title {
+            font-size: clamp(1.55rem, 8vw, 2.5rem);
+            animation-range: 0 14vh, 0 16vh;
+          }
+
+          .features-stack-list {
+            max-width: 100%;
+            padding: 1vh 1rem 14vh 1rem;
+          }
+
+          .features-stack-item {
+            top: calc(48px + 5.5vh);
+            height: 52vh;
+          }
+
+          .features-stack-card {
+            border-radius: 26px;
+            padding: 1.35rem;
+          }
+
+          .features-stack-heading {
+            max-width: 100%;
+          }
+
+          .features-stack-number {
+            right: 1rem;
+            top: 0;
+          }
+
+          @keyframes features-title-shrink {
+            from {
+              transform: translateY(0) scale(1);
+              opacity: 1;
+            }
+            to {
+              transform: translateY(-1.6vh) scale(0.84);
+              opacity: 0.96;
+            }
+          }
+        }
+      `,
+            }}
+          />
+
+          <div className="features-stack-shell">
+            <div className="features-stack-header">
+              <h2 className="features-stack-title">Features</h2>
             </div>
 
-            {/* Mobile: horizontal touch scroll */}
-            <div className="px-4 md:hidden">
-              <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory touch-pan-x no-scrollbar items-center">
-                {features.map((feature, idx) => (
-                  <div
+            <ul className="features-stack-list">
+              {features.map((feature, idx) => {
+                const cardStyles = [
+                  {
+                    bg: "#ff2a6d",
+                    text: "#ffffff",
+                    shadow: "rgba(255, 42, 109, 0.8)",
+                  },
+                  {
+                    bg: "#05d9e8",
+                    text: "#000000",
+                    shadow: "rgba(5, 217, 232, 0.8)",
+                  },
+                  {
+                    bg: "#ffe600",
+                    text: "#000000",
+                    shadow: "rgba(255, 230, 0, 0.8)",
+                  },
+                  {
+                    bg: "#fafac6",
+                    text: "#000000",
+                    shadow: "rgba(250, 250, 198, 0.8)",
+                  },
+                  {
+                    bg: "#7c3aed",
+                    text: "#ffffff",
+                    shadow: "rgba(124, 58, 237, 0.8)",
+                  },
+                ];
+
+                const style = cardStyles[idx % cardStyles.length];
+
+                return (
+                  <li
                     key={idx}
-                    className="snap-start relative flex h-[340px] w-[280px] flex-shrink-0 flex-col overflow-hidden p-7"
+                    className="features-stack-item"
                     style={{
-                      backgroundColor: feat.cardBg,
-                      color: feat.cardText,
-                      borderTop: `4px solid ${feat.cardText}`,
+                      zIndex: features.length + idx,
+                      ["--index"]: idx + 1,
                     }}
                   >
-                    <div className="z-10 mb-auto">
-                      <div
-                        className="mb-5 flex h-14 w-14 items-center justify-center"
-                        style={{ backgroundColor: feat.cardText }}
-                      >
-                        <feature.icon className="w-8 h-8" style={{ color: feat.cardBg }} />
-                      </div>
-                      <h3
-                        className="mb-4 text-2xl font-black uppercase leading-tight tracking-tight"
-                        style={{ color: feat.cardText }}
-                      >
-                        {feature.title}
-                      </h3>
-                    </div>
-                    <div className="z-10 mt-auto">
-                      <p className="text-base font-medium leading-relaxed" style={{ color: feat.cardText, opacity: 0.9 }}>
-                        {feature.description}
-                      </p>
-                    </div>
-                    <span
-                      className="pointer-events-none absolute -bottom-8 -right-4 select-none text-[140px] font-black leading-none opacity-10"
-                      style={{ color: feat.cardText }}
+                    <div
+                      className="features-stack-card"
+                      style={{
+                        background: style.bg,
+                        color: style.text,
+                        ["--shadow-color"]: style.shadow,
+                      }}
                     >
-                      {idx + 1}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+                      <span className="features-stack-number">
+                        {String(idx + 1).padStart(2, "0")}
+                      </span>
 
-            {/* Desktop: auto-scrolling marquee */}
-            <div className="relative hidden w-full overflow-hidden md:flex pt-4">
-              <div className="flex w-max animate-scroll-features hover:[animation-play-state:paused]">
-                {[...features, ...features].map((feature, idx) => (
-                  <div
-                    key={idx}
-                    className="group relative mx-6 flex h-[350px] w-[400px] flex-shrink-0 cursor-pointer flex-col overflow-hidden p-10 transition-all duration-300 hover:-translate-y-4"
-                    style={{
-                      backgroundColor: feat.cardBg,
-                      color: feat.cardText,
-                      borderTop: `4px solid ${feat.cardText}`,
-                    }}
-                  >
-                    <div className="z-10 mb-auto">
-                      <div
-                        className="mb-6 flex h-16 w-16 items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-3"
-                        style={{ backgroundColor: feat.cardText }}
-                      >
-                        <feature.icon className="w-8 h-8" style={{ color: feat.cardBg }} />
+                      <div className="features-stack-icon">
+                        <feature.icon className="h-7 w-7" />
                       </div>
-                      <h3
-                        className="mb-4 text-3xl font-black uppercase leading-tight tracking-tight"
-                        style={{ color: feat.cardText }}
-                      >
+
+                      <h3 className="features-stack-heading">
                         {feature.title}
                       </h3>
-                    </div>
-                    <div className="z-10 mt-auto">
+
                       <p
-                        className="text-lg font-medium leading-relaxed"
-                        style={{ color: feat.cardText, opacity: 0.9 }}
+                        className="features-stack-text"
+                        style={{
+                          color:
+                            style.text === "#000000"
+                              ? "rgba(0,0,0,0.78)"
+                              : "rgba(255,255,255,0.88)",
+                        }}
                       >
                         {feature.description}
                       </p>
                     </div>
-                    <span
-                      className="pointer-events-none absolute -bottom-8 -right-4 select-none text-[180px] font-black leading-none opacity-10 transition-transform group-hover:scale-110"
-                      style={{ color: feat.cardText }}
-                    >
-                      {(idx % features.length) + 1}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
-        </ClipSection>
-
+        </div>
       </div>
     </>
   );

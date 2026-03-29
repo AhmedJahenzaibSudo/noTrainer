@@ -31,7 +31,7 @@ const config = {
   sections: {
     hero: {
       bg: "#020a21",
-      accent: "#1AF0BE",       // Brand mint — kept here only
+      accent: "#1AF0BE", // Brand mint — kept here only
       glow: "#1AF0BE",
       textAccent: "#1AF0BE",
       cardBg: "#1AF0BE",
@@ -39,7 +39,7 @@ const config = {
     },
     muscle: {
       bg: "#1a0010",
-      accent: "#FF2D78",        // Electric magenta
+      accent: "#FF2D78", // Electric magenta
       glow: "#FF2D78",
       textAccent: "#FF2D78",
       cardBg: "#FF2D78",
@@ -47,7 +47,7 @@ const config = {
     },
     problems: {
       bg: "#021a0e",
-      accent: "#AAFF00",        // Toxic lime
+      accent: "#AAFF00", // Toxic lime
       glow: "#AAFF00",
       textAccent: "#AAFF00",
       cardBg: "#AAFF00",
@@ -57,7 +57,7 @@ const config = {
     },
     features: {
       bg: "#08001f",
-      accent: "#BF00FF",        // Hot violet
+      accent: "#BF00FF", // Hot violet
       glow: "#BF00FF",
       textAccent: "#BF00FF",
       cardBg: "#BF00FF",
@@ -73,13 +73,41 @@ const config = {
 // COMPONENT DATA
 // ============================================
 const features = [
-  { title: "Workout Wizard", description: "Select muscles and generate workouts instantly.", icon: Wand2 },
-  { title: "Muscle Map", description: "Interactive diagram for intuitive discovery.", icon: UserCircle },
-  { title: "Rich Dataset", description: "Categorized exercises for all goals.", icon: Database },
-  { title: "Calculators", description: "BMI, calories, and protein formulas.", icon: Calculator },
-  { title: "AI Chatbot", description: "24/7 intelligent fitness assistant.", icon: MessageSquare },
-  { title: "Kanban Board", description: "Visual tracking for fitness tasks.", icon: Columns3 },
-  { title: "Mini Games", description: "Boost focus and motivation.", icon: Gamepad2 },
+  {
+    title: "Workout Wizard",
+    description: "Select muscles and generate workouts instantly.",
+    icon: Wand2,
+  },
+  {
+    title: "Muscle Map",
+    description: "Interactive diagram for intuitive discovery.",
+    icon: UserCircle,
+  },
+  {
+    title: "Rich Dataset",
+    description: "Categorized exercises for all goals.",
+    icon: Database,
+  },
+  {
+    title: "Calculators",
+    description: "BMI, calories, and protein formulas.",
+    icon: Calculator,
+  },
+  {
+    title: "AI Chatbot",
+    description: "24/7 intelligent fitness assistant.",
+    icon: MessageSquare,
+  },
+  {
+    title: "Kanban Board",
+    description: "Visual tracking for fitness tasks.",
+    icon: Columns3,
+  },
+  {
+    title: "Mini Games",
+    description: "Boost focus and motivation.",
+    icon: Gamepad2,
+  },
 ];
 
 const words = ["Home Gym", "Workout Guide", "AI Trainer", "Fitness Hub"];
@@ -98,7 +126,7 @@ const ClipSection = ({ children, bgColor }) => (
     style={{
       position: "relative",
       width: "100%",
-      height: `calc(100vh - ${HEADER_HEIGHT}px)`
+      height: `calc(100vh - ${HEADER_HEIGHT}px)`,
     }}
   >
     <div
@@ -164,17 +192,62 @@ const Hero = () => {
 
   const problems = useMemo(
     () => [
-      { id: 1, text: "No gym access", solution: "Bodyweight & home equipment routines.", icon: MapPin },
-      { id: 2, text: "Too expensive", solution: "Free workout plans & calculators.", icon: Calculator },
-      { id: 3, text: "Don't know how", solution: "Step-by-step exercise guides.", icon: Info },
-      { id: 4, text: "Need privacy", solution: "24/7 AI trainer, no judgment.", icon: MessageSquare },
-      { id: 5, text: "Lack of knowledge", solution: "800+ exercises with instructions.", icon: Dumbbell },
-      { id: 6, text: "Can't go out", solution: "Effective home workout programs.", icon: Zap },
-      { id: 7, text: "Need structure", solution: "Visual Kanban Board tracking.", icon: LayoutDashboard },
-      { id: 8, text: "No motivation", solution: "Motivation Marquee & reminders.", icon: Target },
-      { id: 9, text: "No equipment", solution: "Proven bodyweight training.", icon: Package },
+      {
+        id: 1,
+        text: "No gym access",
+        solution: "Bodyweight & home equipment routines.",
+        icon: MapPin,
+      },
+      {
+        id: 2,
+        text: "Too expensive",
+        solution: "Free workout plans & calculators.",
+        icon: Calculator,
+      },
+      {
+        id: 3,
+        text: "Don't know how",
+        solution: "Step-by-step exercise guides.",
+        icon: Info,
+      },
+      {
+        id: 4,
+        text: "Need privacy",
+        solution: "24/7 AI trainer, no judgment.",
+        icon: MessageSquare,
+      },
+      {
+        id: 5,
+        text: "Lack of knowledge",
+        solution: "800+ exercises with instructions.",
+        icon: Dumbbell,
+      },
+      {
+        id: 6,
+        text: "Can't go out",
+        solution: "Effective home workout programs.",
+        icon: Zap,
+      },
+      {
+        id: 7,
+        text: "Need structure",
+        solution: "Visual Kanban Board tracking.",
+        icon: LayoutDashboard,
+      },
+      {
+        id: 8,
+        text: "No motivation",
+        solution: "Motivation Marquee & reminders.",
+        icon: Target,
+      },
+      {
+        id: 9,
+        text: "No equipment",
+        solution: "Proven bodyweight training.",
+        icon: Package,
+      },
     ],
-    []
+    [],
   );
 
   const handleMouseMove = (e) => {
@@ -216,9 +289,9 @@ const Hero = () => {
         }
       `}</style>
 
-<div className="relative w-full snap-y snap-proximity text-white font-sans">
+      <div className="relative w-full snap-y snap-proximity text-white font-sans">
         {/* ==========================================
-            HERO SECTION — Mint / #020a21
+            HERO SECTION
         ========================================== */}
         <ClipSection bgColor={hero.bg}>
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -246,7 +319,11 @@ const Hero = () => {
               style={{ fontFamily: "'Krona One', sans-serif" }}
             >
               <motion.span
-                animate={{ opacity: [0, 0.4, 0], x: [0, -5, 0], scale: [1, 1.05, 1] }}
+                animate={{
+                  opacity: [0, 0.4, 0],
+                  x: [0, -5, 0],
+                  scale: [1, 1.05, 1],
+                }}
                 transition={{ duration: 3, repeat: Infinity }}
                 className="absolute inset-0 z-0 blur-md"
                 style={{ color: `${hero.accent}55` }}
@@ -261,8 +338,12 @@ const Hero = () => {
 
               <motion.span
                 className="relative z-10 ml-4 bg-[length:200%_auto] bg-clip-text text-transparent"
-                style={{ backgroundImage: `linear-gradient(to top right, ${hero.accent}, #3399ff, ${hero.accent})` }}
-                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                style={{
+                  backgroundImage: `linear-gradient(to top right, ${hero.accent}, #3399ff, ${hero.accent})`,
+                }}
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
               >
                 AI
@@ -298,8 +379,14 @@ const Hero = () => {
               className="relative mt-12 w-full max-w-3xl overflow-hidden p-8 shadow-xl"
               style={{ backgroundColor: hero.cardBg, color: hero.cardText }}
             >
-              <div className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: hero.cardText }} />
-              <span className="mb-2 block text-left text-xs font-bold uppercase tracking-[0.2em]" style={{ color: hero.cardText }}>
+              <div
+                className="absolute inset-x-0 top-0 h-1"
+                style={{ backgroundColor: hero.cardText }}
+              />
+              <span
+                className="mb-2 block text-left text-xs font-bold uppercase tracking-[0.2em]"
+                style={{ color: hero.cardText }}
+              >
                 The Platform
               </span>
               <div className="flex h-20 items-center justify-center overflow-hidden md:h-24">
@@ -321,10 +408,17 @@ const Hero = () => {
 
             <motion.div
               animate={{ y: [0, 12, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              transition={{
+                repeat: Infinity,
+                duration: 1.5,
+                ease: "easeInOut",
+              }}
               className="mt-12"
             >
-              <ChevronDown className="h-8 w-8 opacity-70" style={{ color: hero.accent }} />
+              <ChevronDown
+                className="h-8 w-8 opacity-70"
+                style={{ color: hero.accent }}
+              />
             </motion.div>
           </div>
         </ClipSection>
@@ -382,10 +476,18 @@ const Hero = () => {
                 {highlightedMuscle && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1, x: mousePos.x + 18, y: mousePos.y - 34 }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                      x: mousePos.x + 18,
+                      y: mousePos.y - 34,
+                    }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="pointer-events-none absolute left-0 top-0 z-50 px-3 py-2 text-xs font-black uppercase tracking-[0.16em]"
-                    style={{ backgroundColor: muscle.cardBg, color: muscle.cardText }}
+                    style={{
+                      backgroundColor: muscle.cardBg,
+                      color: muscle.cardText,
+                    }}
                   >
                     {highlightedMuscle}
                   </motion.div>
@@ -447,10 +549,19 @@ const Hero = () => {
                     style={{
                       backgroundColor: isActive ? prob.cardBg : prob.buttonBg,
                       color: isActive ? prob.cardText : "#ffffff",
-                      boxShadow: isActive ? `0 0 24px ${prob.accent}44` : "none",
+                      boxShadow: isActive
+                        ? `0 0 24px ${prob.accent}44`
+                        : "none",
                     }}
-                    onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = prob.buttonHover; }}
-                    onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = prob.buttonBg; }}
+                    onMouseEnter={(e) => {
+                      if (!isActive)
+                        e.currentTarget.style.backgroundColor =
+                          prob.buttonHover;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive)
+                        e.currentTarget.style.backgroundColor = prob.buttonBg;
+                    }}
                   >
                     <problem.icon
                       size={22}
@@ -511,121 +622,171 @@ const Hero = () => {
         </ClipSection>
 
         {/* ==========================================
-            FEATURES SECTION — Violet / #08001f
+            FEATURES SECTION — Staggered 3D Stack
         ========================================== */}
-        <ClipSection bgColor={feat.bg}>
-          <div className="pointer-events-none absolute inset-0">
-            <div
-              className="absolute bottom-0 right-0 w-[800px] h-[400px] blur-[150px] opacity-20"
-              style={{ backgroundColor: feat.glow }}
-            />
-            <div
-              className="absolute top-0 left-0 w-[500px] h-[300px] blur-[120px] opacity-10"
-              style={{ backgroundColor: feat.glow }}
-            />
+        <div
+          className="snap-start"
+          style={{
+            position: "relative",
+            width: "100%",
+            // Enough scroll space for all cards to stack
+            minHeight: `${features.length * 80}vh`,
+            backgroundColor: feat.bg,
+          }}
+        >
+          {/* PINNED HEADER: Stays fixed at the top */}
+          <div
+            style={{
+              position: "sticky",
+              top: HEADER_HEIGHT,
+              height: "20vh",
+              width: "100%",
+              zIndex: 100,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: `linear-gradient(to bottom, ${feat.bg} 60%, transparent)`,
+            }}
+          >
+            <h2
+              className="text-5xl font-black uppercase tracking-widest text-white md:text-7xl"
+              style={{
+                fontFamily: "'Krona One', sans-serif",
+                textShadow: `0 10px 30px ${feat.accent}40`,
+              }}
+            >
+              Features
+            </h2>
           </div>
 
-          <div className="relative z-10 flex w-full flex-col overflow-hidden">
-            <div className="flex w-full items-end justify-center pb-10 md:pb-12 h-[25vh]">
-              <h2
-                className="text-4xl font-black uppercase tracking-tighter text-white drop-shadow-lg sm:text-5xl md:text-8xl"
-                style={{ textShadow: `0 0 40px ${feat.accent}66` }}
-              >
-                Features
-              </h2>
-            </div>
+          {/* SCROLLING CARDS CONTAINER */}
+          <div className="relative z-10 flex w-full flex-col items-center px-4 md:px-8">
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `
+      .stack-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 1000px;
+        padding: 0;
+        list-style: none;
+      }
+      .stack-item {
+        position: sticky;
+        height: 50vh;
+        min-height: 400px;
+        perspective: 1000px;
+        margin-bottom: 12vh;
+      }
+      .stack-item-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 24px;
+        transform-origin: 50% 0%;
+        animation: card-stack linear forwards;
+        animation-timeline: view();
+        animation-range: exit-crossing 0% exit-crossing 100%;
+        overflow: hidden;
+      }
+      @keyframes card-stack {
+        to {
+          transform: scale(0.9) translateY(-20px);
+          filter: brightness(0.4);
+        }
+      }
+    `,
+              }}
+            />
 
-            {/* Mobile: horizontal touch scroll */}
-            <div className="px-4 md:hidden">
-              <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory touch-pan-x no-scrollbar items-center">
-                {features.map((feature, idx) => (
-                  <div
+            <ul className="stack-container">
+              {features.map((feature, idx) => {
+                // Premium modern gradients instead of flat neons
+                const cardStyles = [
+                  { bg: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)" }, // Indigo to Violet
+                  { bg: "linear-gradient(135deg, #059669 0%, #10B981 100%)" }, // Emerald
+                  { bg: "linear-gradient(135deg, #E11D48 0%, #F43F5E 100%)" }, // Rose
+                  { bg: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)" }, // Amber
+                  { bg: "linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)" }, // Sky Blue
+                ];
+                const style = cardStyles[idx % cardStyles.length];
+
+                return (
+                  <li
                     key={idx}
-                    className="snap-start relative flex h-[340px] w-[280px] flex-shrink-0 flex-col overflow-hidden p-7"
+                    className="stack-item"
                     style={{
-                      backgroundColor: feat.cardBg,
-                      color: feat.cardText,
-                      borderTop: `4px solid ${feat.cardText}`,
+                      zIndex: idx + 1,
+                      // Stagger: each card stops slightly lower
+                      top: `calc(25vh + ${idx * 20}px)`,
                     }}
                   >
-                    <div className="z-10 mb-auto">
-                      <div
-                        className="mb-5 flex h-14 w-14 items-center justify-center"
-                        style={{ backgroundColor: feat.cardText }}
-                      >
-                        <feature.icon className="w-8 h-8" style={{ color: feat.cardBg }} />
-                      </div>
-                      <h3
-                        className="mb-4 text-2xl font-black uppercase leading-tight tracking-tight"
-                        style={{ color: feat.cardText }}
-                      >
-                        {feature.title}
-                      </h3>
-                    </div>
-                    <div className="z-10 mt-auto">
-                      <p className="text-base font-medium leading-relaxed" style={{ color: feat.cardText, opacity: 0.9 }}>
-                        {feature.description}
-                      </p>
-                    </div>
-                    <span
-                      className="pointer-events-none absolute -bottom-8 -right-4 select-none text-[140px] font-black leading-none opacity-10"
-                      style={{ color: feat.cardText }}
+                    <div
+                      className="stack-item-inner flex flex-col justify-between p-8 shadow-2xl md:p-12 relative"
+                      style={{
+                        background: style.bg,
+                        color: "#ffffff",
+                        boxShadow:
+                          "0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)",
+                        border: "1px solid rgba(255, 255, 255, 0.15)",
+                      }}
                     >
-                      {idx + 1}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+                      <div className="z-10 relative">
+                        {/* Glassmorphic Icon Container */}
+                        <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-inner">
+                          <feature.icon className="w-8 h-8 text-white" />
+                        </div>
+                        <h3 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 drop-shadow-sm">
+                          {feature.title}
+                        </h3>
+                      </div>
 
-            {/* Desktop: auto-scrolling marquee */}
-            <div className="relative hidden w-full overflow-hidden md:flex pt-4">
-              <div className="flex w-max animate-scroll-features hover:[animation-play-state:paused]">
-                {[...features, ...features].map((feature, idx) => (
-                  <div
-                    key={idx}
-                    className="group relative mx-6 flex h-[350px] w-[400px] flex-shrink-0 cursor-pointer flex-col overflow-hidden p-10 transition-all duration-300 hover:-translate-y-4"
-                    style={{
-                      backgroundColor: feat.cardBg,
-                      color: feat.cardText,
-                      borderTop: `4px solid ${feat.cardText}`,
-                    }}
-                  >
-                    <div className="z-10 mb-auto">
-                      <div
-                        className="mb-6 flex h-16 w-16 items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-3"
-                        style={{ backgroundColor: feat.cardText }}
-                      >
-                        <feature.icon className="w-8 h-8" style={{ color: feat.cardBg }} />
+                      <div className="z-10 relative">
+                        <p className="text-lg md:text-xl font-medium leading-relaxed text-white/90 max-w-2xl drop-shadow-sm">
+                          {feature.description}
+                        </p>
                       </div>
-                      <h3
-                        className="mb-4 text-3xl font-black uppercase leading-tight tracking-tight"
-                        style={{ color: feat.cardText }}
-                      >
-                        {feature.title}
-                      </h3>
+
+                      {/* Repositioned subtle background number */}
+                      <span className="pointer-events-none absolute -bottom-6 -right-2 select-none text-[140px] md:text-[200px] font-black leading-none text-white/10">
+                        0{idx + 1}
+                      </span>
                     </div>
-                    <div className="z-10 mt-auto">
-                      <p
-                        className="text-lg font-medium leading-relaxed"
-                        style={{ color: feat.cardText, opacity: 0.9 }}
-                      >
-                        {feature.description}
-                      </p>
-                    </div>
-                    <span
-                      className="pointer-events-none absolute -bottom-8 -right-4 select-none text-[180px] font-black leading-none opacity-10 transition-transform group-hover:scale-110"
-                      style={{ color: feat.cardText }}
-                    >
-                      {(idx % features.length) + 1}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
-        </ClipSection>
 
+          {/* BOTTOM SECTION */}
+          <div
+            className="flex w-full flex-col items-center justify-center pt-32 pb-40"
+            style={{ perspective: "1000px" }}
+          >
+            <h2
+              className="text-center text-[10vw] md:text-[8vw] font-[200] uppercase leading-[0.9] tracking-tighter text-white"
+              style={{
+                fontFamily: "'Krona One', sans-serif",
+                textShadow: `0 0 60px ${feat.accent}66`,
+                transform: "rotateX(10deg)",
+              }}
+            >
+              No Excuses.
+              <br />
+              <span style={{ color: feat.accent, fontWeight: "800" }}>
+                Just Results.
+              </span>
+            </h2>
+
+            <div
+              className="mt-12 h-1 w-24 md:w-48 rounded-full"
+              style={{
+                backgroundColor: feat.accent,
+                boxShadow: `0 0 30px 2px ${feat.accent}`,
+              }}
+            />
+          </div>
+        </div>
       </div>
     </>
   );
