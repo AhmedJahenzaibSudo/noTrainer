@@ -1,140 +1,211 @@
 "use client";
 
-import Link from "next/link";
 import { Brain, Zap, Target, Wind } from "lucide-react";
+import Link from "next/link";
 
-// ============================================
-// CONFIGURATION
-// ============================================
+// =======================
+// Config
+// =======================
+const HEADER_HEIGHT = 40;
+
 const config = {
-  colors: {
-    bgPrimary: "#051061",
-    bgDark: "#020a21",
-    accent: "#1AF0BE",
-    textPrimary: "#ffffff",
-  },
+  fontFamily: "'Krona One', sans-serif",
+  // Removed animations object
+  colorPalettes: [
+    {
+      bg: "#0a0e27",
+      text: "#ffffff",
+      accent: "#f7b731",
+    },
+    {
+      bg: "#2c003e",
+      text: "#ffffff",
+      accent: "#ff6b6b",
+    },
+    {
+      bg: "#004643",
+      text: "#ffffff",
+      accent: "#abd1c6",
+    },
+    {
+      bg: "#3d0000",
+      text: "#ffffff",
+      accent: "#ffba08",
+    },
+    {
+      bg: "#1a2a3c",
+      text: "#ffffff",
+      accent: "#a8dadc",
+    },
+  ],
 };
 
 const GAMES = [
   {
     title: "Focus Strike",
-    href: "/game/focus",
     icon: Target,
     desc: "Improve target acquisition",
-    color: "bg-[#1AF0BE]", // Accent Color
-    textColor: "text-[#051061]",
-    subtextColor: "text-[#051061]/80",
-    iconColor: "text-[#051061]",
-    hoverRing: "hover:ring-4 hover:ring-white/20",
+    why: "Precision is key in daily brain challenges",
+    href: "/game/focus",
   },
   {
     title: "Neural Recall",
-    href: "/game/recall",
     icon: Brain,
     desc: "Enhance memory retention",
-    color: "bg-[#1AF0BE]",
-    textColor: "text-[#051061]",
-    subtextColor: "text-[#051061]/80",
-    iconColor: "text-[#051061]",
-    hoverRing: "hover:ring-4 hover:ring-white/20",
+    why: "Strong memory = better focus & performance",
+    href: "/game/recall",
   },
   {
     title: "Reflex Pro",
-    href: "/game/reaction",
     icon: Zap,
     desc: "Boost reaction speed",
-    color: "bg-[#1AF0BE]",
-    textColor: "text-[#051061]",
-    subtextColor: "text-[#051061]/80",
-    iconColor: "text-[#051061]",
-    hoverRing: "hover:ring-4 hover:ring-white/20",
+    why: "Quick thinking & reflexes help in everything",
+    href: "/game/reaction",
   },
   {
     title: "Zen Flow",
-    href: "/game/zenflow",
     icon: Wind,
     desc: "Relax and clear your mind",
-    color: "bg-[#1AF0BE]",
-    textColor: "text-[#051061]",
-    subtextColor: "text-[#051061]/80",
-    iconColor: "text-[#051061]",
-    hoverRing: "hover:ring-4 hover:ring-white/20",
+    why: "Calm mind = better learning and stress relief",
+    href: "/game/zenflow",
   },
 ];
 
-export default function Dashboard() {
-  return (
-    <main
-      className="relative flex flex-col items-center overflow-hidden font-sans selection:bg-[#1AF0BE] selection:text-[#051061]"
+// =======================
+// Components
+// =======================
+const ClipSection = ({ children, bgColor }) => (
+  <div
+    className="snap-start"
+    style={{
+      position: "relative",
+      width: "100%",
+      height: `calc(100vh - ${HEADER_HEIGHT}px)`,
+    }}
+  >
+    <div
       style={{
-        backgroundColor: config.colors.bgDark,
-        height: "calc(100dvh - 40px)",
+        position: "absolute",
+        overflow: "hidden",
+        width: "100%",
+        height: "100%",
+        clip: "rect(0, auto, auto, 0)",
       }}
     >
-      {/* Responsive Height Override for MD+ */}
-      <style jsx>{`
-        @media (min-width: 768px) {
-          main {
-            height: calc(100dvh - 48px);
-          }
-        }
-      `}</style>
-
-      {/* Background Glows */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] h-[500px] w-[500px] bg-[#051061] blur-[140px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] h-[400px] w-[400px] bg-[#1AF0BE] opacity-10 blur-[120px]" />
+      <div
+        style={{
+          position: "fixed",
+          top: HEADER_HEIGHT,
+          left: 0,
+          width: "100%",
+          height: `calc(100vh - ${HEADER_HEIGHT}px)`,
+          backgroundColor: bgColor,
+          zIndex: 0,
+        }}
+      />
+      <div
+        style={{
+          position: "fixed",
+          top: HEADER_HEIGHT,
+          left: 0,
+          width: "100%",
+          height: `calc(100vh - ${HEADER_HEIGHT}px)`,
+          zIndex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          padding: "0 1rem",
+        }}
+      >
+        {children}
       </div>
+    </div>
+  </div>
+);
 
-      {/* Header Section */}
-      <header className="relative z-10 w-full max-w-5xl px-6 pt-6 pb-4 text-center shrink-0 md:pt-8 md:pb-6">
-        <h1
-          className="text-3xl font-black uppercase tracking-tight text-white md:text-5xl"
-          style={{ fontFamily: "'Krona One', sans-serif" }}
-        >
-          Mind <span className="text-[#1AF0BE]">Games</span>
-        </h1>
-        <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 md:text-xs">
-          Workout for the Brain
-        </p>
-      </header>
+const GameCard = ({ game, palette }) => {
+  const Icon = game.icon;
 
-      {/* Games Grid Container */}
-      <div className="relative z-10 w-full max-w-5xl flex-1 px-4 pb-4 min-h-0 md:px-6 md:pb-6">
-        <div className="grid h-full grid-cols-2 grid-rows-2 gap-3 md:gap-5">
-          {GAMES.map((game) => {
-            const Icon = game.icon;
-            return (
-              <Link
-                key={game.href}
-                href={game.href}
-                className={`group relative flex flex-col items-center justify-center overflow-hidden p-4 transition-all duration-300 active:scale-95 md:p-6 ${game.color} ${game.hoverRing}`}
-              >
-                {/* Icon */}
-                <div className="mb-2 flex h-10 w-10 items-center justify-center transition-transform duration-300 group-hover:scale-110 md:h-14 md:w-14">
-                  <Icon
-                    size={28}
-                    className={`${game.iconColor} md:size-8`}
-                    strokeWidth={2.5}
-                  />
-                </div>
-
-                {/* Text Content */}
-                <h3
-                  className={`text-center text-base font-black uppercase tracking-tight md:text-xl ${game.textColor}`}
-                >
-                  {game.title}
-                </h3>
-                <p
-                  className={`mt-1 text-center text-[9px] font-medium uppercase tracking-wider md:text-[10px] ${game.subtextColor}`}
-                >
-                  {game.desc}
-                </p>
-              </Link>
-            );
-          })}
+  return (
+    <ClipSection bgColor={palette.bg}>
+      <div className="text-center px-4 relative z-10">
+        <div className="mb-6 flex items-center justify-center w-20 h-20 mx-auto rounded-full bg-white/10">
+          <Icon size={48} style={{ color: palette.accent }} />
         </div>
+
+        <h2
+          className="text-5xl md:text-7xl font-black uppercase mb-4"
+          style={{ fontFamily: config.fontFamily, color: palette.text }}
+        >
+          {game.title}
+        </h2>
+
+        <p
+          className="text-lg md:text-2xl font-semibold uppercase mb-2"
+          style={{ color: `${palette.text}cc` }}
+        >
+          {game.desc}
+        </p>
+
+        <p
+          className="text-sm md:text-lg italic mb-6"
+          style={{ color: `${palette.text}88` }}
+        >
+          {game.why}
+        </p>
+
+        <Link
+          href={game.href}
+          className="inline-block px-8 py-3 text-lg font-bold uppercase rounded-lg transition-transform hover:scale-105"
+          style={{ backgroundColor: palette.accent, color: palette.bg }}
+        >
+          Play
+        </Link>
       </div>
+    </ClipSection>
+  );
+};
+
+// =======================
+// Main Page
+// =======================
+export default function GameDashboard() {
+  const introPalette = config.colorPalettes[0];
+
+  return (
+    <main className="snap-y snap-mandatory overflow-y-scroll font-sans">
+      <ClipSection bgColor={introPalette.bg}>
+        <div className="text-center px-4 relative z-10">
+          <h1
+            className="text-6xl md:text-8xl font-black uppercase mb-4"
+            style={{ fontFamily: config.fontFamily, color: introPalette.text }}
+          >
+            Mind <span style={{ color: introPalette.accent }}>Games</span>
+          </h1>
+          <p
+            className="text-xl md:text-2xl font-semibold"
+            style={{ color: `${introPalette.text}cc` }}
+          >
+            Workout for your Brain
+          </p>
+          <p
+            className="mt-2 text-sm md:text-lg italic"
+            style={{ color: `${introPalette.text}88` }}
+          >
+            Scroll down to explore each game and its benefits
+          </p>
+        </div>
+      </ClipSection>
+
+      {GAMES.map((game, idx) => (
+        <GameCard
+          key={game.title}
+          game={game}
+          palette={config.colorPalettes[idx + 1]}
+        />
+      ))}
     </main>
   );
 }
