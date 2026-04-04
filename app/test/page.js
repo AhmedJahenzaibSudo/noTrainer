@@ -1,795 +1,959 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FrontView from "@/components/anatomy/FrontView";
+import BackView from "@/components/anatomy/BackView";
+import exercisesData from "@/public/exercises.json";
 import {
-  Zap,
-  Dumbbell,
-  LayoutDashboard,
-  Calculator,
-  MessageSquare,
-  Target,
-  Info,
-  MapPin,
-  Package,
+  RotateCcw,
   ChevronDown,
-  Wand2,
-  UserCircle,
-  Database,
-  Columns3,
-  Gamepad2,
-  ArrowRight,
+  Trash2,
+  X,
+  LayoutList,
+  Download,
 } from "lucide-react";
 
-import FrontView from "@/components/anatomy/FrontView";
-
-// ============================================
-// CENTRALIZED CONFIGURATION
-// ============================================
-const config = {
-  // Per-section color themes
-  sections: {
-    hero: {
-      bg: "#020a21",
-      accent: "#1AF0BE", // Brand mint — kept here only
-      glow: "#1AF0BE",
-      textAccent: "#1AF0BE",
-      cardBg: "#1AF0BE",
-      cardText: "#020a21",
-    },
-    muscle: {
-      bg: "#1a0010",
-      accent: "#FF2D78", // Electric magenta
-      glow: "#FF2D78",
-      textAccent: "#FF2D78",
-      cardBg: "#FF2D78",
-      cardText: "#1a0010",
-    },
-    problems: {
-      bg: "#021a0e",
-      accent: "#AAFF00", // Toxic lime
-      glow: "#AAFF00",
-      textAccent: "#AAFF00",
-      cardBg: "#AAFF00",
-      cardText: "#021a0e",
-      buttonBg: "#0a3d1f",
-      buttonHover: "#0f5229",
-    },
-    features: {
-      bg: "#08001f",
-      accent: "#BF00FF", // Hot violet
-      glow: "#BF00FF",
-      textAccent: "#BF00FF",
-      cardBg: "#BF00FF",
-      cardText: "#08001f",
-    },
-  },
-  animation: {
-    marqueeDuration: "45s",
+const theme = {
+  colors: {
+    bgPrimary: "#0A2A9B",
+    bgDark: "#04114F",
+    panel: "#1B43C4",
+    panelHover: "#2550E0",
+    accent: "#22FFD1",
+    accentSoft: "#54FFDC",
+    textPrimary: "#FFFFFF",
+    textSecondary: "#D7E3FF",
+    textMuted: "#B7C7FF",
+    textOnAccent: "#04114F",
   },
 };
 
-// ============================================
-// COMPONENT DATA
-// ============================================
-const features = [
-  {
-    title: "Workout Wizard",
-    description: "Select muscles and generate workouts instantly.",
-    icon: Wand2,
-  },
-  {
-    title: "Muscle Map",
-    description: "Interactive diagram for intuitive discovery.",
-    icon: UserCircle,
-  },
-  {
-    title: "Rich Dataset",
-    description: "Categorized exercises for all goals.",
-    icon: Database,
-  },
-  {
-    title: "Calculators",
-    description: "BMI, calories, and protein formulas.",
-    icon: Calculator,
-  },
-  {
-    title: "AI Chatbot",
-    description: "24/7 intelligent fitness assistant.",
-    icon: MessageSquare,
-  },
-  {
-    title: "Kanban Board",
-    description: "Visual tracking for fitness tasks.",
-    icon: Columns3,
-  },
-  {
-    title: "Mini Games",
-    description: "Boost focus and motivation.",
-    icon: Gamepad2,
-  },
-];
+const RotatingImage = ({ images = [], name, className = "" }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const intervalRef = useRef(null);
 
-const words = ["Home Gym", "Workout Guide", "AI Trainer", "Fitness Hub"];
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [images?.length]);
 
-// ============================================
-// CLIP SECTION WRAPPER
-// Each section clips its fixed-position content so it only
-// shows while that section is in the viewport.
-// HEADER_HEIGHT offsets everything below the sticky marquee.
-// ============================================
-const HEADER_HEIGHT = 40;
+  useEffect(() => {
+    if (images.length > 1) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+      }, 1800);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [images.length]);
 
-const ClipSection = ({ children, bgColor }) => (
-  <div
-    className="snap-start"
-    style={{
-      position: "relative",
-      width: "100%",
-      height: `calc(100vh - ${HEADER_HEIGHT}px)`,
-    }}
-  >
-    <div
-      style={{
-        position: "absolute",
-        overflow: "hidden",
-        width: "100%",
-        height: "100%",
-        clip: "rect(0, auto, auto, 0)",
-        WebkitClipPath: "polygon(0 0, 100% 0, 100% 100%, 0% 100%)",
-        clipPath: "polygon(0 0, 100% 0, 100% 100%, 0% 100%)",
-      }}
-    >
-      <div
-        style={{
-          position: "fixed",
-          top: HEADER_HEIGHT,
-          left: 0,
-          width: "100%",
-          height: `calc(100vh - ${HEADER_HEIGHT}px)`,
-          backgroundColor: bgColor,
-          zIndex: 0,
-        }}
-      />
-      <div
-        style={{
-          position: "fixed",
-          top: HEADER_HEIGHT,
-          left: 0,
-          width: "100%",
-          height: `calc(100vh - ${HEADER_HEIGHT}px)`,
-          zIndex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-        }}
-      >
-        {children}
-      </div>
+  return (
+    <div className={`relative h-full w-full overflow-hidden ${className}`}>
+      {images.map((image, index) => (
+        <div
+          key={`${image}-${index}`}
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            index === currentIndex ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <img
+            src={`/exercises/${image || "placeholder.png"}`}
+            alt={`${name} view ${index + 1}`}
+            className="h-full w-full object-contain"
+          />
+        </div>
+      ))}
     </div>
+  );
+};
+
+const SectionHeading = ({ step, title, subtitle, center = true }) => (
+  <div className={`${center ? "text-center" : "text-left"} mb-4 md:mb-5`}>
+    {step && (
+      <div className="mb-1 text-[11px] font-semibold tracking-[0.18em] text-[#22FFD1] md:text-xs">
+        {step}
+      </div>
+    )}
+    <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
+      {title}
+    </h2>
+    {subtitle && (
+      <p className="mt-2 text-sm font-medium text-[#D7E3FF] md:text-base">
+        {subtitle}
+      </p>
+    )}
   </div>
 );
 
-const Hero = () => {
-  const [mounted, setMounted] = useState(true);
-  const [selectedMuscle, setSelectedMuscle] = useState(null);
-  const [highlightedMuscle, setHighlightedMuscle] = useState(null);
+const SelectionCard = ({ title, count, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`w-full border p-4 text-left transition-all duration-200 md:p-5 ${
+      active
+        ? "border-[#22FFD1] bg-[#22FFD1] text-[#04114F] shadow-[0_0_24px_rgba(34,255,209,0.18)]"
+        : "border-[#6D8DFF]/30 bg-[#1B43C4] text-white hover:border-[#22FFD1] hover:bg-[#2550E0]"
+    }`}
+  >
+    <div className="flex h-full flex-col justify-between gap-4">
+      <div>
+        <h3
+          className={`text-base font-semibold tracking-tight capitalize md:text-lg ${
+            active ? "text-[#04114F]" : "text-white"
+          }`}
+        >
+          {title}
+        </h3>
+      </div>
+
+      <div>
+        <span
+          className={`inline-flex px-3 py-1 text-[11px] font-semibold ${
+            active ? "bg-[#04114F] text-[#22FFD1]" : "bg-[#0A2A9B] text-white"
+          }`}
+        >
+          {count}
+        </span>
+      </div>
+    </div>
+  </button>
+);
+
+const CleanTag = ({ children, accent = false }) => (
+  <span
+    className={`px-2.5 py-1 text-[11px] font-medium capitalize ${
+      accent
+        ? "bg-[#22FFD1] text-[#04114F]"
+        : "border border-[#6D8DFF]/30 bg-[#0A2A9B] text-white"
+    }`}
+  >
+    {children}
+  </span>
+);
+
+export default function WorkoutWizard() {
+  const containerRef = useRef(null);
+  const touchStartY = useRef(null);
+
+  const [activeSection, setActiveSection] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [wordIndex, setWordIndex] = useState(0);
-  const [activeProblem, setActiveProblem] = useState(null);
-  const anatomyBoxRef = useRef(null);
 
-  const { hero, muscle, problems: prob, features: feat } = config.sections;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
 
-  useEffect(() => {
-    const textInterval = setInterval(() => {
-      setWordIndex((prev) => (prev + 1) % words.length);
-    }, 2500);
-    return () => clearInterval(textInterval);
-  }, []);
+  const [view, setView] = useState("front");
+  const [muscle, setMuscle] = useState(null);
+  const [equipment, setEquipment] = useState(null);
+  const [category, setCategory] = useState(null);
+  const [level, setLevel] = useState(null);
 
-  const problems = useMemo(
-    () => [
-      {
-        id: 1,
-        text: "No gym access",
-        solution: "Bodyweight & home equipment routines.",
-        icon: MapPin,
-      },
-      {
-        id: 2,
-        text: "Too expensive",
-        solution: "Free workout plans & calculators.",
-        icon: Calculator,
-      },
-      {
-        id: 3,
-        text: "Don't know how",
-        solution: "Step-by-step exercise guides.",
-        icon: Info,
-      },
-      {
-        id: 4,
-        text: "Need privacy",
-        solution: "24/7 AI trainer, no judgment.",
-        icon: MessageSquare,
-      },
-      {
-        id: 5,
-        text: "Lack of knowledge",
-        solution: "800+ exercises with instructions.",
-        icon: Dumbbell,
-      },
-      {
-        id: 6,
-        text: "Can't go out",
-        solution: "Effective home workout programs.",
-        icon: Zap,
-      },
-      {
-        id: 7,
-        text: "Need structure",
-        solution: "Visual Kanban Board tracking.",
-        icon: LayoutDashboard,
-      },
-      {
-        id: 8,
-        text: "No motivation",
-        solution: "Motivation Marquee & reminders.",
-        icon: Target,
-      },
-      {
-        id: 9,
-        text: "No equipment",
-        solution: "Proven bodyweight training.",
-        icon: Package,
-      },
-    ],
-    [],
+  const [routine, setRoutine] = useState([]);
+  const [highlightedMuscle, setHighlightedMuscle] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const exercisesForMuscle = useMemo(() => {
+    if (!muscle) return [];
+    return exercisesData.filter(
+      (ex) =>
+        ex.primaryMuscles?.includes(muscle) ||
+        ex.secondaryMuscles?.includes(muscle),
+    );
+  }, [muscle]);
+
+  const availableEquipment = useMemo(
+    () =>
+      [
+        ...new Set(
+          exercisesForMuscle.map((ex) => ex.equipment).filter(Boolean),
+        ),
+      ].sort(),
+    [exercisesForMuscle],
   );
 
-  const handleMouseMove = (e) => {
-    if (!anatomyBoxRef.current) return;
-    const rect = anatomyBoxRef.current.getBoundingClientRect();
-    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  const equipmentCounts = useMemo(() => {
+    const counts = {};
+    availableEquipment.forEach((eq) => {
+      counts[eq] = exercisesForMuscle.filter(
+        (ex) => ex.equipment === eq,
+      ).length;
+    });
+    return counts;
+  }, [availableEquipment, exercisesForMuscle]);
+
+  const exercisesForEquipment = useMemo(
+    () =>
+      exercisesForMuscle.filter(
+        (ex) => !equipment || ex.equipment === equipment,
+      ),
+    [exercisesForMuscle, equipment],
+  );
+
+  const availableCategories = useMemo(
+    () =>
+      [
+        ...new Set(
+          exercisesForEquipment.map((ex) => ex.category).filter(Boolean),
+        ),
+      ].sort(),
+    [exercisesForEquipment],
+  );
+
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+    availableCategories.forEach((cat) => {
+      counts[cat] = exercisesForEquipment.filter(
+        (ex) => ex.category === cat,
+      ).length;
+    });
+    return counts;
+  }, [availableCategories, exercisesForEquipment]);
+
+  const exercisesForCategory = useMemo(
+    () =>
+      exercisesForEquipment.filter(
+        (ex) => !category || ex.category === category,
+      ),
+    [exercisesForEquipment, category],
+  );
+
+  const availableLevels = useMemo(
+    () => [
+      ...new Set(exercisesForCategory.map((ex) => ex.level).filter(Boolean)),
+    ],
+    [exercisesForCategory],
+  );
+
+  const levelCounts = useMemo(() => {
+    const counts = {};
+    availableLevels.forEach((lvl) => {
+      counts[lvl] = exercisesForCategory.filter(
+        (ex) => ex.level === lvl,
+      ).length;
+    });
+    return counts;
+  }, [availableLevels, exercisesForCategory]);
+
+  const finalExercises = useMemo(
+    () => exercisesForCategory.filter((ex) => !level || ex.level === level),
+    [exercisesForCategory, level],
+  );
+
+  const currentPreview = finalExercises[activeIndex];
+
+  const maxUnlockedSection = useMemo(() => {
+    if (!muscle) return 1;
+    if (!equipment) return 2;
+    if (!category) return 3;
+    if (!level) return 4;
+    return 5;
+  }, [muscle, equipment, category, level]);
+
+  const scrollTo = (index) => {
+    const clamped = Math.max(0, Math.min(index, maxUnlockedSection));
+    const h = containerRef.current?.clientHeight || window.innerHeight;
+    containerRef.current?.scrollTo({ top: clamped * h, behavior: "smooth" });
   };
 
-  if (!mounted) return null;
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+
+    const h = containerRef.current.clientHeight;
+    const rawIndex = Math.round(containerRef.current.scrollTop / h);
+    const boundedIndex = Math.min(rawIndex, maxUnlockedSection);
+
+    if (rawIndex > maxUnlockedSection) {
+      containerRef.current.scrollTo({
+        top: maxUnlockedSection * h,
+        behavior: "auto",
+      });
+      setActiveSection(maxUnlockedSection);
+      return;
+    }
+
+    setActiveSection(boundedIndex);
+  };
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const h = containerRef.current.clientHeight;
+    const currentIndex = Math.round(containerRef.current.scrollTop / h);
+    if (currentIndex > maxUnlockedSection) {
+      containerRef.current.scrollTo({
+        top: maxUnlockedSection * h,
+        behavior: "smooth",
+      });
+      setActiveSection(maxUnlockedSection);
+    }
+  }, [maxUnlockedSection]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const canScrollInner = (target, deltaY) => {
+      const scrollable = target.closest(".section-scroll");
+      if (!scrollable) return false;
+
+      const { scrollTop, scrollHeight, clientHeight } = scrollable;
+      const atTop = scrollTop <= 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+
+      if (deltaY > 0 && !atBottom) return true;
+      if (deltaY < 0 && !atTop) return true;
+      return false;
+    };
+
+    const onWheel = (e) => {
+      if (canScrollInner(e.target, e.deltaY)) return;
+
+      const goingDown = e.deltaY > 0;
+      const goingUp = e.deltaY < 0;
+
+      if (goingDown && activeSection >= maxUnlockedSection) {
+        e.preventDefault();
+        return;
+      }
+
+      if (goingUp && activeSection <= 0) {
+        e.preventDefault();
+      }
+    };
+
+    const onTouchStart = (e) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const onTouchMove = (e) => {
+      const scrollable = e.target.closest(".section-scroll");
+      if (scrollable) return;
+
+      if (touchStartY.current == null) return;
+      const currentY = e.touches[0].clientY;
+      const delta = touchStartY.current - currentY;
+      const goingDown = delta > 0.5;
+
+      if (goingDown && activeSection >= maxUnlockedSection) {
+        e.preventDefault();
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+    };
+  }, [activeSection, maxUnlockedSection]);
+
+  const toggleRoutine = (ex) => {
+    setRoutine((prev) =>
+      prev.some((item) => item.id === ex.id)
+        ? prev.filter((item) => item.id !== ex.id)
+        : [...prev, ex],
+    );
+  };
+
+  const resetWizard = () => {
+    setMuscle(null);
+    setEquipment(null);
+    setCategory(null);
+    setLevel(null);
+    setActiveIndex(0);
+    scrollTo(0);
+  };
+
+  const exportRoutineCSV = () => {
+    if (!routine.length) return;
+
+    const rows = [
+      ["Name", "Equipment", "Category", "Difficulty", "Primary Muscles"],
+      ...routine.map((ex) => [
+        ex.name || "",
+        ex.equipment || "",
+        ex.category || "",
+        ex.level || "",
+        (ex.primaryMuscles || []).join(", "),
+      ]),
+    ];
+
+    const csv = rows
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "notrainer-routine.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const breadcrumbText = [muscle, equipment, category, level]
+    .filter(Boolean)
+    .join(" > ");
 
   return (
-    <>
+    <div className="relative w-full overflow-hidden bg-[#04114F] text-white h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)]">
       <style>{`
+        .anatomy-svg-wrapper svg {
+          width: 100% !important;
+          height: 100% !important;
+          max-width: 100%;
+          max-height: 100%;
+          display: block;
+          margin: 0 auto;
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .anatomy-svg-wrapper svg {
-          width: 420px !important;
-          height: 520px !important;
-          max-width: 100%;
-          display: block;
-          margin: 0 auto;
-          cursor: pointer;
+        .wizard-panel {
+          height: calc(100dvh - 40px);
+          min-height: calc(100dvh - 40px);
+          scroll-snap-align: start;
+          overflow: hidden;
         }
 
-        @keyframes scrollFeatures {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-scroll-features {
-          animation: scrollFeatures ${config.animation.marqueeDuration} linear infinite;
-        }
-
-        @media (max-width: 767px) {
-          .anatomy-svg-wrapper svg {
-            width: 300px !important;
-            height: 380px !important;
+        @media (min-width: 768px) {
+          .wizard-panel {
+            height: calc(100dvh - 48px);
+            min-height: calc(100dvh - 48px);
           }
         }
       `}</style>
 
-      <div className="relative w-full snap-y snap-proximity text-white font-sans">
-        {/* ==========================================
-            HERO SECTION
-        ========================================== */}
-        <ClipSection bgColor={hero.bg}>
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 0.5, scale: 1 }}
-              transition={{ duration: 1.5 }}
-              className="absolute top-[-20%] left-[-10%] h-[600px] w-[600px] blur-[140px]"
-              style={{ backgroundColor: hero.glow }}
-            />
-            <motion.div
-              animate={{ x: [0, 40, 0], y: [0, -20, 0] }}
-              transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
-              className="absolute bottom-[-10%] right-[-10%] h-[550px] w-[550px] blur-[130px] opacity-30"
-              style={{ backgroundColor: hero.glow }}
-            />
-          </div>
+      <div className="pointer-events-none fixed left-0 right-0 top-0 z-[60] h-20 bg-gradient-to-b from-[#04114F] via-[#04114F]/90 to-transparent" />
 
-          <div className="relative z-10 flex w-full max-w-5xl flex-col items-center text-center px-6">
-            <motion.h1
-              initial={{ opacity: 0, scale: 0.8, filter: "blur(20px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="relative text-6xl font-normal md:text-9xl"
-              style={{ fontFamily: "'Krona One', sans-serif" }}
+      <div className="fixed left-0 right-0 top-14 z-[80] px-3 md:top-16 md:px-6">
+        <div className="mx-auto flex max-w-7xl items-start justify-end gap-3">
+          <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
+            <button
+              onClick={() => setIsRoutineModalOpen(true)}
+              className="flex items-center gap-2 bg-[#22FFD1] px-4 py-3 text-[11px] font-black tracking-[0.16em] text-[#04114F] transition-all hover:bg-[#54FFDC] md:px-5"
             >
-              <motion.span
-                animate={{
-                  opacity: [0, 0.4, 0],
-                  x: [0, -5, 0],
-                  scale: [1, 1.05, 1],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute inset-0 z-0 blur-md"
-                style={{ color: `${hero.accent}55` }}
-                aria-hidden="true"
-              >
-                noTrainer AI
-              </motion.span>
+              <LayoutList size={16} />
+              Routine ({routine.length})
+            </button>
 
-              <span className="relative z-10 bg-gradient-to-b from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-                noTrainer
-              </span>
-
-              <motion.span
-                className="relative z-10 ml-4 bg-[length:200%_auto] bg-clip-text text-transparent"
-                style={{
-                  backgroundImage: `linear-gradient(to top right, ${hero.accent}, #3399ff, ${hero.accent})`,
-                }}
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              >
-                AI
-                <span
-                  className="absolute -inset-2 -z-10 animate-pulse blur-2xl"
-                  style={{ backgroundColor: `${hero.accent}33` }}
-                />
-              </motion.span>
-            </motion.h1>
-
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: "6rem" }}
-              transition={{ delay: 0.6, duration: 0.7 }}
-              className="mt-4 h-1.5"
-              style={{
-                backgroundColor: hero.accent,
-                boxShadow: `0 0 20px ${hero.accent}cc`,
-              }}
-            />
-
-            <p className="mt-5 max-w-md text-lg font-semibold text-slate-200 md:text-xl">
-              Train Anywhere.{" "}
-              <span className="font-semibold" style={{ color: hero.accent }}>
-                No Trainer Needed.
-              </span>
-            </p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="relative mt-12 w-full max-w-3xl overflow-hidden p-8 shadow-xl"
-              style={{ backgroundColor: hero.cardBg, color: hero.cardText }}
-            >
-              <div
-                className="absolute inset-x-0 top-0 h-1"
-                style={{ backgroundColor: hero.cardText }}
-              />
-              <span
-                className="mb-2 block text-left text-xs font-bold uppercase tracking-[0.2em]"
-                style={{ color: hero.cardText }}
-              >
-                The Platform
-              </span>
-              <div className="flex h-20 items-center justify-center overflow-hidden md:h-24">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={wordIndex}
-                    initial={{ y: 50, opacity: 0, rotateX: -40 }}
-                    animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                    exit={{ y: -50, opacity: 0, rotateX: 40 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="text-4xl font-black uppercase tracking-tight md:text-6xl"
-                    style={{ color: hero.cardText }}
-                  >
-                    {words[wordIndex]}
-                  </motion.div>
-                </AnimatePresence>
+            {breadcrumbText && (
+              <div className="hidden items-center bg-[#1B43C4] px-4 py-3 text-[11px] font-semibold text-white xl:flex">
+                <span className="capitalize">{breadcrumbText}</span>
               </div>
-            </motion.div>
+            )}
 
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{
-                repeat: Infinity,
-                duration: 1.5,
-                ease: "easeInOut",
-              }}
-              className="mt-12"
-            >
-              <ChevronDown
-                className="h-8 w-8 opacity-70"
-                style={{ color: hero.accent }}
-              />
-            </motion.div>
-          </div>
-        </ClipSection>
-
-        {/* ==========================================
-            MUSCLE SELECTION SECTION — Magenta / #1a0010
-        ========================================== */}
-        <ClipSection bgColor={muscle.bg}>
-          <div className="pointer-events-none absolute inset-0">
-            <div
-              className="absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 blur-[140px] opacity-20"
-              style={{ backgroundColor: muscle.glow }}
-            />
-            <div
-              className="absolute top-[-10%] right-[-5%] h-[300px] w-[300px] blur-[100px] opacity-15"
-              style={{ backgroundColor: muscle.glow }}
-            />
-          </div>
-
-          <div className="relative z-10 flex w-full max-w-5xl flex-col items-center px-6 mt-6">
-            <div className="mb-6 text-center">
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
-                Target Every{" "}
-                <span style={{ color: muscle.accent }}>Muscle</span>
-              </h2>
-            </div>
-
-            <div
-              className="mb-6 flex w-full max-w-md items-center justify-center px-5 py-3 md:py-4"
-              style={{ backgroundColor: muscle.cardBg }}
-            >
-              {selectedMuscle ? (
-                <span
-                  className="text-lg md:text-xl font-black capitalize tracking-tight"
-                  style={{ color: muscle.cardText }}
-                >
-                  {String(selectedMuscle)}
-                </span>
-              ) : (
-                <span
-                  className="text-xs md:text-sm font-black uppercase tracking-[0.14em]"
-                  style={{ color: muscle.cardText }}
-                >
-                  Select a Muscle
-                </span>
-              )}
-            </div>
-
-            <div
-              ref={anatomyBoxRef}
-              onMouseMove={handleMouseMove}
-              className="relative flex w-full items-center justify-center"
-            >
-              <AnimatePresence>
-                {highlightedMuscle && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{
-                      opacity: 1,
-                      scale: 1,
-                      x: mousePos.x + 18,
-                      y: mousePos.y - 34,
-                    }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="pointer-events-none absolute left-0 top-0 z-50 px-3 py-2 text-xs font-black uppercase tracking-[0.16em]"
-                    style={{
-                      backgroundColor: muscle.cardBg,
-                      color: muscle.cardText,
-                    }}
-                  >
-                    {highlightedMuscle}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="anatomy-svg-wrapper flex w-full items-center justify-center">
-                <div className="scale-[0.82] md:scale-[0.88] origin-center flex items-center justify-center">
-                  <FrontView
-                    onHover={setHighlightedMuscle}
-                    onLeave={() => setHighlightedMuscle(null)}
-                    onSelect={setSelectedMuscle}
-                    selectedMuscle={selectedMuscle}
-                    highlightedMuscle={highlightedMuscle}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </ClipSection>
-
-        {/* ==========================================
-            PROBLEMS & SOLUTIONS SECTION — Lime / #021a0e
-        ========================================== */}
-        <ClipSection bgColor={prob.bg}>
-          <div className="pointer-events-none absolute inset-0">
-            <div
-              className="absolute top-0 left-1/2 h-[400px] w-[800px] -translate-x-1/2 blur-[150px] opacity-15"
-              style={{ backgroundColor: prob.glow }}
-            />
-          </div>
-
-          <div className="relative z-10 flex w-full max-w-6xl flex-col px-6 overflow-y-auto no-scrollbar max-h-screen py-16">
-            <div className="mb-8 flex items-center justify-center gap-3 md:gap-5">
-              <h2 className="text-2xl font-black uppercase tracking-tighter text-white sm:text-3xl md:text-4xl">
-                Problems
-              </h2>
-              <ArrowRight
-                className="h-5 w-5 md:h-8 md:w-8"
-                strokeWidth={3}
-                style={{ color: prob.accent }}
-              />
-              <h2
-                className="text-2xl font-black uppercase tracking-tighter sm:text-3xl md:text-4xl"
-                style={{ color: prob.accent }}
+            {activeSection > 0 && (
+              <button
+                onClick={resetWizard}
+                className="flex items-center gap-2 border border-[#22FFD1]/30 bg-[#16359E] px-4 py-3 text-[11px] font-black tracking-[0.16em] text-white transition-all hover:border-[#22FFD1] hover:bg-[#1B43C4] md:px-5"
               >
-                Solutions
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-              {problems.map((problem) => {
-                const isActive = activeProblem?.id === problem.id;
-                return (
-                  <button
-                    key={problem.id}
-                    onClick={() => setActiveProblem(isActive ? null : problem)}
-                    className="flex min-h-[80px] items-center gap-3 p-3 text-left transition-all duration-300"
-                    style={{
-                      backgroundColor: isActive ? prob.cardBg : prob.buttonBg,
-                      color: isActive ? prob.cardText : "#ffffff",
-                      boxShadow: isActive
-                        ? `0 0 24px ${prob.accent}44`
-                        : "none",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive)
-                        e.currentTarget.style.backgroundColor =
-                          prob.buttonHover;
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive)
-                        e.currentTarget.style.backgroundColor = prob.buttonBg;
-                    }}
-                  >
-                    <problem.icon
-                      size={22}
-                      strokeWidth={2.6}
-                      className="shrink-0 transition-all duration-300"
-                      style={{ color: isActive ? prob.cardText : prob.accent }}
-                    />
-                    <span
-                      className="text-[10px] font-black uppercase leading-snug tracking-tight md:text-xs"
-                      style={{ color: isActive ? prob.cardText : "#ffffff" }}
-                    >
-                      {problem.text}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div
-              className="mt-3 text-center text-[10px] uppercase tracking-[0.22em] md:text-xs"
-              style={{ color: "rgba(255,255,255,0.5)" }}
-            >
-              Tap a problem to reveal the solution
-            </div>
-
-            <div
-              className={`mt-3 overflow-hidden transition-all duration-500 ${
-                activeProblem ? "opacity-100" : "opacity-0 pointer-events-none"
-              }`}
-              style={{
-                maxHeight: activeProblem ? "200px" : "0px",
-                transition: "max-height 0.4s ease, opacity 0.3s ease",
-              }}
-            >
-              {activeProblem && (
-                <div
-                  className="flex items-center justify-center px-5 py-4 md:px-6 md:py-5 rounded-sm"
-                  style={{ backgroundColor: prob.cardBg }}
-                >
-                  <div className="flex max-w-4xl items-center justify-center gap-4 text-center">
-                    <activeProblem.icon
-                      size={26}
-                      strokeWidth={2.7}
-                      className="shrink-0"
-                      style={{ color: prob.cardText }}
-                    />
-                    <p
-                      className="text-sm font-extrabold leading-relaxed md:text-base"
-                      style={{ color: prob.cardText }}
-                    >
-                      {activeProblem.solution}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </ClipSection>
-
-        {/* ==========================================
-            FEATURES SECTION — Staggered 3D Stack
-        ========================================== */}
-        <div
-          className="snap-start"
-          style={{
-            position: "relative",
-            width: "100%",
-            // Enough scroll space for all cards to stack
-            minHeight: `${features.length * 80}vh`,
-            backgroundColor: feat.bg,
-          }}
-        >
-          {/* PINNED HEADER: Stays fixed at the top */}
-          <div
-            style={{
-              position: "sticky",
-              top: HEADER_HEIGHT,
-              height: "20vh",
-              width: "100%",
-              zIndex: 100,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: `linear-gradient(to bottom, ${feat.bg} 60%, transparent)`,
-            }}
-          >
-            <h2
-              className="text-5xl font-black uppercase tracking-widest text-white md:text-7xl"
-              style={{
-                fontFamily: "'Krona One', sans-serif",
-                textShadow: `0 10px 30px ${feat.accent}40`,
-              }}
-            >
-              Features
-            </h2>
-          </div>
-
-          {/* SCROLLING CARDS CONTAINER */}
-          <div className="relative z-10 flex w-full flex-col items-center px-4 md:px-8">
-            <style
-              dangerouslySetInnerHTML={{
-                __html: `
-      .stack-container {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        max-width: 1000px;
-        padding: 0;
-        list-style: none;
-      }
-      .stack-item {
-        position: sticky;
-        height: 50vh;
-        min-height: 400px;
-        perspective: 1000px;
-        margin-bottom: 12vh;
-      }
-      .stack-item-inner {
-        width: 100%;
-        height: 100%;
-        border-radius: 24px;
-        transform-origin: 50% 0%;
-        animation: card-stack linear forwards;
-        animation-timeline: view();
-        animation-range: exit-crossing 0% exit-crossing 100%;
-        overflow: hidden;
-      }
-      @keyframes card-stack {
-        to {
-          transform: scale(0.9) translateY(-20px);
-          filter: brightness(0.4);
-        }
-      }
-    `,
-              }}
-            />
-
-            <ul className="stack-container">
-              {features.map((feature, idx) => {
-                // Premium modern gradients instead of flat neons
-                const cardStyles = [
-                  { bg: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)" }, // Indigo to Violet
-                  { bg: "linear-gradient(135deg, #059669 0%, #10B981 100%)" }, // Emerald
-                  { bg: "linear-gradient(135deg, #E11D48 0%, #F43F5E 100%)" }, // Rose
-                  { bg: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)" }, // Amber
-                  { bg: "linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)" }, // Sky Blue
-                ];
-                const style = cardStyles[idx % cardStyles.length];
-
-                return (
-                  <li
-                    key={idx}
-                    className="stack-item"
-                    style={{
-                      zIndex: idx + 1,
-                      // Stagger: each card stops slightly lower
-                      top: `calc(25vh + ${idx * 20}px)`,
-                    }}
-                  >
-                    <div
-                      className="stack-item-inner flex flex-col justify-between p-8 shadow-2xl md:p-12 relative"
-                      style={{
-                        background: style.bg,
-                        color: "#ffffff",
-                        boxShadow:
-                          "0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)",
-                        border: "1px solid rgba(255, 255, 255, 0.15)",
-                      }}
-                    >
-                      <div className="z-10 relative">
-                        {/* Glassmorphic Icon Container */}
-                        <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-inner">
-                          <feature.icon className="w-8 h-8 text-white" />
-                        </div>
-                        <h3 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 drop-shadow-sm">
-                          {feature.title}
-                        </h3>
-                      </div>
-
-                      <div className="z-10 relative">
-                        <p className="text-lg md:text-xl font-medium leading-relaxed text-white/90 max-w-2xl drop-shadow-sm">
-                          {feature.description}
-                        </p>
-                      </div>
-
-                      {/* Repositioned subtle background number */}
-                      <span className="pointer-events-none absolute -bottom-6 -right-2 select-none text-[140px] md:text-[200px] font-black leading-none text-white/10">
-                        0{idx + 1}
-                      </span>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-
-          {/* BOTTOM SECTION */}
-          <div
-            className="flex w-full flex-col items-center justify-center pt-32 pb-40"
-            style={{ perspective: "1000px" }}
-          >
-            <h2
-              className="text-center text-[10vw] md:text-[8vw] font-[200] uppercase leading-[0.9] tracking-tighter text-white"
-              style={{
-                fontFamily: "'Krona One', sans-serif",
-                textShadow: `0 0 60px ${feat.accent}66`,
-                transform: "rotateX(10deg)",
-              }}
-            >
-              No Excuses.
-              <br />
-              <span style={{ color: feat.accent, fontWeight: "800" }}>
-                Just Results.
-              </span>
-            </h2>
-
-            <div
-              className="mt-12 h-1 w-24 md:w-48 rounded-full"
-              style={{
-                backgroundColor: feat.accent,
-                boxShadow: `0 0 30px 2px ${feat.accent}`,
-              }}
-            />
+                <RotateCcw size={16} />
+                Reset
+              </button>
+            )}
           </div>
         </div>
       </div>
-    </>
-  );
-};
 
-export default Hero;
+      <AnimatePresence>
+        {highlightedMuscle && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, x: mousePos.x + 18, y: mousePos.y - 28 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed z-[100] hidden bg-[#22FFD1] px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-[#04114F] shadow-xl md:block"
+          >
+            {highlightedMuscle}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
+        className="no-scrollbar h-full w-full snap-y snap-mandatory overflow-y-auto scroll-smooth"
+      >
+        {/* HERO */}
+        <section className="wizard-panel relative flex items-center justify-center bg-[#04114F] px-4">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute left-[-10%] top-[-10%] h-[420px] w-[420px] bg-[#0A2A9B] blur-[130px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] h-[320px] w-[320px] bg-[#22FFD1] opacity-25 blur-[120px]" />
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center"
+          >
+            <h1 className="text-5xl font-black uppercase tracking-tighter text-white sm:text-6xl md:text-8xl">
+              Workout <span className="text-[#22FFD1]">Wizard</span>
+            </h1>
+
+            <div className="mt-4 h-1.5 w-20 bg-[#22FFD1]" />
+
+            <p className="mt-6 max-w-xl text-sm font-semibold text-[#D7E3FF] sm:text-base md:text-lg">
+              Choose your target and get matching workouts
+            </p>
+          </motion.div>
+
+          <button
+            onClick={() => scrollTo(1)}
+            className="absolute bottom-6 flex flex-col items-center gap-2 text-[#22FFD1] transition-colors hover:text-white md:bottom-8"
+          >
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] md:text-xs">
+              Start
+            </span>
+            <ChevronDown size={28} className="animate-bounce" />
+          </button>
+        </section>
+
+        {/* MUSCLE */}
+        <section className="wizard-panel relative bg-[#0A2A9B] px-4 pt-20 pb-4 md:px-6 md:pt-24">
+          <div className="absolute inset-0 bg-[#0A2A9B]" />
+          <div className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 bg-[#22FFD1] opacity-10 blur-[140px]" />
+
+          <div className="relative z-10 flex h-full flex-col overflow-hidden">
+            <SectionHeading
+              step="STEP 1"
+              title={
+                <>
+                  Select a <span className="text-[#22FFD1]">Muscle</span>
+                </>
+              }
+            />
+
+            <div className="mb-3 flex justify-center gap-3">
+              {["front", "back"].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`min-w-[120px] px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] transition-all md:text-xs ${
+                    view === v
+                      ? "bg-[#22FFD1] text-[#04114F]"
+                      : "border border-white/15 bg-[#1B43C4] text-white hover:border-[#22FFD1]"
+                  }`}
+                >
+                  {v} view
+                </button>
+              ))}
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-hidden">
+              <div className="anatomy-svg-wrapper flex h-full w-full items-center justify-center overflow-hidden">
+                <div className="flex h-full w-full items-center justify-center scale-[0.94] sm:scale-[0.98] md:scale-[1.04]">
+                  {view === "front" ? (
+                    <FrontView
+                      onSelect={(selected) => {
+                        setMuscle(selected);
+                        setEquipment(null);
+                        setCategory(null);
+                        setLevel(null);
+                        setTimeout(() => scrollTo(2), 150);
+                      }}
+                      selectedMuscle={muscle}
+                      onHover={setHighlightedMuscle}
+                      onLeave={() => setHighlightedMuscle(null)}
+                    />
+                  ) : (
+                    <BackView
+                      onSelect={(selected) => {
+                        setMuscle(selected);
+                        setEquipment(null);
+                        setCategory(null);
+                        setLevel(null);
+                        setTimeout(() => scrollTo(2), 150);
+                      }}
+                      selectedMuscle={muscle}
+                      onHover={setHighlightedMuscle}
+                      onLeave={() => setHighlightedMuscle(null)}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* EQUIPMENT */}
+        <section
+          className={`wizard-panel relative bg-[#04114F] px-4 pt-20 pb-4 transition-opacity duration-500 md:px-6 md:pt-24 ${
+            muscle ? "opacity-100" : "pointer-events-none opacity-30"
+          }`}
+        >
+          <div className="absolute inset-0 bg-[#04114F]" />
+          <div className="absolute left-0 top-0 h-[380px] w-[700px] bg-[#1B43C4] opacity-70 blur-[150px]" />
+
+          <div className="relative z-10 flex h-full flex-col overflow-hidden">
+            <SectionHeading
+              step="STEP 2"
+              title={
+                <>
+                  Select <span className="text-[#22FFD1]">Equipment</span>
+                </>
+              }
+            />
+
+            <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
+              <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
+                {availableEquipment.map((item) => {
+                  const isActive = equipment === item;
+
+                  return (
+                    <SelectionCard
+                      key={item}
+                      title={item}
+                      count={`${equipmentCounts[item]} exercises`}
+                      active={isActive}
+                      onClick={() => {
+                        setEquipment(item);
+                        setCategory(null);
+                        setLevel(null);
+                        setTimeout(() => scrollTo(3), 150);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CATEGORY */}
+        <section
+          className={`wizard-panel relative bg-[#0A2A9B] px-4 pt-20 pb-4 transition-opacity duration-500 md:px-6 md:pt-24 ${
+            equipment ? "opacity-100" : "pointer-events-none opacity-30"
+          }`}
+        >
+          <div className="absolute inset-0 bg-[#0A2A9B]" />
+          <div className="absolute left-1/2 top-0 h-[380px] w-[800px] -translate-x-1/2 bg-[#22FFD1] opacity-10 blur-[150px]" />
+
+          <div className="relative z-10 flex h-full flex-col overflow-hidden">
+            <SectionHeading
+              step="STEP 3"
+              title={
+                <>
+                  Select <span className="text-[#22FFD1]">Category</span>
+                </>
+              }
+            />
+
+            <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
+              <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
+                {availableCategories.map((cat) => (
+                  <SelectionCard
+                    key={cat}
+                    title={cat}
+                    count={`${categoryCounts[cat]}`}
+                    active={category === cat}
+                    onClick={() => {
+                      setCategory(cat);
+                      setLevel(null);
+                      setTimeout(() => scrollTo(4), 150);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* DIFFICULTY */}
+        <section
+          className={`wizard-panel relative bg-[#04114F] px-4 pt-20 pb-4 transition-opacity duration-500 md:px-6 md:pt-24 ${
+            category ? "opacity-100" : "pointer-events-none opacity-30"
+          }`}
+        >
+          <div className="absolute inset-0 bg-[#04114F]" />
+          <div className="absolute right-0 top-0 h-[340px] w-[700px] bg-[#1B43C4] opacity-70 blur-[150px]" />
+
+          <div className="relative z-10 flex h-full flex-col overflow-hidden">
+            <SectionHeading
+              step="STEP 4"
+              title={
+                <>
+                  Select <span className="text-[#22FFD1]">Difficulty</span>
+                </>
+              }
+            />
+
+            <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
+              <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
+                {availableLevels.map((lvl) => (
+                  <SelectionCard
+                    key={lvl}
+                    title={lvl}
+                    count={`${levelCounts[lvl]}`}
+                    active={level === lvl}
+                    onClick={() => {
+                      setLevel(lvl);
+                      setTimeout(() => scrollTo(5), 150);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* EXERCISES */}
+        <section
+          className={`wizard-panel relative bg-[#04114F] transition-opacity duration-500 ${
+            level ? "opacity-100" : "pointer-events-none opacity-40"
+          }`}
+        >
+          <div className="absolute inset-0 bg-[#04114F]" />
+          <div className="absolute bottom-0 right-0 h-[340px] w-[700px] bg-[#1B43C4] opacity-70 blur-[150px]" />
+
+          <div className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden pt-16 md:pt-20">
+            <div className="shrink-0 border-b border-white/10 bg-[#04114F] px-4 py-5 md:px-8 md:py-6">
+              <div className="flex flex-col items-center justify-center text-center">
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-5xl">
+                  {finalExercises.length} workouts found
+                </h2>
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-hidden">
+              <div className="section-scroll no-scrollbar h-full overflow-y-auto px-3 py-3 md:px-6 md:py-5">
+                <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 lg:grid-cols-2">
+                  {finalExercises.map((ex, idx) => {
+                    const added = routine.some((r) => r.id === ex.id);
+
+                    return (
+                      <button
+                        key={ex.id}
+                        onClick={() => {
+                          setActiveIndex(idx);
+                          setIsModalOpen(true);
+                        }}
+                        className="border border-[#6D8DFF]/30 bg-[#1B43C4] p-5 text-left transition-all hover:border-[#22FFD1] hover:bg-[#2550E0]"
+                      >
+                        <div className="flex h-full flex-col gap-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <div className="mb-2 text-[11px] font-semibold tracking-[0.16em] text-[#22FFD1]">
+                                {(idx + 1).toString().padStart(2, "0")}
+                              </div>
+                              <h3 className="line-clamp-2 text-lg font-semibold tracking-tight text-white">
+                                {ex.name}
+                              </h3>
+                            </div>
+
+                            {added && (
+                              <span className="shrink-0 bg-[#22FFD1] px-3 py-1 text-[10px] font-semibold text-[#04114F]">
+                                Added
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            {ex.equipment && (
+                              <CleanTag>{ex.equipment}</CleanTag>
+                            )}
+                            {ex.category && <CleanTag>{ex.category}</CleanTag>}
+                            {ex.level && <CleanTag accent>{ex.level}</CleanTag>}
+                          </div>
+
+                          <div className="mt-auto border-t border-white/10 pt-3">
+                            <span className="text-sm font-medium text-slate-100">
+                              View exercise
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {isModalOpen && currentPreview && (
+            <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#04114F]/90 p-3 backdrop-blur-sm md:p-6">
+              <div className="relative flex h-[92dvh] w-full max-w-6xl flex-col overflow-hidden border border-white/10 bg-[#04114F] md:h-[88dvh] md:flex-row">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center border border-white/10 bg-[#1B43C4] text-white transition-all hover:border-[#22FFD1] hover:text-[#22FFD1]"
+                >
+                  <X size={18} />
+                </button>
+
+                <div className="flex h-[38%] w-full items-center justify-center border-b border-white/10 bg-[#0A2A9B] p-4 md:h-full md:w-1/2 md:border-b-0 md:border-r md:p-8">
+                  <div className="relative flex h-full w-full max-w-md items-center justify-center">
+                    <RotatingImage
+                      images={currentPreview.images}
+                      name={currentPreview.name}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex min-h-0 h-[62%] w-full flex-col bg-[#04114F] md:h-full md:w-1/2">
+                  <div className="shrink-0 border-b border-white/10 px-5 py-5 pr-16 md:px-8 md:py-6">
+                    <h3 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                      {currentPreview.name}
+                    </h3>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {currentPreview.equipment && (
+                        <CleanTag>{currentPreview.equipment}</CleanTag>
+                      )}
+                      {currentPreview.category && (
+                        <CleanTag>{currentPreview.category}</CleanTag>
+                      )}
+                      {currentPreview.level && (
+                        <CleanTag accent>{currentPreview.level}</CleanTag>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-8 md:py-6">
+                    <div>
+                      <p className="mb-3 text-[11px] font-semibold text-[#22FFD1]">
+                        Primary muscles
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {currentPreview.primaryMuscles?.map((m) => (
+                          <span
+                            key={m}
+                            className="border border-[#6D8DFF]/30 bg-[#1B43C4] px-3 py-2 text-[11px] font-medium capitalize text-white"
+                          >
+                            {m}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-8">
+                      <p className="mb-4 text-[11px] font-semibold text-[#22FFD1]">
+                        Instructions
+                      </p>
+                      <div className="space-y-4">
+                        {currentPreview.instructions?.map((step, i) => (
+                          <div key={i} className="flex gap-3 md:gap-4">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-[#22FFD1] text-[11px] font-semibold text-[#04114F] md:h-8 md:w-8">
+                              {i + 1}
+                            </span>
+                            <p className="pt-0.5 text-sm leading-relaxed text-slate-200 md:text-[15px]">
+                              {step}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 border-t border-white/10 bg-[#04114F] p-5 md:p-6">
+                    <button
+                      onClick={() => toggleRoutine(currentPreview)}
+                      className={`w-full py-4 text-sm font-semibold transition-all ${
+                        routine.some((r) => r.id === currentPreview.id)
+                          ? "border border-red-400 bg-transparent text-red-400 hover:bg-red-500/10"
+                          : "bg-[#22FFD1] text-[#04114F] hover:bg-[#54FFDC]"
+                      }`}
+                    >
+                      {routine.some((r) => r.id === currentPreview.id)
+                        ? "Remove from routine"
+                        : "Add to routine"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
+
+      <AnimatePresence>
+        {isRoutineModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[220] flex items-center justify-center bg-[#04114F]/95 p-3 backdrop-blur-sm md:p-6"
+          >
+            <div className="flex h-[90dvh] w-full max-w-2xl flex-col border border-white/10 bg-[#04114F] md:h-[80dvh]">
+              <div className="flex items-center justify-between border-b border-white/10 bg-[#0A2A9B] px-5 py-5 md:px-8">
+                <div>
+                  <h2 className="text-2xl font-black uppercase tracking-tight text-white md:text-3xl">
+                    My <span className="text-[#22FFD1]">Routine</span>
+                  </h2>
+                </div>
+
+                <div className="flex items-center gap-2 md:gap-4">
+                  <button
+                    onClick={() => setRoutine([])}
+                    className="text-[10px] font-black uppercase tracking-[0.18em] text-red-400 transition-colors hover:text-white md:text-xs"
+                  >
+                    Clear all
+                  </button>
+                  <button
+                    onClick={() => setIsRoutineModalOpen(false)}
+                    className="flex h-10 w-10 items-center justify-center bg-[#22FFD1] text-[#04114F]"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto bg-[#04114F] p-4 md:p-6">
+                {routine.length === 0 ? (
+                  <div className="flex h-full flex-col items-center justify-center text-center">
+                    <p className="text-sm font-black uppercase tracking-[0.18em] text-slate-300 md:text-base">
+                      No routine items yet
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {routine.map((ex) => (
+                      <div
+                        key={ex.id}
+                        className="flex items-center justify-between border border-[#6D8DFF]/30 bg-[#1B43C4] p-4 md:p-5"
+                      >
+                        <div className="min-w-0">
+                          <span className="block truncate text-sm font-black uppercase tracking-tight text-white md:text-base">
+                            {ex.name}
+                          </span>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {ex.equipment && (
+                              <CleanTag>{ex.equipment}</CleanTag>
+                            )}
+                            {ex.category && <CleanTag>{ex.category}</CleanTag>}
+                            {ex.level && <CleanTag accent>{ex.level}</CleanTag>}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => toggleRoutine(ex)}
+                          className="ml-4 flex h-10 w-10 shrink-0 items-center justify-center border border-red-400 text-red-400 transition-all hover:bg-red-500/10"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-white/10 bg-[#04114F] p-4 md:p-6">
+                <button
+                  onClick={exportRoutineCSV}
+                  className="flex w-full items-center justify-center gap-2 bg-[#22FFD1] py-4 text-[11px] font-black uppercase tracking-[0.2em] text-[#04114F] transition-all hover:bg-[#54FFDC] md:text-xs"
+                >
+                  <Download size={16} />
+                  Export routine (.csv)
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
