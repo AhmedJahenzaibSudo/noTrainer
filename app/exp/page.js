@@ -1,19 +1,22 @@
 "use client";
 
 import React, {
-  useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
+  useCallback,
+  useRef,
 } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowDown,
-  ArrowUp,
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+} from "framer-motion";
+import {
   RotateCcw,
+  ArrowRight,
+  ArrowLeft,
   Coffee,
   Dumbbell,
   Zap,
@@ -24,28 +27,20 @@ import {
   Shield,
   Mars,
   Venus,
-  Droplets,
-  GlassWater,
   Download,
-  CheckCircle2,
-  BatteryMedium,
-  Activity,
-  Beef,
-  Wheat,
-  Target,
-  Scale,
+  GlassWater,
 } from "lucide-react";
 
-const config = {
-  colors: {
-    bgPrimary: "#051061",
-    bgDark: "#091d5bff",
-    accent: "#1AF0BE",
-    textPrimary: "#ffffff",
-  },
+// Deep, solid flat backgrounds for high contrast wizard steps
+const stepThemes = {
+  "-1": "bg-slate-900",
+  0: "bg-indigo-900",
+  1: "bg-violet-900",
+  2: "bg-cyan-900",
+  3: "bg-teal-900",
+  4: "bg-emerald-900",
+  5: "bg-rose-900",
 };
-
-const SECTION_HEIGHT = "h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3rem)]";
 
 const ACTIVITY_LEVELS = [
   {
@@ -54,22 +49,17 @@ const ACTIVITY_LEVELS = [
     val: 1.2,
     icon: Coffee,
   },
-  {
-    label: "Light",
-    desc: "Light walks, 1–3×/week",
-    val: 1.375,
-    icon: Footprints,
-  },
+  { label: "Light", desc: "Walk 1-3× a week", val: 1.375, icon: Footprints },
   {
     label: "Moderate",
-    desc: "Regular gym, 3–5×/week",
+    desc: "Regular gym 3-5× a week",
     val: 1.55,
     icon: Dumbbell,
   },
-  { label: "Active", desc: "Hard training, 6–7×/week", val: 1.725, icon: Zap },
+  { label: "Active", desc: "Hard training 6-7× a week", val: 1.725, icon: Zap },
   {
     label: "Athlete",
-    desc: "Physical job + daily sport",
+    desc: "Physical job or intense sport",
     val: 1.9,
     icon: Trophy,
   },
@@ -82,144 +72,11 @@ const GOALS = [
 ];
 
 const BMI_CATEGORIES = [
-  { label: "Underweight", min: 0, max: 18.5, color: "#38bdf8" },
-  { label: "Healthy", min: 18.5, max: 25, color: "#1AF0BE" },
-  { label: "Overweight", min: 25, max: 30, color: "#fbbf24" },
-  { label: "Obese", min: 30, max: 1000, color: "#f87171" },
+  { label: "Underweight", min: 0, max: 18.5, color: "text-sky-300" },
+  { label: "Healthy", min: 18.5, max: 25, color: "text-emerald-300" },
+  { label: "Overweight", min: 25, max: 30, color: "text-amber-300" },
+  { label: "Obese", min: 30, max: 1000, color: "text-rose-300" },
 ];
-
-function clamp(n, min, max) {
-  return Math.max(min, Math.min(max, n));
-}
-function parseNum(raw, mode = "float") {
-  if (raw === "") return "";
-  const v = mode === "int" ? parseInt(raw, 10) : parseFloat(raw);
-  return Number.isFinite(v) ? v : "";
-}
-
-function useCountUp(target, duration = 900, trigger = true) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (!trigger || target === 0) {
-      setValue(target);
-      return;
-    }
-    let start = null;
-    const animate = (ts) => {
-      if (!start) start = ts;
-      const p = Math.min((ts - start) / duration, 1);
-      const e = 1 - Math.pow(1 - p, 3);
-      setValue(Math.round(target * e));
-      if (p < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
-  }, [target, trigger, duration]);
-  return value;
-}
-
-function CountDisplay({
-  value,
-  trigger,
-  duration = 900,
-  isFloat = false,
-  className = "",
-  color = "white",
-}) {
-  const num = isFloat ? parseFloat(value) : parseInt(value, 10);
-  const counted = useCountUp(num, duration, trigger);
-  return (
-    <span className={className} style={{ color }}>
-      {isFloat ? counted.toFixed(1) : counted}
-    </span>
-  );
-}
-
-function BMIRangeBar({ bmi }) {
-  const min = 12,
-    max = 40;
-  const pos = ((clamp(bmi, min, max) - min) / (max - min)) * 100;
-  return (
-    <div className="w-full mt-5">
-      <div
-        className="relative h-5 rounded-xl overflow-hidden"
-        style={{ background: "rgba(0,0,0,0.35)" }}
-      >
-        <div className="absolute inset-0 flex">
-          <div className="w-[23%]" style={{ background: "#38bdf8" }} />
-          <div className="w-[23%]" style={{ background: "#1AF0BE" }} />
-          <div className="w-[12%]" style={{ background: "#fbbf24" }} />
-          <div className="flex-1" style={{ background: "#f87171" }} />
-        </div>
-        <motion.div
-          className="absolute top-1 bottom-1 w-2 rounded-full z-10"
-          initial={{ left: "0%" }}
-          animate={{ left: `calc(${pos}% - 4px)` }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
-          style={{
-            background: "white",
-            boxShadow: "0 0 10px rgba(255,255,255,0.9)",
-          }}
-        />
-      </div>
-      <div className="grid grid-cols-4 gap-1.5 mt-3">
-        {BMI_CATEGORIES.map((c) => {
-          const active = bmi >= c.min && bmi < c.max;
-          return (
-            <div
-              key={c.label}
-              className="py-2 text-center rounded-xl text-[10px] md:text-xs font-black uppercase transition-all"
-              style={{
-                background: active ? c.color : `${c.color}12`,
-                color: active ? "#020a21" : c.color,
-                border: `1.5px solid ${active ? c.color : c.color + "30"}`,
-              }}
-            >
-              {c.label}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function FilledGlass() {
-  return (
-    <GlassWater
-      size={26}
-      strokeWidth={1.5}
-      style={{ color: config.colors.accent }}
-    />
-  );
-}
-
-function SectionHeader({ title, accent, sub }) {
-  return (
-    <div className="text-center mb-6 md:mb-8">
-      <h2 className="font-hero text-3xl md:text-5xl font-black uppercase leading-tight tracking-tight">
-        {title} <span style={{ color: config.colors.accent }}>{accent}</span>
-      </h2>
-      <p className="text-sm md:text-base text-slate-300 mt-2.5 font-medium max-w-lg mx-auto leading-relaxed">
-        {sub}
-      </p>
-    </div>
-  );
-}
-
-function ResultSection({ id, children, sectionRefs }) {
-  return (
-    <section
-      data-section={id}
-      ref={(el) => {
-        if (el) sectionRefs.current[id] = el;
-      }}
-      className={`min-h-full w-full snap-start flex flex-col items-center justify-center px-5 md:px-8 ${SECTION_HEIGHT}`}
-      style={{ backgroundColor: config.colors.bgDark }}
-    >
-      {children}
-    </section>
-  );
-}
 
 const INITIAL_INPUTS = {
   gender: "",
@@ -231,65 +88,348 @@ const INITIAL_INPUTS = {
   goal: "",
 };
 
-export default function HealthCalculators() {
-  const scrollContainerRef = useRef(null);
-  const ageRef = useRef(null);
-  const weightRef = useRef(null);
-  const feetRef = useRef(null);
-  const inchesRef = useRef(null);
-  const sectionRefs = useRef({});
+// --- Helpers ---
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
 
-  const [step, setStep] = useState(0);
-  const [inputs, setInputs] = useState(INITIAL_INPUTS);
-  const [results, setResults] = useState(null);
-  const [showResults, setShowResults] = useState(false);
-  const [visibleSections, setVisibleSections] = useState({});
+function parseNum(raw, mode = "float") {
+  if (raw === "") return "";
+  const v = mode === "int" ? parseInt(raw, 10) : parseFloat(raw);
+  return Number.isFinite(v) ? v : "";
+}
 
-  const noSpinner =
-    "appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
-  const inputStyle = useMemo(
-    () =>
-      `w-full bg-transparent text-center text-5xl md:text-7xl font-black outline-none border-b-4 transition-all py-3 placeholder:text-slate-800 ${noSpinner}`,
-    [noSpinner],
-  );
-
-  const scrollToPage = (i) => {
-    if (!scrollContainerRef.current) return;
-    scrollContainerRef.current.scrollTo({
-      top: scrollContainerRef.current.clientHeight * i,
-      behavior: "smooth",
-    });
-  };
-
-  const resetAll = () => {
-    setResults(null);
-    setStep(0);
-    setInputs(INITIAL_INPUTS);
-    setShowResults(false);
-    setVisibleSections({});
-    scrollToPage(0);
-  };
+// --- Reusable CountUp Component ---
+function CountDisplay({
+  value,
+  isFloat = false,
+  className = "",
+  duration = 1200,
+}) {
+  const [current, setCurrent] = useState(0);
+  const target = isFloat ? parseFloat(value) : parseInt(value, 10);
 
   useEffect(() => {
-    if (!results) return;
-    const observer = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting)
-            setVisibleSections((p) => ({
-              ...p,
-              [e.target.dataset.section]: true,
-            }));
-        }),
-      { threshold: 0.4 },
-    );
-    Object.values(sectionRefs.current).forEach(
-      (el) => el && observer.observe(el),
-    );
-    return () => observer.disconnect();
-  }, [results]);
+    let start = null;
+    const animate = (ts) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setCurrent(target * easeOutQuart);
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [target, duration]);
+
+  return (
+    <span className={className}>
+      {isFloat ? current.toFixed(1) : Math.round(current)}
+    </span>
+  );
+}
+
+// --- Scrolling Results Component ---
+// Extracted to properly isolate the `useScroll` hook and prevent hydration errors
+function ScrollingResults({ results, inputs, onReset, onDownload }) {
+  const scrollRef = useRef(null);
+  const { scrollYProgress } = useScroll({ container: scrollRef });
+
+  // Smoothly shift background colors as the user scrolls
+  const bgColor = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.4, 0.6, 0.8, 1],
+    ["#0f172a", "#1e1b4b", "#064e3b", "#7c2d12", "#831843", "#0f172a"], // slate-900 -> indigo-950 -> emerald-950 -> orange-950 -> rose-950 -> slate-900
+  );
+
+  return (
+    <motion.div
+      ref={scrollRef}
+      style={{ backgroundColor: bgColor }}
+      className="custom-scrollbar flex-1 overflow-y-auto w-full"
+    >
+      <div className="max-w-4xl mx-auto px-6 py-24 pb-48 flex flex-col gap-40 text-center">
+        {/* Intro */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <p className="text-sm font-black uppercase tracking-widest text-white/50 mb-6">
+            Analysis Complete
+          </p>
+          <h2 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-6 text-white">
+            Your Results.
+          </h2>
+          <p className="text-xl md:text-2xl font-bold text-white/60">
+            Scroll down to view your decoded metrics.
+          </p>
+        </motion.div>
+
+        {/* 1. BMI Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ amount: 0.4 }}
+          className="flex flex-col items-center"
+        >
+          <p className="text-sm font-black uppercase tracking-widest text-white/50 mb-8">
+            Body Mass Index
+          </p>
+          <p className="text-3xl md:text-5xl font-black leading-tight text-white mb-8">
+            Your BMI score is{" "}
+            <span className="bg-white/10 px-3 py-1">
+              <CountDisplay value={results.bmi} isFloat />
+            </span>
+            .
+            <br className="hidden md:block mt-2" />
+            You are in the{" "}
+            <span className={results.cat.color}>{results.cat.label}</span> zone.
+          </p>
+
+          <div className="w-full max-w-2xl my-6">
+            <div className="relative h-4 w-full flex bg-black/30 rounded-none overflow-hidden">
+              <div className="h-full w-[25%] bg-sky-500 opacity-80"></div>
+              <div className="h-full w-[25%] bg-emerald-500 opacity-80"></div>
+              <div className="h-full w-[20%] bg-amber-500 opacity-80"></div>
+              <div className="h-full w-[30%] bg-rose-500 opacity-80"></div>
+              <motion.div
+                initial={{ left: "0%" }}
+                whileInView={{
+                  left: `calc(${clamp(((results.bmi - 12) / 28) * 100, 0, 100)}% - 6px)`,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 60,
+                  damping: 12,
+                  delay: 0.2,
+                }}
+                className="absolute top-[-8px] bottom-[-8px] w-3 bg-white shadow-xl rounded-none"
+              />
+            </div>
+            <div className="flex justify-between mt-3 text-xs font-bold uppercase tracking-widest text-white/40">
+              <span>Under</span>
+              <span>Healthy</span>
+              <span>Over</span>
+              <span>Obese</span>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* 2. Ideal Weight Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ amount: 0.4 }}
+          className="flex flex-col items-center"
+        >
+          <p className="text-sm font-black uppercase tracking-widest text-white/50 mb-8">
+            Body Weight
+          </p>
+          <div className="flex flex-col gap-6 text-left md:text-center w-full">
+            <p className="text-3xl md:text-5xl font-black leading-tight text-white">
+              Your current weight is{" "}
+              <span className="text-indigo-300">{inputs.weight} kg</span>.
+            </p>
+            <p className="text-3xl md:text-5xl font-black leading-tight text-white">
+              Your minimum weight should be{" "}
+              <span className="text-emerald-300">
+                <CountDisplay value={results.idealRangeMin} /> kg
+              </span>
+              .
+            </p>
+            <p className="text-3xl md:text-5xl font-black leading-tight text-white">
+              Your maximum weight should be{" "}
+              <span className="text-emerald-300">
+                <CountDisplay value={results.idealRangeMax} /> kg
+              </span>
+              .
+            </p>
+            <p className="text-3xl md:text-5xl font-black leading-tight text-white mt-4">
+              To reach your goal, you need to{" "}
+              {results.diffToTarget > 0 ? (
+                <span className="text-rose-400">lose</span>
+              ) : results.diffToTarget < 0 ? (
+                <span className="text-sky-400">gain</span>
+              ) : (
+                <span className="text-white">maintain</span>
+              )}{" "}
+              <span className="bg-white/10 px-3">
+                {Math.abs(results.diffToTarget)} kg
+              </span>
+              .
+            </p>
+          </div>
+        </motion.section>
+
+        {/* 3. Energy Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ amount: 0.4 }}
+          className="flex flex-col items-center"
+        >
+          <p className="text-sm font-black uppercase tracking-widest text-white/50 mb-12">
+            Energy Burn
+          </p>
+          <div className="flex flex-col gap-12 w-full text-left md:text-center">
+            <p className="text-3xl md:text-5xl font-black leading-tight text-white">
+              Your resting burn is{" "}
+              <span className="text-amber-400">
+                <CountDisplay value={results.bmr} /> kcal
+              </span>
+              . <br className="hidden md:block" />
+              It means calories burned doing nothing.
+            </p>
+            <p className="text-3xl md:text-5xl font-black leading-tight text-white">
+              Your total burn is{" "}
+              <span className="text-orange-400">
+                <CountDisplay value={results.tdee} /> kcal
+              </span>
+              . <br className="hidden md:block" />
+              It means calories burned with your activity.
+            </p>
+          </div>
+        </motion.section>
+
+        {/* 4. Target Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ amount: 0.4 }}
+          className="flex flex-col items-center"
+        >
+          <p className="text-sm font-black uppercase tracking-widest text-white/50 mb-12">
+            Daily Target
+          </p>
+          <p className="text-4xl md:text-6xl font-black leading-tight text-white">
+            To{" "}
+            {inputs.goal === 0
+              ? "maintain"
+              : inputs.goal > 0
+                ? "build muscle"
+                : "lose weight"}
+            , eat{" "}
+            <span className="text-rose-400 bg-white/10 px-4 py-2">
+              <CountDisplay value={results.targetCalories} /> kcal
+            </span>{" "}
+            daily.
+          </p>
+        </motion.section>
+
+        {/* 5. Macros Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ amount: 0.3 }}
+          className="flex flex-col items-center"
+        >
+          <p className="text-sm font-black uppercase tracking-widest text-white/50 mb-12">
+            Macro Breakdown
+          </p>
+          <div className="flex flex-col gap-8 w-full text-left md:text-center">
+            <p className="text-3xl md:text-5xl font-black leading-tight text-white">
+              Eat{" "}
+              <span className="text-rose-400 bg-white/10 px-3">
+                <CountDisplay value={results.protein} />g
+              </span>{" "}
+              of protein for muscle.
+            </p>
+            <p className="text-3xl md:text-5xl font-black leading-tight text-white">
+              Eat{" "}
+              <span className="text-sky-400 bg-white/10 px-3">
+                <CountDisplay value={results.carbs} />g
+              </span>{" "}
+              of carbs for energy.
+            </p>
+            <p className="text-3xl md:text-5xl font-black leading-tight text-white">
+              Eat{" "}
+              <span className="text-amber-400 bg-white/10 px-3">
+                <CountDisplay value={results.fat} />g
+              </span>{" "}
+              of fat for hormones.
+            </p>
+          </div>
+        </motion.section>
+
+        {/* 6. Hydration Section */}
+        <motion.section
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ amount: 0.3 }}
+          className="flex flex-col items-center"
+        >
+          <p className="text-sm font-black uppercase tracking-widest text-white/50 mb-12">
+            Hydration
+          </p>
+          <p className="text-3xl md:text-5xl font-black leading-tight text-white mb-12">
+            Drink{" "}
+            <span className="text-cyan-400 bg-white/10 px-3">
+              <CountDisplay value={results.waterL} isFloat /> liters
+            </span>{" "}
+            of water daily. <br className="hidden md:block" />
+            That is{" "}
+            <span className="text-cyan-400 bg-white/10 px-3">
+              {results.glasses}
+            </span>{" "}
+            glasses.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4 w-full max-w-3xl mt-4 mb-24">
+            {Array.from({ length: results.glasses }).map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: -20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                  delay: i * 0.04,
+                  type: "spring",
+                  stiffness: 150,
+                  damping: 12,
+                }}
+              >
+                <GlassWater
+                  className="text-cyan-400 fill-cyan-400/20"
+                  size={48}
+                  strokeWidth={1.5}
+                />
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-6 w-full max-w-2xl mt-12">
+            <button
+              onClick={onDownload}
+              className="flex-1 flex items-center justify-center gap-3 bg-emerald-500 px-8 py-5 text-base font-black uppercase tracking-widest text-slate-900 rounded-none transition-transform hover:scale-105 hover:bg-white"
+            >
+              <Download size={20} strokeWidth={3} />
+              Save Report
+            </button>
+            <button
+              onClick={onReset}
+              className="flex-1 flex items-center justify-center gap-3 bg-white/10 border-2 border-white/20 px-8 py-5 text-base font-black uppercase tracking-widest text-white rounded-none transition-colors hover:bg-white hover:text-slate-900"
+            >
+              <RotateCcw size={20} strokeWidth={3} />
+              Start Over
+            </button>
+          </div>
+        </motion.section>
+      </div>
+    </motion.div>
+  );
+}
+
+// --- Main App Component ---
+export default function HealthCalculators() {
+  const [step, setStep] = useState(-1);
+  const [inputs, setInputs] = useState(INITIAL_INPUTS);
+  const [results, setResults] = useState(null);
+
+  const feetRef = useRef(null);
+  const inchesRef = useRef(null);
 
   const canNext = useMemo(() => {
+    if (step === -1) return true;
     if (step === 0) return inputs.gender !== "";
     if (step === 1) return inputs.age >= 5 && inputs.age <= 120;
     if (step === 2) return inputs.weight >= 20 && inputs.weight <= 400;
@@ -302,44 +442,39 @@ export default function HealthCalculators() {
     return false;
   }, [step, inputs]);
 
-  const setAgeInputRef = useCallback(
-    (n) => {
-      ageRef.current = n;
-      if (n && step === 1) n.focus({ preventScroll: true });
-    },
-    [step],
-  );
-  const setWeightInputRef = useCallback(
-    (n) => {
-      weightRef.current = n;
-      if (n && step === 2) n.focus({ preventScroll: true });
-    },
-    [step],
-  );
-  const setFeetInputRef = useCallback(
-    (n) => {
-      feetRef.current = n;
-      if (n && step === 3) n.focus({ preventScroll: true });
-    },
-    [step],
-  );
-  const setInchesInputRef = useCallback((n) => {
-    inchesRef.current = n;
-  }, []);
+  const resetAll = () => {
+    setResults(null);
+    setInputs(INITIAL_INPUTS);
+    setStep(-1);
+  };
 
-  const goalLabel =
-    inputs.goal === 0
-      ? "Maintain Weight"
-      : inputs.goal > 0
-        ? "Build Muscle"
-        : "Lose Weight";
+  const handleNext = useCallback(() => {
+    if (!canNext) return;
+    if (step === 5) calculate();
+    else setStep((s) => s + 1);
+  }, [canNext, step]);
+
+  const handleBack = () => {
+    if (step > -1) setStep((s) => s - 1);
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (step === 3 && e.target === feetRef.current) {
+        inchesRef.current?.focus();
+      } else {
+        handleNext();
+      }
+    }
+  };
 
   const calculate = () => {
     const feet = inputs.feet,
       inches = inputs.inches === "" ? 0 : inputs.inches;
     const totalInches = feet * 12 + inches;
-    const heightM = totalInches * 0.0254,
-      heightCm = heightM * 100;
+    const heightM = totalInches * 0.0254;
+    const heightCm = heightM * 100;
     const { weight: wkg, age } = inputs;
 
     const bmi = Number((wkg / heightM ** 2).toFixed(1));
@@ -362,13 +497,12 @@ export default function HealthCalculators() {
     );
     const idealRangeMin = Number((ibw * 0.9).toFixed(1));
     const idealRangeMax = Number((ibw * 1.1).toFixed(1));
-    const mid = (idealRangeMin + idealRangeMax) / 2;
     const targetWeight =
       wkg > idealRangeMax
         ? idealRangeMax
         : wkg < idealRangeMin
           ? idealRangeMin
-          : mid;
+          : (idealRangeMin + idealRangeMax) / 2;
     const diffToTarget = Number((wkg - targetWeight).toFixed(1));
 
     const protein = Math.round((targetCalories * 0.3) / 4);
@@ -390,51 +524,23 @@ export default function HealthCalculators() {
       glasses,
       idealRangeMin,
       idealRangeMax,
-      targetWeight: Number(targetWeight.toFixed(1)),
       diffToTarget,
     });
-    setShowResults(true);
-    requestAnimationFrame(() => requestAnimationFrame(() => scrollToPage(2)));
+    setStep(6);
   };
-
-  const onEnter = (e) => {
-    if (e.key !== "Enter") return;
-    if (step === 3 && e.target === feetRef.current) {
-      inchesRef.current?.focus({ preventScroll: true });
-      return;
-    }
-    if (step < 5 && canNext) {
-      setStep((s) => s + 1);
-      return;
-    }
-    if (step === 5 && canNext) calculate();
-  };
-
-  const goalSentence = useMemo(() => {
-    if (!results) return { text: "", color: "#1AF0BE" };
-    const d = results.diffToTarget;
-    if (Math.abs(d) < 0.6)
-      return {
-        text: "You're already in a healthy weight range.",
-        color: "#1AF0BE",
-      };
-    if (d > 0)
-      return {
-        text: `Lose ${Math.abs(d).toFixed(1)} kg to reach your healthy range.`,
-        color: "#f87171",
-      };
-    return {
-      text: `Gain ${Math.abs(d).toFixed(1)} kg to reach your healthy range.`,
-      color: "#38bdf8",
-    };
-  }, [results]);
 
   const downloadReport = () => {
     if (!results) return;
     const actObj = ACTIVITY_LEVELS.find((a) => a.val === inputs.activity);
+    const goalLabel =
+      inputs.goal === 0
+        ? "Maintain"
+        : inputs.goal > 0
+          ? "Build Muscle"
+          : "Lose Weight";
     const blob = new Blob(
       [
-        `HEALTH REPORT\n${new Date().toLocaleDateString()}\n${"─".repeat(40)}\nGender: ${inputs.gender} | Age: ${inputs.age} | Weight: ${inputs.weight}kg | Height: ${inputs.feet}'${inputs.inches || 0}"\nActivity: ${actObj?.label} | Goal: ${goalLabel}\n${"─".repeat(40)}\nBMI: ${results.bmi} (${results.cat.label})\nIBW: ${results.idealRangeMin}–${results.idealRangeMax} kg\nBMR: ${results.bmr} kcal | TDEE: ${results.tdee} kcal\nTarget: ${results.targetCalories} kcal\nProtein: ${results.protein}g | Carbs: ${results.carbs}g | Fat: ${results.fat}g\nHydration: ${results.waterL} L`,
+        `HEALTH CALCULATORS REPORT\n${new Date().toLocaleDateString()}\n${"─".repeat(40)}\nGender: ${inputs.gender} | Age: ${inputs.age} | Weight: ${inputs.weight}kg | Height: ${inputs.feet}'${inputs.inches || 0}"\nActivity: ${actObj?.label} | Goal: ${goalLabel}\n${"─".repeat(40)}\nBMI: ${results.bmi} (${results.cat.label})\nIdeal Weight: ${results.idealRangeMin}–${results.idealRangeMax} kg\nBase Burn (BMR): ${results.bmr} kcal\nTotal Burn (TDEE): ${results.tdee} kcal\nDaily Target: ${results.targetCalories} kcal\nProtein: ${results.protein}g | Carbs: ${results.carbs}g | Fat: ${results.fat}g\nHydration: ${results.waterL} L`,
       ],
       { type: "text/plain" },
     );
@@ -447,1267 +553,365 @@ export default function HealthCalculators() {
     document.body.removeChild(a);
   };
 
-  // Selectable card style — hover handled via CSS class
-  const cardStyle = (active, color = config.colors.accent) => ({
-    background: active ? color : "#0c1a30",
-    borderColor: active ? color : `${color}2e`,
-    color: active ? "#020a21" : "rgba(255,255,255,0.55)",
-    boxShadow: active ? `0 0 26px ${color}30` : "none",
-    transition: "all 0.17s ease",
-  });
+  const currentTheme = stepThemes[step] || "";
+  const noSpinner =
+    "appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+
+  // Refined input style: completely transparent background, thick bottom border
+  const lineInputStyle = `w-full bg-transparent border-0 border-b-4 border-white/20 outline-none text-center font-black transition-colors ${noSpinner} text-7xl md:text-9xl py-4 px-4 text-white focus:border-white focus:ring-0 placeholder:text-white/10 rounded-none`;
 
   return (
     <div
-      className="text-white overflow-hidden selection:bg-[#1AF0BE]/30"
-      style={{ backgroundColor: config.colors.bgDark }}
+      className={`flex h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)] w-full flex-col ${step < 6 ? currentTheme : "bg-slate-900"} text-white overflow-hidden transition-colors duration-500`}
     >
-      <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&family=Krona+One&display=swap");
-
-        body {
-          font-family: "Outfit", sans-serif;
-        }
-        .font-hero {
-          font-family: "Krona One", sans-serif;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        input[type="number"] {
-          -moz-appearance: textfield;
-        }
-        .sel:hover:not(.sel-on) {
-          background: rgba(26, 240, 190, 0.38) !important;
-          border-color: rgba(49, 223, 182, 0.89) !important;
-          color: rgba(255, 255, 255, 0.85) !important;
-          box-shadow: 0 0 18px rgba(16, 225, 177, 0.88) !important;
-        }
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 0px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
       `}</style>
 
-      <div
-        ref={scrollContainerRef}
-        className={`${SECTION_HEIGHT} overflow-y-scroll snap-y snap-mandatory no-scrollbar scroll-smooth`}
-      >
-        {/* ═══════ HERO ═══════ */}
-        <section
-          className={`min-h-full w-full snap-start relative flex flex-col items-center justify-center ${SECTION_HEIGHT}`}
-          style={{
-            backgroundColor: config.colors.bgDark,
-            backgroundImage: `radial-gradient(ellipse at 50% 58%, ${config.colors.bgPrimary}, transparent 68%)`,
-          }}
-        >
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[52vw] h-[52vw] max-w-[520px] blur-[120px] rounded-full pointer-events-none opacity-20"
-            style={{ backgroundColor: config.colors.accent }}
-          />
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="text-center max-w-3xl relative z-10 px-4 sm:px-6"
+      {/* HEADER */}
+      {step > -1 && step < 6 && (
+        <header className="flex h-16 shrink-0 items-center justify-between px-6 bg-black/10 border-b-2 border-white/10">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 border-2 border-white/20 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-slate-900 rounded-none"
+            >
+              <ArrowLeft size={16} />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+            <span className="hidden text-sm font-bold text-white/50 md:block tracking-widest uppercase">
+              Step {step + 1} of 6
+            </span>
+          </div>
+          <button
+            onClick={resetAll}
+            className="flex items-center gap-2 border-2 border-white/20 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-white hover:text-slate-900 rounded-none"
           >
-            <h1 className="font-hero text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight leading-tight mb-5 break-words">
-              Health{" "}
-              <span style={{ color: config.colors.accent }}>Calculators</span>
-            </h1>
+            <RotateCcw size={14} />
+            <span className="hidden sm:inline">Reset</span>
+          </button>
+        </header>
+      )}
 
-            <p className="text-slate-300 text-sm sm:text-base md:text-lg font-medium mb-9 max-w-md mx-auto leading-relaxed">
-              Know your numbers. Understand what your body actually needs.
-            </p>
-
-            <div className="flex flex-wrap justify-center gap-2 mb-10">
-              {["BMI", "BMR", "TDEE", "IBW", "Macros", "Hydration"].map(
-                (t, i) => (
-                  <motion.span
-                    key={t}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 + i * 0.07 }}
-                    className="px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest rounded-lg"
-                    style={{
-                      border: `1.5px solid ${config.colors.accent}40`,
-                      color: config.colors.accent,
-                      background: `${config.colors.accent}0c`,
-                    }}
-                  >
-                    {t}
-                  </motion.span>
-                ),
-              )}
-            </div>
-
-            <motion.button
-              onClick={() => scrollToPage(1)}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              className="px-10 sm:px-14 py-3 sm:py-4 font-black uppercase text-sm sm:text-base md:text-lg tracking-wider rounded-2xl"
-              style={{
-                backgroundColor: config.colors.accent,
-                color: config.colors.bgDark,
-                boxShadow: `0 0 40px ${config.colors.accent}40`,
-              }}
+      {/* MAIN CONTENT AREA */}
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-transparent">
+        <AnimatePresence mode="wait">
+          {step < 6 ? (
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25 }}
+              className="flex h-full w-full flex-col"
             >
-              Get Started
-            </motion.button>
-          </motion.div>
-        </section>
-
-        {/* ═══════ INPUTS ═══════ */}
-        <section
-          className={`min-h-full w-full snap-start relative flex flex-col items-center justify-center px-5 md:px-8 ${SECTION_HEIGHT}`}
-          style={{ backgroundColor: config.colors.bgDark }}
-        >
-          {/* Step indicator — top center */}
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
-            {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="rounded-full transition-all duration-300"
-                style={{
-                  width: i === step ? 22 : 8,
-                  height: 8,
-                  background:
-                    i <= step ? config.colors.accent : "rgba(255,255,255,0.1)",
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Nav — bottom center, bigger */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
-            <button
-              onClick={() => step > 0 && setStep((s) => s - 1)}
-              disabled={step === 0}
-              className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center border-2 rounded-2xl transition-all disabled:opacity-20 hover:bg-white/5"
-              style={{
-                borderColor: config.colors.accent + "55",
-                color: config.colors.accent,
-              }}
-            >
-              <ArrowLeft size={22} strokeWidth={2.5} />
-            </button>
-            <button
-              onClick={resetAll}
-              className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center border-2 rounded-2xl transition-all hover:bg-red-500/10"
-              style={{ borderColor: "#f87171" + "55", color: "#f87171" }}
-            >
-              <RotateCcw size={20} strokeWidth={2.5} />
-            </button>
-            <button
-              onClick={() => canNext && step < 5 && setStep((s) => s + 1)}
-              disabled={!canNext || step >= 5}
-              className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center border-2 rounded-2xl transition-all disabled:opacity-20"
-              style={{
-                background:
-                  canNext && step < 5 ? config.colors.accent : "transparent",
-                color:
-                  canNext && step < 5
-                    ? config.colors.bgDark
-                    : "rgba(255,255,255,0.2)",
-                borderColor:
-                  canNext && step < 5
-                    ? config.colors.accent
-                    : "rgba(255,255,255,0.1)",
-              }}
-            >
-              <ArrowRight size={22} strokeWidth={2.5} />
-            </button>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {step === 0 && (
-              <motion.div
-                key="gender"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.22 }}
-                className="w-full max-w-md"
-              >
-                <p className="font-hero text-2xl md:text-3xl font-black uppercase text-center mb-8">
-                  Select{" "}
-                  <span style={{ color: config.colors.accent }}>Gender</span>
-                </p>
-                <div className="grid grid-cols-2 gap-4">
-                  {["male", "female"].map((g) => {
-                    const active = inputs.gender === g;
-                    return (
-                      <button
-                        key={g}
-                        onClick={() => setInputs((p) => ({ ...p, gender: g }))}
-                        className={`py-10 md:py-14 border-2 flex flex-col items-center gap-4 rounded-2xl font-black uppercase text-lg sel ${active ? "sel-on" : ""}`}
-                        style={cardStyle(active)}
-                      >
-                        {g === "male" ? (
-                          <Mars size={44} strokeWidth={1.5} />
-                        ) : (
-                          <Venus size={44} strokeWidth={1.5} />
-                        )}
-                        {g}
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-
-            {step === 1 && (
-              <motion.div
-                key="age"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.22 }}
-                className="w-full max-w-sm text-center"
-              >
-                <p className="font-hero text-2xl md:text-3xl font-black uppercase mb-8">
-                  Your <span style={{ color: config.colors.accent }}>Age</span>
-                </p>
-                <input
-                  ref={setAgeInputRef}
-                  type="number"
-                  inputMode="numeric"
-                  value={inputs.age === "" ? "" : String(inputs.age)}
-                  onKeyDown={onEnter}
-                  onChange={(e) =>
-                    setInputs((p) => ({
-                      ...p,
-                      age: parseNum(e.target.value, "int"),
-                    }))
-                  }
-                  className={inputStyle}
-                  style={{ borderColor: config.colors.accent, color: "white" }}
-                  placeholder="0"
-                />
-                <p className="text-slate-400 font-semibold mt-4 text-sm uppercase tracking-widest">
-                  Years old
-                </p>
-              </motion.div>
-            )}
-
-            {step === 2 && (
-              <motion.div
-                key="weight"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.22 }}
-                className="w-full max-w-sm text-center"
-              >
-                <p className="font-hero text-2xl md:text-3xl font-black uppercase mb-8">
-                  Your{" "}
-                  <span style={{ color: config.colors.accent }}>Weight</span>
-                </p>
-                <input
-                  ref={setWeightInputRef}
-                  type="number"
-                  inputMode="decimal"
-                  value={inputs.weight === "" ? "" : String(inputs.weight)}
-                  onKeyDown={onEnter}
-                  onChange={(e) =>
-                    setInputs((p) => ({
-                      ...p,
-                      weight: parseNum(e.target.value, "float"),
-                    }))
-                  }
-                  className={inputStyle}
-                  style={{ borderColor: config.colors.accent, color: "white" }}
-                  placeholder="0"
-                />
-                <p className="text-slate-400 font-semibold mt-4 text-sm uppercase tracking-widest">
-                  Kilograms
-                </p>
-              </motion.div>
-            )}
-
-            {step === 3 && (
-              <motion.div
-                key="height"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.22 }}
-                className="w-full max-w-sm text-center"
-              >
-                <p className="font-hero text-2xl md:text-3xl font-black uppercase mb-8">
-                  Your{" "}
-                  <span style={{ color: config.colors.accent }}>Height</span>
-                </p>
-                <div className="grid grid-cols-2 gap-6">
-                  {[
-                    {
-                      label: "Feet",
-                      ref: setFeetInputRef,
-                      val: inputs.feet,
-                      key: "feet",
-                      mode: "int",
-                      ph: "5",
-                    },
-                    {
-                      label: "Inches",
-                      ref: setInchesInputRef,
-                      val: inputs.inches,
-                      key: "inches",
-                      mode: "int",
-                      ph: "10",
-                    },
-                  ].map(({ label, ref, val, key, mode, ph }) => (
-                    <div key={key}>
-                      <p className="text-slate-400 font-semibold mb-3 text-sm uppercase tracking-widest">
-                        {label}
-                      </p>
-                      <input
-                        ref={ref}
-                        type="number"
-                        inputMode="numeric"
-                        value={val === "" ? "" : String(val)}
-                        onKeyDown={onEnter}
-                        onChange={(e) =>
-                          setInputs((p) => ({
-                            ...p,
-                            [key]: parseNum(e.target.value, mode),
-                          }))
-                        }
-                        className={inputStyle}
-                        style={{
-                          borderColor: config.colors.accent,
-                          color: "white",
-                        }}
-                        placeholder={ph}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {step === 4 && (
-              <motion.div
-                key="activity"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
-                /* Max-width 6xl (1152px) allows cards to expand horizontally on PC */
-                className="w-full max-w-6xl mx-auto pb-10 px-4"
-              >
-                <p className="font-hero text-2xl md:text-4xl font-black uppercase text-center mb-10">
-                  Activity{" "}
-                  <span style={{ color: config.colors.accent }}>Level</span>
-                </p>
-
-                {/* flex-col on mobile | flex-row on PC */}
-                <div className="flex flex-col md:flex-row items-stretch justify-center gap-4">
-                  {ACTIVITY_LEVELS.map((lvl) => {
-                    const active = inputs.activity === lvl.val;
-                    return (
-                      <button
-                        key={lvl.val}
-                        onClick={() =>
-                          setInputs((p) => ({ ...p, activity: lvl.val }))
-                        }
-                        /* md:py-10: Tall cards on PC 
-             md:flex-1: Even distribution
-             hover:-translate-y-1: Premium "lift" effect
-          */
-                        className={`
-            group relative flex flex-row md:flex-col items-center md:justify-center
-            gap-5 p-5 md:py-10 md:px-6 md:flex-1 md:min-w-0
-            border-2 rounded-3xl transition-all duration-300
-            text-left md:text-center
-            ${
-              active
-                ? "border-current bg-current/5 shadow-lg"
-                : "border-opacity-10 hover:border-opacity-30 hover:-translate-y-1"
-            }
-          `}
-                        style={cardStyle(active)}
-                      >
-                        {/* Icon: Large and prominent on PC */}
-                        <div
-                          className={`
-            p-3 md:p-5 rounded-2xl shrink-0 transition-transform duration-300
-            ${active ? "bg-white/20 scale-110" : "bg-gray-100 dark:bg-white/5 group-hover:scale-110"}
-          `}
-                        >
-                          <lvl.icon size={32} strokeWidth={1.5} />
-                        </div>
-
-                        <div className="flex-1 md:w-full">
-                          <div className="font-black text-sm md:text-lg uppercase tracking-tight leading-tight">
-                            {lvl.label}
-                          </div>
-                          {/* Description: Visible and clean */}
-                          <div className="text-[11px] md:text-xs font-semibold opacity-60 leading-relaxed mt-2 line-clamp-2">
-                            {lvl.desc}
-                          </div>
-                        </div>
-
-                        {/* Indicator: Centered bottom checkmark for PC */}
-                        {active && (
-                          <div className="hidden md:flex absolute bottom-3 justify-center w-full">
-                            <CheckCircle2 size={20} />
-                          </div>
-                        )}
-                        {/* Standard checkmark for mobile side-view */}
-                        {active && (
-                          <CheckCircle2
-                            size={20}
-                            className="md:hidden shrink-0"
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-
-            {step === 5 && (
-              <motion.div
-                key="goal"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.22 }}
-                className="w-full max-w-lg"
-              >
-                <p className="font-hero text-2xl md:text-3xl font-black uppercase text-center mb-6">
-                  Primary{" "}
-                  <span style={{ color: config.colors.accent }}>Goal</span>
-                </p>
-                <div className="flex flex-col gap-3 mb-8">
-                  {GOALS.map((g) => {
-                    const active = inputs.goal === g.val;
-                    return (
-                      <button
-                        key={g.val}
-                        onClick={() =>
-                          setInputs((p) => ({ ...p, goal: g.val }))
-                        }
-                        className={`flex items-center gap-5 px-6 py-5 md:py-6 border-2 rounded-2xl text-left sel ${active ? "sel-on" : ""}`}
-                        style={cardStyle(active)}
-                      >
-                        <g.icon size={26} strokeWidth={1.7} />
-                        <span className="font-black text-lg md:text-xl uppercase flex-1">
-                          {g.label}
-                        </span>
-                        {active && <CheckCircle2 size={20} />}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  onClick={() => canNext && calculate()}
-                  disabled={!canNext}
-                  className="w-full py-4 md:py-5 font-black uppercase text-base md:text-lg tracking-wider rounded-2xl transition-all disabled:opacity-30"
-                  style={{
-                    backgroundColor: config.colors.accent,
-                    color: config.colors.bgDark,
-                    boxShadow: canNext
-                      ? `0 0 32px ${config.colors.accent}40`
-                      : "none",
-                  }}
-                >
-                  Calculate My Results →
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </section>
-
-        {/* ═══════ RESULTS ═══════ */}
-        {results && (
-          <>
-            {/* BMI - Style: Status Card (Centered, Immediate Feedback) */}
-            <ResultSection id="bmi" sectionRefs={sectionRefs}>
-              <SectionHeader
-                title="Body Mass"
-                accent="Index"
-                sub="A ratio of weight to height — a quick signal of whether you're in a healthy range."
-              />
-              <div className="w-full max-w-lg mx-auto">
-                <div
-                  className="rounded-2xl overflow-hidden text-center py-10"
-                  style={{ background: results.cat.color }}
-                >
-                  <div className="px-8 flex flex-col items-center justify-center">
-                    <p
-                      className="text-xs font-black uppercase tracking-[0.25em] mb-2 opacity-80"
-                      style={{ color: "#020a21" }}
-                    >
-                      Your Classification
+              {/* HERO SECTION */}
+              {step === -1 && (
+                <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+                  <div className="flex flex-col items-center justify-center w-full max-w-4xl">
+                    <h1 className="text-5xl font-black uppercase tracking-tighter text-white sm:text-7xl md:text-8xl leading-none">
+                      Health
+                      <br />
+                      Calculators
+                    </h1>
+                    <p className="mt-8 text-base md:text-xl font-bold text-white/70 uppercase tracking-widest">
+                      Know your numbers. Understand your body.
                     </p>
-                    <h3
-                      className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-4"
-                      style={{ color: "#020a21" }}
-                    >
-                      {results.cat.label}
-                    </h3>
-                    <div className="flex items-end gap-2 mb-6">
-                      <CountDisplay
-                        value={results.bmi}
-                        isFloat
-                        trigger={visibleSections["bmi"]}
-                        className="text-7xl md:text-8xl font-black leading-none font-hero"
-                        color="#020a21"
-                      />
-                    </div>
-                    <div className="w-16 h-1 rounded-full bg-black/10 mb-6"></div>
-                    <p
-                      className="text-sm md:text-base font-semibold leading-relaxed max-w-sm"
-                      style={{ color: "#020a21cc" }}
-                    >
-                      {results.bmi < 18.5 &&
-                        "Being underweight can affect your immune system and energy levels. Focus on nutrient-dense foods."}
-                      {results.bmi >= 18.5 &&
-                        results.bmi < 25 &&
-                        "Excellent. You are in the healthy weight zone. Maintain your current lifestyle."}
-                      {results.bmi >= 25 &&
-                        results.bmi < 30 &&
-                        "Excess weight can strain joints. Losing just 5-10% of your weight brings health benefits."}
-                      {results.bmi >= 30 &&
-                        "Consider consulting a healthcare provider. Small changes in diet and activity can significantly improve health markers."}
-                    </p>
-                  </div>
-                </div>
-                <BMIRangeBar bmi={results.bmi} />
-              </div>
-            </ResultSection>
 
-            {/* IBW - Style: Dashboard Grid (Min, Max, Current, Goal) */}
-
-            <ResultSection id="ibw" sectionRefs={sectionRefs}>
-              <SectionHeader
-                title="Ideal Body"
-                accent="Weight"
-                sub="The healthy weight range for your height and gender, based on the Devine formula."
-              />
-              <div className="w-full max-w-lg mx-auto">
-                <div
-                  className="rounded-2xl overflow-hidden"
-                  style={{ background: config.colors.accent }}
-                >
-                  {/* Top Row: Min & Max */}
-                  <div className="grid grid-cols-2 border-b border-slate-900/10">
-                    <div className="p-6 text-center border-r border-slate-900/10">
-                      <p
-                        className="text-xs font-black uppercase tracking-widest mb-2"
-                        style={{ color: "#020a2166" }}
-                      >
-                        Min Ideal
-                      </p>
-                      <p
-                        className="text-4xl font-black font-hero"
-                        style={{ color: "#020a21" }}
-                      >
-                        {Math.floor(results.idealRangeMin)}
-                        <span className="text-lg font-bold ml-1">kg</span>
-                      </p>
-                    </div>
-                    <div className="p-6 text-center">
-                      <p
-                        className="text-xs font-black uppercase tracking-widest mb-2"
-                        style={{ color: "#020a2166" }}
-                      >
-                        Max Ideal
-                      </p>
-                      <p
-                        className="text-4xl font-black font-hero"
-                        style={{ color: "#020a21" }}
-                      >
-                        {Math.floor(results.idealRangeMax)}
-                        <span className="text-lg font-bold ml-1">kg</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Middle: Current Weight */}
-                  <div className="p-6 text-center border-b border-slate-900/10">
-                    <p
-                      className="text-xs font-black uppercase tracking-widest mb-2"
-                      style={{ color: "#020a2166" }}
-                    >
-                      Your Current Weight
-                    </p>
-                    <p
-                      className="text-5xl font-black font-hero"
-                      style={{ color: "#020a21" }}
-                    >
-                      {inputs.weight}
-                      <span className="text-xl font-bold ml-1">kg</span>
-                    </p>
-                  </div>
-
-                  {/* Bottom: Goal Context */}
-                  <div className="p-6 text-center">
-                    <p
-                      className="text-sm font-bold leading-relaxed"
-                      style={{ color: "#020a21" }}
-                    >
-                      {inputs.weight < results.idealRangeMin ? (
-                        <>
-                          Goal: <span className="font-black">Gain Weight</span>.
-                          You are below the healthy range.
-                        </>
-                      ) : inputs.weight > results.idealRangeMax ? (
-                        <>
-                          Goal: <span className="font-black">Lose Weight</span>.
-                          You are above the healthy range.
-                        </>
-                      ) : (
-                        <>
-                          Goal: <span className="font-black">Maintain</span>.
-                          You are in the healthy range.
-                        </>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </ResultSection>
-
-            {/* BMR - Style: Engine Card (Horizontal, Minimal) */}
-            <ResultSection id="bmr" sectionRefs={sectionRefs}>
-              <SectionHeader
-                title="Resting"
-                accent="Burn"
-                sub="Calories your body burns just to stay alive — heart, lungs, brain — even while you sleep."
-              />
-              <div className="w-full max-w-lg mx-auto">
-                <div
-                  className="rounded-2xl overflow-hidden"
-                  style={{ background: config.colors.accent }}
-                >
-                  <div className="p-8 flex items-center justify-between">
-                    <div className="flex-1">
-                      <p
-                        className="text-xs font-black uppercase tracking-[0.25em] mb-2"
-                        style={{ color: "#020a21aa" }}
-                      >
-                        Basal Metabolic Rate
-                      </p>
-                      <div className="flex items-end gap-2">
-                        <CountDisplay
-                          value={results.bmr}
-                          trigger={visibleSections["bmr"]}
-                          className="text-5xl md:text-6xl font-black leading-none font-hero"
-                          color="#020a21"
-                        />
+                    {/* Tags */}
+                    <div className="mt-12 flex flex-wrap justify-center gap-3 max-w-2xl">
+                      {[
+                        "BMI",
+                        "BMR",
+                        "TDEE",
+                        "Macros",
+                        "Ideal Weight",
+                        "Hydration",
+                      ].map((tag) => (
                         <span
-                          className="text-lg font-bold mb-1"
-                          style={{ color: "#020a2166" }}
+                          key={tag}
+                          className="border-2 border-white/20 px-4 py-2 text-xs md:text-sm font-bold uppercase tracking-widest text-white/80 rounded-none"
                         >
-                          kcal
+                          {tag}
                         </span>
-                      </div>
-                      <p
-                        className="mt-3 text-xs font-bold uppercase tracking-wide opacity-70"
-                        style={{ color: "#020a21" }}
-                      >
-                        This is 60-70% of your total burn
-                      </p>
-                    </div>
-                    <div className="pl-4 opacity-20">
-                      <BatteryMedium size={48} style={{ color: "#020a21" }} />
-                    </div>
-                  </div>
-                  <div className="px-8 pb-8">
-                    <div className="bg-slate-900/10 rounded-xl p-4">
-                      <p
-                        className="text-sm font-medium"
-                        style={{ color: "#020a21cc" }}
-                      >
-                        Think of this as your "Idle Engine." Even if you lay in
-                        bed all day watching TV, your body burns this many
-                        calories just to keep your heart beating and lungs
-                        breathing.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ResultSection>
-
-            {/* TDEE - Style: Dashboard (Breakdown Focus) */}
-            <ResultSection id="tdee" sectionRefs={sectionRefs}>
-              <SectionHeader
-                title="Total Daily"
-                accent="Burn"
-                sub="Everything you burn in a full day — rest plus every step, workout, and daily task."
-              />
-              <div className="w-full max-w-lg mx-auto">
-                <div
-                  className="rounded-2xl overflow-hidden"
-                  style={{ background: config.colors.accent }}
-                >
-                  <div className="p-8">
-                    <div className="flex items-start justify-between mb-6">
-                      <div>
-                        <p
-                          className="text-xs font-black uppercase tracking-[0.25em] mb-2"
-                          style={{ color: "#020a21aa" }}
-                        >
-                          Total Energy Expenditure
-                        </p>
-                        <div className="flex items-end gap-2">
-                          <CountDisplay
-                            value={results.tdee}
-                            trigger={visibleSections["tdee"]}
-                            className="text-5xl md:text-6xl font-black leading-none font-hero"
-                            color="#020a21"
-                          />
-                          <span
-                            className="text-lg font-bold mb-1"
-                            style={{ color: "#020a2166" }}
-                          >
-                            kcal
-                          </span>
-                        </div>
-                      </div>
-                      <Activity size={40} style={{ color: "#020a2118" }} />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      {[
-                        ["Resting (BMR)", results.bmr],
-                        ["Movement", results.tdee - results.bmr],
-                      ].map(([label, val]) => (
-                        <div
-                          key={label}
-                          className="bg-slate-900/5 rounded-xl p-4 text-center"
-                        >
-                          <p
-                            className="text-xs font-bold uppercase tracking-wider mb-1 opacity-60"
-                            style={{ color: "#020a21" }}
-                          >
-                            {label}
-                          </p>
-                          <p
-                            className="text-xl font-black font-hero"
-                            style={{ color: "#020a21" }}
-                          >
-                            {val}
-                          </p>
-                        </div>
                       ))}
                     </div>
 
-                    <p
-                      className="text-xs text-center font-semibold opacity-70"
-                      style={{ color: "#020a21" }}
-                    >
-                      This is your maintenance number. Eat this much to stay
-                      exactly where you are.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </ResultSection>
-
-            {/* TARGET - Style: Prescriptive Action Plan */}
-            <ResultSection id="target" sectionRefs={sectionRefs}>
-              <SectionHeader
-                title="Daily Calorie"
-                accent="Target"
-                sub={`The exact number of calories to eat every day to ${goalLabel.toLowerCase()}.`}
-              />
-              <div className="w-full max-w-lg mx-auto">
-                <div
-                  className="rounded-2xl overflow-hidden"
-                  style={{ background: config.colors.accent }}
-                >
-                  <div className="px-8 py-8 text-center">
-                    <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-slate-900/10 mb-4">
-                      <span
-                        className="text-xs font-black uppercase tracking-widest"
-                        style={{ color: "#020a21" }}
-                      >
-                        {goalLabel} Goal
-                      </span>
-                    </div>
-
-                    <div className="flex items-end justify-center gap-2 mb-2">
-                      <CountDisplay
-                        value={results.targetCalories}
-                        trigger={visibleSections["target"]}
-                        className="text-7xl md:text-8xl font-black leading-none font-hero"
-                        color="#020a21"
-                      />
-                      <span
-                        className="text-2xl font-bold mb-2"
-                        style={{ color: "#020a2166" }}
-                      >
-                        kcal
-                      </span>
-                    </div>
-                    <p
-                      className="text-xs font-bold opacity-70 mb-6"
-                      style={{ color: "#020a21" }}
-                    >
-                      DAILY ALLOWANCE
-                    </p>
-
-                    <div className="bg-slate-900/10 rounded-xl p-4 text-left">
-                      <p
-                        className="text-sm font-semibold leading-relaxed"
-                        style={{ color: "#020a21" }}
-                      >
-                        {inputs.goal === 0 &&
-                          "Maintenance mode. You are eating exactly what you burn. Your weight should remain stable."}
-                        {inputs.goal < 0 && (
-                          <>
-                            Creating a deficit. Consistency is key. At this
-                            rate, you can expect to lose approx.{" "}
-                            <span className="font-black">0.5 kg per week</span>.
-                          </>
-                        )}
-                        {inputs.goal > 0 && (
-                          <>
-                            Creating a surplus. Combine this with resistance
-                            training to ensure the weight gained is muscle, not
-                            just fat.
-                          </>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 border-t border-slate-900/10">
-                    {[
-                      ["Burn", results.tdee],
-                      ["Eat", results.targetCalories],
-                    ].map(([label, val], i) => (
-                      <div
-                        key={label}
-                        className="px-7 py-5 text-center"
-                        style={
-                          i === 0
-                            ? { borderRight: "1px solid rgba(2, 10, 33, 0.1)" }
-                            : {}
-                        }
-                      >
-                        <p
-                          className="text-xs font-black uppercase tracking-widest mb-1 opacity-60"
-                          style={{ color: "#020a21" }}
-                        >
-                          {label}
-                        </p>
-                        <p
-                          className="text-2xl font-black font-hero"
-                          style={{ color: "#020a21" }}
-                        >
-                          {val}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </ResultSection>
-
-            {/* MACROS - Style: Nutrition Label Grid */}
-            <ResultSection id="macros" sectionRefs={sectionRefs}>
-              <SectionHeader
-                title="Macro"
-                accent="Breakdown"
-                sub="How to split your daily calories across protein, carbs, and fat for the best results."
-              />
-              <div className="w-full max-w-lg mx-auto">
-                <div
-                  className="rounded-2xl overflow-hidden"
-                  style={{ background: config.colors.accent }}
-                >
-                  <div className="p-6 text-center border-b border-slate-900/10">
-                    <p
-                      className="text-xs font-black uppercase tracking-[0.25em] mb-1"
-                      style={{ color: "#020a21aa" }}
-                    >
-                      Daily Nutrients
-                    </p>
-                    <p className="text-lg font-bold text-slate-900">
-                      Total: {results.targetCalories} kcal
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-3">
-                    {/* Protein */}
-                    <div className="p-5 text-center border-r border-slate-900/10">
-                      <div className="inline-block p-2 rounded-lg bg-slate-900/5 mb-2">
-                        <Beef size={20} style={{ color: "#020a21" }} />
-                      </div>
-                      <p
-                        className="text-xs font-black uppercase tracking-widest mb-1 opacity-60"
-                        style={{ color: "#020a21" }}
-                      >
-                        Protein
-                      </p>
-                      <p
-                        className="text-2xl font-black font-hero"
-                        style={{ color: "#020a21" }}
-                      >
-                        {results.protein}g
-                      </p>
-                      <p className="text-xs mt-1 " style={{ color: "#020a21" }}>
-                        Muscle Repair
-                      </p>
-                    </div>
-
-                    {/* Carbs */}
-                    <div className="p-5 text-center border-r border-slate-900/10">
-                      <div className="inline-block p-2 rounded-lg bg-slate-900/5 mb-2">
-                        <Wheat size={20} style={{ color: "#020a21" }} />
-                      </div>
-                      <p
-                        className="text-xs font-black uppercase tracking-widest mb-1 opacity-60"
-                        style={{ color: "#020a21" }}
-                      >
-                        Carbs
-                      </p>
-                      <p
-                        className="text-2xl font-black font-hero"
-                        style={{ color: "#020a21" }}
-                      >
-                        {results.carbs}g
-                      </p>
-                      <p className="text-xs mt-1 " style={{ color: "#020a21" }}>
-                        Energy
-                      </p>
-                    </div>
-
-                    {/* Fat */}
-                    <div className="p-5 text-center">
-                      <div className="inline-block p-2 rounded-lg bg-slate-900/5 mb-2">
-                        <Droplets size={20} style={{ color: "#020a21" }} />
-                      </div>
-                      <p
-                        className="text-xs font-black uppercase tracking-widest mb-1 opacity-60"
-                        style={{ color: "#020a21" }}
-                      >
-                        Fat
-                      </p>
-                      <p
-                        className="text-2xl font-black font-hero"
-                        style={{ color: "#020a21" }}
-                      >
-                        {results.fat}g
-                      </p>
-                      <p className="text-xs mt-1 " style={{ color: "#020a21" }}>
-                        Hormones
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="px-6 pb-6">
-                    <div className="bg-slate-900/5 rounded-xl p-3 text-center">
-                      <p
-                        className="text-xs font-semibold"
-                        style={{ color: "#020a21aa" }}
-                      >
-                        Tip: Prioritize protein at every meal to stay full
-                        longer.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ResultSection>
-
-            {/* HYDRATION - Style: Visual Liquid Card (Softer Blue) */}
-            <ResultSection id="hydration" sectionRefs={sectionRefs}>
-              <SectionHeader
-                title="Daily"
-                accent="Hydration"
-                sub="How much water your body needs each day. Hydration directly impacts energy, focus, and recovery."
-              />
-
-              <div className="w-full max-w-3xl mx-auto mt-8">
-                {/* Main Hydration Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                  className="bg-gradient-to-br from-blue-700 to-cyan-500 rounded-2xl p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6"
-                >
-                  {/* Left Content */}
-                  <div className="flex-1">
-                    <p className="text-xs font-black uppercase tracking-widest text-blue-100/70 mb-3">
-                      Daily Water Target
-                    </p>
-
-                    <div className="flex items-end gap-3">
-                      <CountDisplay
-                        value={parseFloat(results.waterL)}
-                        isFloat
-                        trigger={visibleSections["hydration"]}
-                        className="text-6xl md:text-7xl font-black leading-none font-hero text-white"
-                      />
-                      <span className="text-xl md:text-2xl font-bold text-blue-100/70 mb-1">
-                        Liters
-                      </span>
-                    </div>
-
-                    <p className="mt-3 text-sm md:text-base font-bold text-blue-100/70">
-                      Approx.{" "}
-                      <span className="font-black text-white">
-                        {results.glasses} glasses
-                      </span>
-                    </p>
-                  </div>
-
-                  {/* Icon */}
-                  <div className="opacity-20 md:opacity-50">
-                    <Droplets size={64} style={{ color: "white" }} />
-                  </div>
-                </motion.div>
-
-                {/* When to Drink / Tips */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  className="mt-6 bg-gray-900/60 rounded-xl p-6 shadow-lg"
-                >
-                  <p className="text-sm md:text-base font-semibold text-blue-100/70 leading-relaxed">
-                    <span className="font-black text-white">
-                      When to drink:
-                    </span>{" "}
-                    1 glass upon waking, 1 glass before every meal, and sip
-                    consistently during workouts.
-                  </p>
-                </motion.div>
-
-                {/* Example Drinks */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  className="mt-8 grid md:grid-cols-3 gap-6"
-                >
-                  {/* Water */}
-                  <div className="bg-blue-700/70 rounded-xl p-4 text-center shadow-lg hover:scale-105 transition-transform">
-                    <p className="font-semibold text-white mb-1">Plain Water</p>
-                    <p className="text-sm text-blue-100 mb-1">
-                      0 kcal | 0g carbs | 0g fat | 0g protein
-                    </p>
-                    <p className="text-sm font-bold text-yellow-400">
-                      1 glass = 250 ml
-                    </p>
-                  </div>
-
-                  {/* Lassi */}
-                  <div className="bg-cyan-600/70 rounded-xl p-4 text-center shadow-lg hover:scale-105 transition-transform">
-                    <p className="font-semibold text-white mb-1">Sweet Lassi</p>
-                    <p className="text-sm text-blue-100 mb-1">
-                      150 kcal | 25g carbs | 5g fat | 5g protein
-                    </p>
-                    <p className="text-sm font-bold text-yellow-400">
-                      1 glass = 250 ml
-                    </p>
-                  </div>
-
-                  {/* Rooh Afza Drink */}
-                  <div className="bg-purple-600/70 rounded-xl p-4 text-center shadow-lg hover:scale-105 transition-transform">
-                    <p className="font-semibold text-white mb-1">
-                      Rooh Afza Drink
-                    </p>
-                    <p className="text-sm text-blue-100 mb-1">
-                      120 kcal | 30g carbs | 0g fat | 0g protein
-                    </p>
-                    <p className="text-sm font-bold text-yellow-400">
-                      1 glass = 250 ml
-                    </p>
-                  </div>
-                </motion.div>
-
-                {/* Hydration Tip */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.6 }}
-                  className="mt-6 bg-gray-900/60 rounded-xl p-4 shadow-lg"
-                >
-                  <p className="text-sm md:text-base text-blue-100/70">
-                    Tip: Drinking consistently throughout the day keeps energy
-                    levels stable and improves focus and recovery. Avoid sugary
-                    drinks as a main source of hydration.
-                  </p>
-                </motion.div>
-              </div>
-            </ResultSection>
-
-            {/* SUMMARY */}
-            <ResultSection id="summary" sectionRefs={sectionRefs}>
-              <div className="w-full max-w-2xl mx-auto">
-                <div className="text-center mb-6">
-                  <CheckCircle2
-                    size={38}
-                    className="mx-auto mb-3"
-                    style={{ color: config.colors.accent }}
-                  />
-                  <h2 className="font-hero text-3xl md:text-4xl font-black uppercase">
-                    Health{" "}
-                    <span style={{ color: config.colors.accent }}>Report</span>
-                  </h2>
-                  <p className="text-slate-400 text-sm mt-2 font-medium">
-                    Everything in one place
-                  </p>
-                </div>
-
-                <div
-                  className="flex rounded-xl overflow-hidden mb-4 md:hidden"
-                  style={{ background: "#0c1a2e" }}
-                >
-                  {["Profile", "Results"].map((t, i) => (
                     <button
-                      key={t}
-                      onClick={() => setShowResults(i === 1)}
-                      className="flex-1 py-3 text-xs font-black uppercase transition-all rounded-xl"
-                      style={{
-                        background:
-                          showResults === (i === 1)
-                            ? config.colors.accent
-                            : "transparent",
-                        color:
-                          showResults === (i === 1)
-                            ? config.colors.bgDark
-                            : "rgba(255,255,255,0.35)",
-                      }}
+                      onClick={handleNext}
+                      className="mt-16 flex w-full max-w-xs items-center justify-between bg-white px-8 py-5 text-lg font-black uppercase tracking-widest text-slate-900 rounded-none transition-transform hover:scale-105"
                     >
-                      {t}
+                      <span>Start</span>
+                      <ArrowRight size={24} strokeWidth={3} />
                     </button>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div
-                    className={`rounded-2xl p-6 ${showResults ? "hidden md:block" : ""}`}
-                    style={{
-                      background: "#0c1a2e",
-                      border: `1px solid ${config.colors.accent}18`,
-                    }}
-                  >
-                    <p
-                      className="text-xs font-black uppercase tracking-widest mb-4"
-                      style={{ color: config.colors.accent }}
-                    >
-                      Your Profile
-                    </p>
-                    <div className="space-y-3 text-sm">
-                      {[
-                        ["Gender", inputs.gender.toUpperCase()],
-                        ["Age", `${inputs.age} years`],
-                        ["Height", `${inputs.feet}' ${inputs.inches || 0}"`],
-                        ["Weight", `${inputs.weight} kg`],
-                        [
-                          "Activity",
-                          ACTIVITY_LEVELS.find((a) => a.val === inputs.activity)
-                            ?.label,
-                        ],
-                        ["Goal", goalLabel],
-                      ].map(([k, v]) => (
-                        <div
-                          key={k}
-                          className="flex justify-between items-center"
-                        >
-                          <span className="text-slate-500 font-semibold">
-                            {k}
-                          </span>
-                          <span className="text-white font-black">{v}</span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
-                  <div
-                    className={`rounded-2xl p-6 ${!showResults ? "hidden md:block" : ""}`}
-                    style={{
-                      background: "#0c1a2e",
-                      border: `1px solid ${config.colors.accent}18`,
-                    }}
-                  >
-                    <p
-                      className="text-xs font-black uppercase tracking-widest mb-4"
-                      style={{ color: config.colors.accent }}
-                    >
-                      Your Results
-                    </p>
-                    <div className="space-y-3 text-sm">
-                      {[
-                        [
-                          "BMI",
-                          `${results.bmi} — ${results.cat.label}`,
-                          results.cat.color,
-                        ],
-                        [
-                          "Ideal Weight",
-                          `${results.idealRangeMin}–${results.idealRangeMax} kg`,
-                          null,
-                        ],
-                        ["Resting Burn", `${results.bmr} kcal`, "#60a5fa"],
-                        ["Total Burn", `${results.tdee} kcal`, "#f59e0b"],
-                        [
-                          "Daily Target",
-                          `${results.targetCalories} kcal`,
-                          config.colors.accent,
-                        ],
-                        [
-                          "Macros",
-                          `P ${results.protein}g · C ${results.carbs}g · F ${results.fat}g`,
-                          null,
-                        ],
-                        ["Hydration", `${results.waterL} L / day`, "#0ea5e9"],
-                      ].map(([k, v, c]) => (
-                        <div
-                          key={k}
-                          className="flex justify-between items-center"
-                        >
-                          <span className="text-slate-500 font-semibold">
-                            {k}
-                          </span>
-                          <span
-                            className="font-black"
-                            style={{ color: c || "white" }}
+                </div>
+              )}
+
+              {/* WIZARD INPUTS */}
+              {step > -1 && (
+                <div className="mx-auto flex h-full w-full max-w-5xl flex-col p-6 md:p-12">
+                  <div className="flex flex-col items-center justify-center min-h-0 flex-1 w-full">
+                    {/* STEP 0: GENDER */}
+                    {step === 0 && (
+                      <div className="w-full">
+                        <h2 className="mb-16 text-5xl md:text-7xl font-black uppercase text-center tracking-tighter">
+                          Gender
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mx-auto">
+                          <button
+                            onClick={() => {
+                              setInputs((p) => ({ ...p, gender: "male" }));
+                            }}
+                            className={`flex flex-col items-center justify-center gap-6 p-12 transition-all duration-200 rounded-none ${
+                              inputs.gender === "male"
+                                ? "bg-white text-indigo-900 scale-105 shadow-xl ring-4 ring-white"
+                                : "border-2 border-white/20 bg-transparent text-white/60 hover:bg-white/5"
+                            }`}
                           >
-                            {v}
-                          </span>
+                            <Mars size={80} strokeWidth={2} />
+                            <span className="text-3xl font-black uppercase tracking-widest">
+                              Male
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setInputs((p) => ({ ...p, gender: "female" }));
+                            }}
+                            className={`flex flex-col items-center justify-center gap-6 p-12 transition-all duration-200 rounded-none ${
+                              inputs.gender === "female"
+                                ? "bg-white text-indigo-900 scale-105 shadow-xl ring-4 ring-white"
+                                : "border-2 border-white/20 bg-transparent text-white/60 hover:bg-white/5"
+                            }`}
+                          >
+                            <Venus size={80} strokeWidth={2} />
+                            <span className="text-3xl font-black uppercase tracking-widest">
+                              Female
+                            </span>
+                          </button>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    )}
+
+                    {/* STEP 1: AGE */}
+                    {step === 1 && (
+                      <div className="w-full max-w-lg text-center">
+                        <h2 className="mb-12 text-5xl md:text-7xl font-black uppercase tracking-tighter">
+                          Age
+                        </h2>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          value={inputs.age === "" ? "" : inputs.age}
+                          onChange={(e) =>
+                            setInputs((p) => ({
+                              ...p,
+                              age: parseNum(e.target.value, "int"),
+                            }))
+                          }
+                          onKeyDown={handleInputKeyDown}
+                          className={lineInputStyle}
+                          placeholder="0"
+                          autoFocus
+                        />
+                      </div>
+                    )}
+
+                    {/* STEP 2: WEIGHT */}
+                    {step === 2 && (
+                      <div className="w-full max-w-lg text-center">
+                        <h2 className="mb-12 text-5xl md:text-7xl font-black uppercase tracking-tighter">
+                          Weight
+                        </h2>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          value={inputs.weight === "" ? "" : inputs.weight}
+                          onChange={(e) =>
+                            setInputs((p) => ({
+                              ...p,
+                              weight: parseNum(e.target.value, "float"),
+                            }))
+                          }
+                          onKeyDown={handleInputKeyDown}
+                          className={lineInputStyle}
+                          placeholder="0"
+                          autoFocus
+                        />
+                        <p className="mt-8 text-base font-bold uppercase tracking-widest text-white/80">
+                          Kilograms
+                        </p>
+                      </div>
+                    )}
+
+                    {/* STEP 3: HEIGHT */}
+                    {step === 3 && (
+                      <div className="w-full max-w-3xl text-center">
+                        <h2 className="mb-12 text-5xl md:text-7xl font-black uppercase tracking-tighter">
+                          Height
+                        </h2>
+                        <div className="flex flex-col md:flex-row gap-8 md:gap-16">
+                          <div className="flex-1">
+                            <input
+                              ref={feetRef}
+                              type="number"
+                              inputMode="numeric"
+                              value={inputs.feet === "" ? "" : inputs.feet}
+                              onChange={(e) =>
+                                setInputs((p) => ({
+                                  ...p,
+                                  feet: parseNum(e.target.value, "int"),
+                                }))
+                              }
+                              onKeyDown={handleInputKeyDown}
+                              className={lineInputStyle}
+                              placeholder="5"
+                              autoFocus
+                            />
+                            <p className="mt-8 text-base font-bold uppercase tracking-widest text-white/80">
+                              Feet
+                            </p>
+                          </div>
+                          <div className="flex-1">
+                            <input
+                              ref={inchesRef}
+                              type="number"
+                              inputMode="numeric"
+                              value={inputs.inches === "" ? "" : inputs.inches}
+                              onChange={(e) =>
+                                setInputs((p) => ({
+                                  ...p,
+                                  inches: parseNum(e.target.value, "int"),
+                                }))
+                              }
+                              onKeyDown={handleInputKeyDown}
+                              className={lineInputStyle}
+                              placeholder="10"
+                            />
+                            <p className="mt-8 text-base font-bold uppercase tracking-widest text-white/80">
+                              Inches
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* STEP 4: ACTIVITY */}
+                    {step === 4 && (
+                      <div className="w-full h-full flex flex-col justify-center">
+                        <h2 className="mb-12 text-5xl md:text-7xl font-black uppercase text-center tracking-tighter shrink-0">
+                          Activity
+                        </h2>
+                        <div className="flex flex-col md:flex-row gap-4 w-full">
+                          {ACTIVITY_LEVELS.map((lvl) => {
+                            const active = inputs.activity === lvl.val;
+                            return (
+                              <button
+                                key={lvl.val}
+                                onClick={() =>
+                                  setInputs((p) => ({
+                                    ...p,
+                                    activity: lvl.val,
+                                  }))
+                                }
+                                className={`flex-1 flex flex-row md:flex-col items-center justify-start md:justify-center p-6 gap-4 rounded-none transition-all duration-200 ${
+                                  active
+                                    ? "bg-white text-emerald-900 scale-105 shadow-xl ring-4 ring-white"
+                                    : "border-2 border-white/20 text-white/60 hover:bg-white/5"
+                                }`}
+                              >
+                                <lvl.icon size={36} strokeWidth={2} />
+                                <div className="flex flex-col items-start md:items-center text-left md:text-center">
+                                  <h3 className="text-lg md:text-xl font-black uppercase tracking-widest leading-tight">
+                                    {lvl.label}
+                                  </h3>
+                                  <p
+                                    className={`text-xs font-bold mt-2 ${active ? "opacity-80" : "opacity-50"}`}
+                                  >
+                                    {lvl.desc}
+                                  </p>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* STEP 5: GOAL */}
+                    {step === 5 && (
+                      <div className="w-full h-full flex flex-col justify-center">
+                        <h2 className="mb-12 text-5xl md:text-7xl font-black uppercase text-center tracking-tighter shrink-0">
+                          Goal
+                        </h2>
+                        <div className="flex flex-col md:flex-row gap-6 w-full">
+                          {GOALS.map((g) => {
+                            const active = inputs.goal === g.val;
+                            return (
+                              <button
+                                key={g.val}
+                                onClick={() =>
+                                  setInputs((p) => ({ ...p, goal: g.val }))
+                                }
+                                className={`flex-1 flex flex-row md:flex-col items-center justify-start md:justify-center p-8 gap-6 rounded-none transition-all duration-200 ${
+                                  active
+                                    ? "bg-white text-rose-900 scale-105 shadow-xl ring-4 ring-white"
+                                    : "border-2 border-white/20 text-white/60 hover:bg-white/5"
+                                }`}
+                              >
+                                <g.icon size={48} strokeWidth={2} />
+                                <h3 className="text-2xl font-black uppercase tracking-widest text-left md:text-center leading-tight">
+                                  {g.label}
+                                </h3>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* NEXT BUTTON */}
+                  <div className="mt-12 shrink-0 flex justify-center">
+                    <button
+                      onClick={handleNext}
+                      disabled={!canNext}
+                      className={`group flex w-full max-w-sm items-center justify-between p-6 text-xl font-black uppercase tracking-widest rounded-none transition-all ${
+                        canNext
+                          ? "bg-white text-slate-900 shadow-xl hover:scale-[1.02]"
+                          : "bg-white/10 text-white/20 cursor-not-allowed"
+                      }`}
+                    >
+                      <span>{step === 5 ? "See Results" : "Next"}</span>
+                      <ArrowRight
+                        size={24}
+                        strokeWidth={3}
+                        className={
+                          canNext
+                            ? "transition-transform group-hover:translate-x-2"
+                            : ""
+                        }
+                      />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex gap-3 mt-5">
-                  <button
-                    onClick={resetAll}
-                    className="flex-1 py-4 text-sm font-black uppercase border-2 rounded-2xl transition-all hover:bg-white/5"
-                    style={{
-                      borderColor: config.colors.accent + "44",
-                      color: config.colors.accent,
-                    }}
-                  >
-                    Start Over
-                  </button>
-                  <button
-                    onClick={downloadReport}
-                    className="flex-1 py-4 text-sm font-black uppercase flex items-center justify-center gap-2 rounded-2xl transition-all"
-                    style={{
-                      background: config.colors.accent,
-                      color: config.colors.bgDark,
-                      boxShadow: `0 0 24px ${config.colors.accent}30`,
-                    }}
-                  >
-                    <Download size={16} /> Download
-                  </button>
-                </div>
-              </div>
-            </ResultSection>
-          </>
-        )}
-      </div>
+              )}
+            </motion.div>
+          ) : (
+            /* RESULTS VIEW SEPARATED TO AVOID HOOK REF ERRORS */
+            <ScrollingResults
+              key="results-view"
+              results={results}
+              inputs={inputs}
+              onReset={resetAll}
+              onDownload={downloadReport}
+            />
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }

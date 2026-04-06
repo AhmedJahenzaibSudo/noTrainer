@@ -1,37 +1,128 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FrontView from "@/components/anatomy/FrontView";
 import BackView from "@/components/anatomy/BackView";
 import exercisesData from "@/public/exercises.json";
 import {
   RotateCcw,
-  ChevronDown,
   Trash2,
   X,
   LayoutList,
   Download,
+  ArrowRight,
+  ChevronDown,
 } from "lucide-react";
 
-const theme = {
-  colors: {
-    bgPrimary: "#0A2A9B",
-    bgDark: "#04114F",
-    panel: "#1B43C4",
-    panelHover: "#2550E0",
-    accent: "#22FFD1",
-    accentSoft: "#54FFDC",
-    textPrimary: "#FFFFFF",
-    textSecondary: "#D7E3FF",
-    textMuted: "#B7C7FF",
-    textOnAccent: "#04114F",
+// Dynamic Themes (No Black, Flat color transitions)
+const themes = {
+  0: {
+    // Hero: Deep Navy & Cyan
+    bg: "bg-indigo-950",
+    header: "bg-indigo-900",
+    panel: "bg-indigo-900",
+    border: "border-indigo-800",
+    textAccent: "text-cyan-400",
+    bgAccent: "bg-cyan-400",
+    borderAccent: "border-cyan-400",
+    hoverBorder: "hover:border-cyan-400",
+    hoverBg: "hover:bg-cyan-400",
+    textHover: "hover:text-indigo-950",
+    textOnAccent: "text-indigo-950",
+    modalBg: "bg-indigo-950/95",
+    scrollThumb: "rgba(34,211,238,0.3)",
+    scrollThumbHover: "rgba(34,211,238,0.6)",
+  },
+  1: {
+    // Muscle: Deep Violet & Pink
+    bg: "bg-violet-950",
+    header: "bg-violet-900",
+    panel: "bg-violet-900",
+    border: "border-violet-800",
+    textAccent: "text-pink-400",
+    bgAccent: "bg-pink-400",
+    borderAccent: "border-pink-400",
+    hoverBorder: "hover:border-pink-400",
+    hoverBg: "hover:bg-pink-400",
+    textHover: "hover:text-violet-950",
+    textOnAccent: "text-violet-950",
+    modalBg: "bg-violet-950/95",
+    scrollThumb: "rgba(244,114,182,0.3)",
+    scrollThumbHover: "rgba(244,114,182,0.6)",
+  },
+  2: {
+    // Equipment: Emerald & Amber
+    bg: "bg-emerald-950",
+    header: "bg-emerald-900",
+    panel: "bg-emerald-900",
+    border: "border-emerald-800",
+    textAccent: "text-amber-400",
+    bgAccent: "bg-amber-400",
+    borderAccent: "border-amber-400",
+    hoverBorder: "hover:border-amber-400",
+    hoverBg: "hover:bg-amber-400",
+    textHover: "hover:text-emerald-950",
+    textOnAccent: "text-emerald-950",
+    modalBg: "bg-emerald-950/95",
+    scrollThumb: "rgba(251,191,36,0.3)",
+    scrollThumbHover: "rgba(251,191,36,0.6)",
+  },
+  3: {
+    // Category: Deep Rose & Orange
+    bg: "bg-rose-950",
+    header: "bg-rose-900",
+    panel: "bg-rose-900",
+    border: "border-rose-800",
+    textAccent: "text-orange-400",
+    bgAccent: "bg-orange-400",
+    borderAccent: "border-orange-400",
+    hoverBorder: "hover:border-orange-400",
+    hoverBg: "hover:bg-orange-400",
+    textHover: "hover:text-rose-950",
+    textOnAccent: "text-rose-950",
+    modalBg: "bg-rose-950/95",
+    scrollThumb: "rgba(251,146,60,0.3)",
+    scrollThumbHover: "rgba(251,146,60,0.6)",
+  },
+  4: {
+    // Difficulty: Slate Blue & Lime
+    bg: "bg-slate-900",
+    header: "bg-slate-800",
+    panel: "bg-slate-800",
+    border: "border-slate-700",
+    textAccent: "text-lime-400",
+    bgAccent: "bg-lime-400",
+    borderAccent: "border-lime-400",
+    hoverBorder: "hover:border-lime-400",
+    hoverBg: "hover:bg-lime-400",
+    textHover: "hover:text-slate-900",
+    textOnAccent: "text-slate-900",
+    modalBg: "bg-slate-900/95",
+    scrollThumb: "rgba(163,230,53,0.3)",
+    scrollThumbHover: "rgba(163,230,53,0.6)",
+  },
+  5: {
+    // Results: Royal Blue & Yellow
+    bg: "bg-blue-950",
+    header: "bg-blue-900",
+    panel: "bg-blue-900",
+    border: "border-blue-800",
+    textAccent: "text-yellow-400",
+    bgAccent: "bg-yellow-400",
+    borderAccent: "border-yellow-400",
+    hoverBorder: "hover:border-yellow-400",
+    hoverBg: "hover:bg-yellow-400",
+    textHover: "hover:text-blue-950",
+    textOnAccent: "text-blue-950",
+    modalBg: "bg-blue-950/95",
+    scrollThumb: "rgba(250,204,21,0.3)",
+    scrollThumbHover: "rgba(250,204,21,0.6)",
   },
 };
 
 const RotatingImage = ({ images = [], name, className = "" }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const intervalRef = useRef(null);
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -39,11 +130,11 @@ const RotatingImage = ({ images = [], name, className = "" }) => {
 
   useEffect(() => {
     if (images.length > 1) {
-      intervalRef.current = setInterval(() => {
+      const interval = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % images.length);
       }, 1800);
+      return () => clearInterval(interval);
     }
-    return () => clearInterval(intervalRef.current);
   }, [images.length]);
 
   return (
@@ -51,7 +142,7 @@ const RotatingImage = ({ images = [], name, className = "" }) => {
       {images.map((image, index) => (
         <div
           key={`${image}-${index}`}
-          className={`absolute inset-0 transition-opacity duration-500 ${
+          className={`absolute inset-0 transition-opacity duration-0 ${
             index === currentIndex ? "opacity-100" : "opacity-0"
           }`}
         >
@@ -66,76 +157,37 @@ const RotatingImage = ({ images = [], name, className = "" }) => {
   );
 };
 
-const SectionHeading = ({ step, title, subtitle, center = true }) => (
-  <div className={`${center ? "text-center" : "text-left"} mb-4 md:mb-5`}>
-    {step && (
-      <div className="mb-1 text-[11px] font-semibold tracking-[0.18em] text-[#22FFD1] md:text-xs">
-        {step}
-      </div>
-    )}
-    <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
-      {title}
-    </h2>
-    {subtitle && (
-      <p className="mt-2 text-sm font-medium text-[#D7E3FF] md:text-base">
-        {subtitle}
-      </p>
-    )}
-  </div>
-);
-
-const SelectionCard = ({ title, count, active, onClick }) => (
+// Flat color transition card (no lift/transform)
+const SelectionCard = ({ title, count, active, onClick, t }) => (
   <button
     onClick={onClick}
-    className={`w-full border p-4 text-left transition-all duration-200 md:p-5 ${
+    className={`w-full border-2 p-5 text-left transition-colors duration-200 ${
       active
-        ? "border-[#22FFD1] bg-[#22FFD1] text-[#04114F] shadow-[0_0_24px_rgba(34,255,209,0.18)]"
-        : "border-[#6D8DFF]/30 bg-[#1B43C4] text-white hover:border-[#22FFD1] hover:bg-[#2550E0]"
+        ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent}`
+        : `${t.border} ${t.panel} text-white ${t.hoverBorder} hover:text-white`
     }`}
   >
-    <div className="flex h-full flex-col justify-between gap-4">
-      <div>
-        <h3
-          className={`text-base font-semibold tracking-tight capitalize md:text-lg ${
-            active ? "text-[#04114F]" : "text-white"
-          }`}
-        >
-          {title}
-        </h3>
-      </div>
-
+    <div className="flex flex-col gap-4">
+      <h3
+        className={`text-xl font-bold capitalize ${active ? t.textOnAccent : "text-white"}`}
+      >
+        {title}
+      </h3>
       <div>
         <span
-          className={`inline-flex px-3 py-1 text-[11px] font-semibold ${
-            active ? "bg-[#04114F] text-[#22FFD1]" : "bg-[#0A2A9B] text-white"
-          }`}
+          className={`inline-flex px-3 py-1 text-xs font-bold uppercase tracking-widest border-2 ${
+            active ? "border-current" : t.borderAccent
+          } ${active ? t.textOnAccent : t.textAccent}`}
         >
-          {count}
+          {count} options
         </span>
       </div>
     </div>
   </button>
 );
 
-const CleanTag = ({ children, accent = false }) => (
-  <span
-    className={`px-2.5 py-1 text-[11px] font-medium capitalize ${
-      accent
-        ? "bg-[#22FFD1] text-[#04114F]"
-        : "border border-[#6D8DFF]/30 bg-[#0A2A9B] text-white"
-    }`}
-  >
-    {children}
-  </span>
-);
-
 export default function WorkoutWizard() {
-  const containerRef = useRef(null);
-  const touchStartY = useRef(null);
-
-  const [activeSection, setActiveSection] = useState(0);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
+  const [currentStep, setCurrentStep] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
 
@@ -238,113 +290,40 @@ export default function WorkoutWizard() {
 
   const currentPreview = finalExercises[activeIndex];
 
-  const maxUnlockedSection = useMemo(() => {
-    if (!muscle) return 1;
-    if (!equipment) return 2;
-    if (!category) return 3;
-    if (!level) return 4;
-    return 5;
-  }, [muscle, equipment, category, level]);
-
-  const scrollTo = (index) => {
-    const clamped = Math.max(0, Math.min(index, maxUnlockedSection));
-    const h = containerRef.current?.clientHeight || window.innerHeight;
-    containerRef.current?.scrollTo({ top: clamped * h, behavior: "smooth" });
+  const handleNext = () => {
+    setCurrentStep((prev) => prev + 1);
   };
 
-  const handleScroll = () => {
-    if (!containerRef.current) return;
-
-    const h = containerRef.current.clientHeight;
-    const rawIndex = Math.round(containerRef.current.scrollTop / h);
-    const boundedIndex = Math.min(rawIndex, maxUnlockedSection);
-
-    if (rawIndex > maxUnlockedSection) {
-      containerRef.current.scrollTo({
-        top: maxUnlockedSection * h,
-        behavior: "auto",
-      });
-      setActiveSection(maxUnlockedSection);
-      return;
-    }
-
-    setActiveSection(boundedIndex);
+  const resetWizard = () => {
+    setMuscle(null);
+    setEquipment(null);
+    setCategory(null);
+    setLevel(null);
+    setActiveIndex(0);
+    setCurrentStep(0);
   };
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const h = containerRef.current.clientHeight;
-    const currentIndex = Math.round(containerRef.current.scrollTop / h);
-    if (currentIndex > maxUnlockedSection) {
-      containerRef.current.scrollTo({
-        top: maxUnlockedSection * h,
-        behavior: "smooth",
-      });
-      setActiveSection(maxUnlockedSection);
-    }
-  }, [maxUnlockedSection]);
+  const handleSelectMuscle = (selected) => {
+    setMuscle(selected);
+    setEquipment(null);
+    setCategory(null);
+    setLevel(null);
+  };
 
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+  const handleSelectEquipment = (item) => {
+    setEquipment(item);
+    setCategory(null);
+    setLevel(null);
+  };
 
-    const canScrollInner = (target, deltaY) => {
-      const scrollable = target.closest(".section-scroll");
-      if (!scrollable) return false;
+  const handleSelectCategory = (cat) => {
+    setCategory(cat);
+    setLevel(null);
+  };
 
-      const { scrollTop, scrollHeight, clientHeight } = scrollable;
-      const atTop = scrollTop <= 0;
-      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
-
-      if (deltaY > 0 && !atBottom) return true;
-      if (deltaY < 0 && !atTop) return true;
-      return false;
-    };
-
-    const onWheel = (e) => {
-      if (canScrollInner(e.target, e.deltaY)) return;
-
-      const goingDown = e.deltaY > 0;
-      const goingUp = e.deltaY < 0;
-
-      if (goingDown && activeSection >= maxUnlockedSection) {
-        e.preventDefault();
-        return;
-      }
-
-      if (goingUp && activeSection <= 0) {
-        e.preventDefault();
-      }
-    };
-
-    const onTouchStart = (e) => {
-      touchStartY.current = e.touches[0].clientY;
-    };
-
-    const onTouchMove = (e) => {
-      const scrollable = e.target.closest(".section-scroll");
-      if (scrollable) return;
-
-      if (touchStartY.current == null) return;
-      const currentY = e.touches[0].clientY;
-      const delta = touchStartY.current - currentY;
-      const goingDown = delta > 0.5;
-
-      if (goingDown && activeSection >= maxUnlockedSection) {
-        e.preventDefault();
-      }
-    };
-
-    el.addEventListener("wheel", onWheel, { passive: false });
-    el.addEventListener("touchstart", onTouchStart, { passive: true });
-    el.addEventListener("touchmove", onTouchMove, { passive: false });
-
-    return () => {
-      el.removeEventListener("wheel", onWheel);
-      el.removeEventListener("touchstart", onTouchStart);
-      el.removeEventListener("touchmove", onTouchMove);
-    };
-  }, [activeSection, maxUnlockedSection]);
+  const handleSelectLevel = (lvl) => {
+    setLevel(lvl);
+  };
 
   const toggleRoutine = (ex) => {
     setRoutine((prev) =>
@@ -354,20 +333,10 @@ export default function WorkoutWizard() {
     );
   };
 
-  const resetWizard = () => {
-    setMuscle(null);
-    setEquipment(null);
-    setCategory(null);
-    setLevel(null);
-    setActiveIndex(0);
-    scrollTo(0);
-  };
-
   const exportRoutineCSV = () => {
     if (!routine.length) return;
-
     const rows = [
-      ["Name", "Equipment", "Category", "Difficulty", "Primary Muscles"],
+      ["Name", "Equipment", "Type", "Difficulty", "Primary Muscles"],
       ...routine.map((ex) => [
         ex.name || "",
         ex.equipment || "",
@@ -376,18 +345,16 @@ export default function WorkoutWizard() {
         (ex.primaryMuscles || []).join(", "),
       ]),
     ];
-
     const csv = rows
       .map((row) =>
         row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
       )
       .join("\n");
-
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "notrainer-routine.csv");
+    link.setAttribute("download", "workout-routine.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -396,10 +363,14 @@ export default function WorkoutWizard() {
 
   const breadcrumbText = [muscle, equipment, category, level]
     .filter(Boolean)
-    .join(" > ");
+    .join(" / ");
+
+  const t = themes[currentStep] || themes[0];
 
   return (
-    <div className="relative w-full overflow-hidden bg-[#04114F] text-white h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)]">
+    <div
+      className={`relative flex h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)] w-full flex-col ${t.bg} text-white overflow-hidden transition-colors duration-500`}
+    >
       <style>{`
         .anatomy-svg-wrapper svg {
           width: 100% !important;
@@ -410,528 +381,462 @@ export default function WorkoutWizard() {
           margin: 0 auto;
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .wizard-panel {
-          height: calc(100dvh - 40px);
-          min-height: calc(100dvh - 40px);
-          scroll-snap-align: start;
-          overflow: hidden;
+        /* Custom Sharp Scrollbars */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
         }
-
-        @media (min-width: 768px) {
-          .wizard-panel {
-            height: calc(100dvh - 48px);
-            min-height: calc(100dvh - 48px);
-          }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: ${t.scrollThumb};
+          border-radius: 0px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: ${t.scrollThumbHover};
         }
       `}</style>
 
-      <div className="pointer-events-none fixed left-0 right-0 top-0 z-[60] h-20 bg-gradient-to-b from-[#04114F] via-[#04114F]/90 to-transparent" />
+      {/* HEADER (Hidden on Hero Step) */}
+      {currentStep > 0 && (
+        <header
+          className={`flex h-16 shrink-0 items-center justify-between border-b-2 ${t.border} ${t.header} px-6 transition-colors duration-500`}
+        >
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold uppercase tracking-widest text-white">
+              Workout <span className={t.textAccent}>Wizard</span>
+            </h1>
+            {breadcrumbText && (
+              <span className="hidden text-sm font-bold text-white/60 md:block">
+                {breadcrumbText}
+              </span>
+            )}
+          </div>
 
-      <div className="fixed left-0 right-0 top-14 z-[80] px-3 md:top-16 md:px-6">
-        <div className="mx-auto flex max-w-7xl items-start justify-end gap-3">
-          <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={resetWizard}
+              className={`flex items-center gap-2 border-2 ${t.border} ${t.panel} px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition-colors ${t.hoverBorder}`}
+            >
+              <RotateCcw size={14} />
+              <span className="hidden sm:inline">Reset</span>
+            </button>
             <button
               onClick={() => setIsRoutineModalOpen(true)}
-              className="flex items-center gap-2 bg-[#22FFD1] px-4 py-3 text-[11px] font-black tracking-[0.16em] text-[#04114F] transition-all hover:bg-[#54FFDC] md:px-5"
+              className={`flex items-center gap-2 ${t.bgAccent} px-4 py-2 text-xs font-bold uppercase tracking-widest ${t.textOnAccent} border-2 ${t.borderAccent} transition-colors hover:bg-white hover:border-white`}
             >
-              <LayoutList size={16} />
+              <LayoutList size={14} />
               Routine ({routine.length})
             </button>
-
-            {breadcrumbText && (
-              <div className="hidden items-center bg-[#1B43C4] px-4 py-3 text-[11px] font-semibold text-white xl:flex">
-                <span className="capitalize">{breadcrumbText}</span>
-              </div>
-            )}
-
-            {activeSection > 0 && (
-              <button
-                onClick={resetWizard}
-                className="flex items-center gap-2 border border-[#22FFD1]/30 bg-[#16359E] px-4 py-3 text-[11px] font-black tracking-[0.16em] text-white transition-all hover:border-[#22FFD1] hover:bg-[#1B43C4] md:px-5"
-              >
-                <RotateCcw size={16} />
-                Reset
-              </button>
-            )}
           </div>
-        </div>
-      </div>
+        </header>
+      )}
 
-      <AnimatePresence>
-        {highlightedMuscle && (
+      {/* MAIN CONTENT AREA */}
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <AnimatePresence mode="wait">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, x: mousePos.x + 18, y: mousePos.y - 28 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed z-[100] hidden bg-[#22FFD1] px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-[#04114F] shadow-xl md:block"
+            key={currentStep}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="flex h-full w-full flex-col"
           >
-            {highlightedMuscle}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {/* STEP 0: HERO */}
+            {/* STEP 0: HERO */}
+            {currentStep === 0 && (
+              <div className="relative flex h-full flex-col items-center justify-center p-6 text-center">
+                <div className="absolute right-6 top-6 z-10">
+                  <button
+                    onClick={() => setIsRoutineModalOpen(true)}
+                    className={`flex items-center gap-2 border-2 ${t.border} ${t.panel} px-4 py-3 text-xs font-bold uppercase tracking-widest text-white transition-colors ${t.hoverBorder}`}
+                  >
+                    <LayoutList size={14} />
+                    Routine ({routine.length})
+                  </button>
+                </div>
 
-      <div
-        ref={containerRef}
-        onScroll={handleScroll}
-        onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
-        className="no-scrollbar h-full w-full snap-y snap-mandatory overflow-y-auto scroll-smooth"
-      >
-        {/* HERO */}
-        <section className="wizard-panel relative flex items-center justify-center bg-[#04114F] px-4">
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute left-[-10%] top-[-10%] h-[420px] w-[420px] bg-[#0A2A9B] blur-[130px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] h-[320px] w-[320px] bg-[#22FFD1] opacity-25 blur-[120px]" />
-          </div>
+                <div className="flex flex-col items-center justify-center w-full max-w-3xl">
+                  <h1 className="text-6xl font-black uppercase tracking-widest text-white sm:text-7xl md:text-8xl">
+                    Workout
+                    <br />
+                    <span className={t.textAccent}>Wizard</span>
+                  </h1>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center"
-          >
-            <h1 className="text-5xl font-black uppercase tracking-tighter text-white sm:text-6xl md:text-8xl">
-              Workout <span className="text-[#22FFD1]">Wizard</span>
-            </h1>
+                  <p className="mt-8 text-lg font-bold text-white/60 uppercase tracking-widest">
+                    Find the right exercises for you
+                  </p>
 
-            <div className="mt-4 h-1.5 w-20 bg-[#22FFD1]" />
-
-            <p className="mt-6 max-w-xl text-sm font-semibold text-[#D7E3FF] sm:text-base md:text-lg">
-              Choose your target and get matching workouts
-            </p>
-          </motion.div>
-
-          <button
-            onClick={() => scrollTo(1)}
-            className="absolute bottom-6 flex flex-col items-center gap-2 text-[#22FFD1] transition-colors hover:text-white md:bottom-8"
-          >
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] md:text-xs">
-              Start
-            </span>
-            <ChevronDown size={28} className="animate-bounce" />
-          </button>
-        </section>
-
-        {/* MUSCLE */}
-        <section className="wizard-panel relative bg-[#0A2A9B] px-4 pt-20 pb-4 md:px-6 md:pt-24">
-          <div className="absolute inset-0 bg-[#0A2A9B]" />
-          <div className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 bg-[#22FFD1] opacity-10 blur-[140px]" />
-
-          <div className="relative z-10 flex h-full flex-col overflow-hidden">
-            <SectionHeading
-              step="STEP 1"
-              title={
-                <>
-                  Select a <span className="text-[#22FFD1]">Muscle</span>
-                </>
-              }
-            />
-
-            <div className="mb-3 flex justify-center gap-3">
-              {["front", "back"].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`min-w-[120px] px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] transition-all md:text-xs ${
-                    view === v
-                      ? "bg-[#22FFD1] text-[#04114F]"
-                      : "border border-white/15 bg-[#1B43C4] text-white hover:border-[#22FFD1]"
-                  }`}
-                >
-                  {v} view
-                </button>
-              ))}
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-hidden">
-              <div className="anatomy-svg-wrapper flex h-full w-full items-center justify-center overflow-hidden">
-                <div className="flex h-full w-full items-center justify-center scale-[0.94] sm:scale-[0.98] md:scale-[1.04]">
-                  {view === "front" ? (
-                    <FrontView
-                      onSelect={(selected) => {
-                        setMuscle(selected);
-                        setEquipment(null);
-                        setCategory(null);
-                        setLevel(null);
-                        setTimeout(() => scrollTo(2), 150);
-                      }}
-                      selectedMuscle={muscle}
-                      onHover={setHighlightedMuscle}
-                      onLeave={() => setHighlightedMuscle(null)}
-                    />
-                  ) : (
-                    <BackView
-                      onSelect={(selected) => {
-                        setMuscle(selected);
-                        setEquipment(null);
-                        setCategory(null);
-                        setLevel(null);
-                        setTimeout(() => scrollTo(2), 150);
-                      }}
-                      selectedMuscle={muscle}
-                      onHover={setHighlightedMuscle}
-                      onLeave={() => setHighlightedMuscle(null)}
-                    />
-                  )}
+                  <button
+                    onClick={handleNext}
+                    className={`mt-16 flex w-full max-w-sm items-center justify-center gap-4 border-2 ${t.borderAccent} py-5 text-xl font-black uppercase tracking-widest ${t.textAccent} transition-colors hover:${t.bgAccent} hover:${t.textOnAccent}`}
+                  >
+                    Start <ArrowRight size={24} strokeWidth={3} />
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
+            )}
 
-        {/* EQUIPMENT */}
-        <section
-          className={`wizard-panel relative bg-[#04114F] px-4 pt-20 pb-4 transition-opacity duration-500 md:px-6 md:pt-24 ${
-            muscle ? "opacity-100" : "pointer-events-none opacity-30"
-          }`}
-        >
-          <div className="absolute inset-0 bg-[#04114F]" />
-          <div className="absolute left-0 top-0 h-[380px] w-[700px] bg-[#1B43C4] opacity-70 blur-[150px]" />
+            {/* STEP 1: MUSCLE */}
+            {currentStep === 1 && (
+              <div className="flex h-full flex-col p-6">
+                <div className="mb-6 flex flex-col items-center shrink-0">
+                  <h2 className="text-3xl font-black uppercase tracking-wide text-white">
+                    Select a Target
+                  </h2>
+                  <div className="mt-6 flex gap-3">
+                    {["front", "back"].map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setView(v)}
+                        className={`border-2 px-8 py-3 text-sm font-bold uppercase tracking-widest transition-colors ${
+                          view === v
+                            ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent}`
+                            : `${t.border} ${t.panel} text-white ${t.hoverBorder} hover:text-white`
+                        }`}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-          <div className="relative z-10 flex h-full flex-col overflow-hidden">
-            <SectionHeading
-              step="STEP 2"
-              title={
-                <>
-                  Select <span className="text-[#22FFD1]">Equipment</span>
-                </>
-              }
-            />
+                <div className="min-h-0 flex-1 overflow-hidden">
+                  <div className="anatomy-svg-wrapper flex h-full w-full items-center justify-center overflow-hidden">
+                    <div className="flex h-full w-full items-center justify-center scale-[0.94] sm:scale-[0.98] md:scale-[1.04]">
+                      {view === "front" ? (
+                        <FrontView
+                          onSelect={handleSelectMuscle}
+                          selectedMuscle={muscle}
+                          onHover={setHighlightedMuscle}
+                          onLeave={() => setHighlightedMuscle(null)}
+                        />
+                      ) : (
+                        <BackView
+                          onSelect={handleSelectMuscle}
+                          selectedMuscle={muscle}
+                          onHover={setHighlightedMuscle}
+                          onLeave={() => setHighlightedMuscle(null)}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-            <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
-              <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
-                {availableEquipment.map((item) => {
-                  const isActive = equipment === item;
-
-                  return (
-                    <SelectionCard
-                      key={item}
-                      title={item}
-                      count={`${equipmentCounts[item]} exercises`}
-                      active={isActive}
-                      onClick={() => {
-                        setEquipment(item);
-                        setCategory(null);
-                        setLevel(null);
-                        setTimeout(() => scrollTo(3), 150);
-                      }}
-                    />
-                  );
-                })}
+                <div className="mt-6 flex justify-center shrink-0">
+                  <button
+                    onClick={handleNext}
+                    disabled={!muscle}
+                    className={`flex w-full max-w-md items-center justify-center gap-3 border-2 p-5 text-base font-bold uppercase tracking-widest transition-colors ${
+                      muscle
+                        ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} hover:bg-white hover:border-white`
+                        : `cursor-not-allowed ${t.border} ${t.panel} text-white/40`
+                    }`}
+                  >
+                    Next Step <ArrowRight size={20} />
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
-        </section>
+            )}
 
-        {/* CATEGORY */}
-        <section
-          className={`wizard-panel relative bg-[#0A2A9B] px-4 pt-20 pb-4 transition-opacity duration-500 md:px-6 md:pt-24 ${
-            equipment ? "opacity-100" : "pointer-events-none opacity-30"
-          }`}
-        >
-          <div className="absolute inset-0 bg-[#0A2A9B]" />
-          <div className="absolute left-1/2 top-0 h-[380px] w-[800px] -translate-x-1/2 bg-[#22FFD1] opacity-10 blur-[150px]" />
-
-          <div className="relative z-10 flex h-full flex-col overflow-hidden">
-            <SectionHeading
-              step="STEP 3"
-              title={
-                <>
-                  Select <span className="text-[#22FFD1]">Category</span>
-                </>
-              }
-            />
-
-            <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
-              <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
-                {availableCategories.map((cat) => (
-                  <SelectionCard
-                    key={cat}
-                    title={cat}
-                    count={`${categoryCounts[cat]}`}
-                    active={category === cat}
-                    onClick={() => {
-                      setCategory(cat);
-                      setLevel(null);
-                      setTimeout(() => scrollTo(4), 150);
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* DIFFICULTY */}
-        <section
-          className={`wizard-panel relative bg-[#04114F] px-4 pt-20 pb-4 transition-opacity duration-500 md:px-6 md:pt-24 ${
-            category ? "opacity-100" : "pointer-events-none opacity-30"
-          }`}
-        >
-          <div className="absolute inset-0 bg-[#04114F]" />
-          <div className="absolute right-0 top-0 h-[340px] w-[700px] bg-[#1B43C4] opacity-70 blur-[150px]" />
-
-          <div className="relative z-10 flex h-full flex-col overflow-hidden">
-            <SectionHeading
-              step="STEP 4"
-              title={
-                <>
-                  Select <span className="text-[#22FFD1]">Difficulty</span>
-                </>
-              }
-            />
-
-            <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
-              <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 md:grid-cols-2">
-                {availableLevels.map((lvl) => (
-                  <SelectionCard
-                    key={lvl}
-                    title={lvl}
-                    count={`${levelCounts[lvl]}`}
-                    active={level === lvl}
-                    onClick={() => {
-                      setLevel(lvl);
-                      setTimeout(() => scrollTo(5), 150);
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* EXERCISES */}
-        <section
-          className={`wizard-panel relative bg-[#04114F] transition-opacity duration-500 ${
-            level ? "opacity-100" : "pointer-events-none opacity-40"
-          }`}
-        >
-          <div className="absolute inset-0 bg-[#04114F]" />
-          <div className="absolute bottom-0 right-0 h-[340px] w-[700px] bg-[#1B43C4] opacity-70 blur-[150px]" />
-
-          <div className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden pt-16 md:pt-20">
-            <div className="shrink-0 border-b border-white/10 bg-[#04114F] px-4 py-5 md:px-8 md:py-6">
-              <div className="flex flex-col items-center justify-center text-center">
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-                  {finalExercises.length} workouts found
+            {/* STEP 2: EQUIPMENT */}
+            {currentStep === 2 && (
+              <div className="mx-auto flex h-full w-full max-w-4xl flex-col p-6">
+                <h2 className="mb-8 text-3xl font-black uppercase tracking-wide text-white text-center shrink-0">
+                  Select Equipment
                 </h2>
+                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto pr-3">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {availableEquipment.map((item) => (
+                      <SelectionCard
+                        key={item}
+                        title={item}
+                        count={equipmentCounts[item]}
+                        active={equipment === item}
+                        onClick={() => handleSelectEquipment(item)}
+                        t={t}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-8 shrink-0">
+                  <button
+                    onClick={handleNext}
+                    disabled={!equipment}
+                    className={`flex w-full items-center justify-center gap-3 border-2 p-5 text-base font-bold uppercase tracking-widest transition-colors ${
+                      equipment
+                        ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} hover:bg-white hover:border-white`
+                        : `cursor-not-allowed ${t.border} ${t.panel} text-white/40`
+                    }`}
+                  >
+                    Next Step <ArrowRight size={20} />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="min-h-0 flex-1 overflow-hidden">
-              <div className="section-scroll no-scrollbar h-full overflow-y-auto px-3 py-3 md:px-6 md:py-5">
-                <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 lg:grid-cols-2">
-                  {finalExercises.map((ex, idx) => {
-                    const added = routine.some((r) => r.id === ex.id);
+            {/* STEP 3: CATEGORY */}
+            {currentStep === 3 && (
+              <div className="mx-auto flex h-full w-full max-w-4xl flex-col p-6">
+                <h2 className="mb-8 text-3xl font-black uppercase tracking-wide text-white text-center shrink-0">
+                  Select Type
+                </h2>
+                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto pr-3">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {availableCategories.map((cat) => (
+                      <SelectionCard
+                        key={cat}
+                        title={cat}
+                        count={categoryCounts[cat]}
+                        active={category === cat}
+                        onClick={() => handleSelectCategory(cat)}
+                        t={t}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-8 shrink-0">
+                  <button
+                    onClick={handleNext}
+                    disabled={!category}
+                    className={`flex w-full items-center justify-center gap-3 border-2 p-5 text-base font-bold uppercase tracking-widest transition-colors ${
+                      category
+                        ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} hover:bg-white hover:border-white`
+                        : `cursor-not-allowed ${t.border} ${t.panel} text-white/40`
+                    }`}
+                  >
+                    Next Step <ArrowRight size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
 
-                    return (
+            {/* STEP 4: DIFFICULTY */}
+            {currentStep === 4 && (
+              <div className="mx-auto flex h-full w-full max-w-4xl flex-col p-6">
+                <h2 className="mb-8 text-3xl font-black uppercase tracking-wide text-white text-center shrink-0">
+                  Select Difficulty
+                </h2>
+                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto pr-3">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {availableLevels.map((lvl) => (
+                      <SelectionCard
+                        key={lvl}
+                        title={lvl}
+                        count={levelCounts[lvl]}
+                        active={level === lvl}
+                        onClick={() => handleSelectLevel(lvl)}
+                        t={t}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-8 shrink-0">
+                  <button
+                    onClick={handleNext}
+                    disabled={!level}
+                    className={`flex w-full items-center justify-center gap-3 border-2 p-5 text-base font-bold uppercase tracking-widest transition-colors ${
+                      level
+                        ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} hover:bg-white hover:border-white`
+                        : `cursor-not-allowed ${t.border} ${t.panel} text-white/40`
+                    }`}
+                  >
+                    Show Workouts <ArrowRight size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: RESULTS */}
+            {currentStep === 5 && (
+              <div className="mx-auto flex h-full w-full max-w-5xl flex-col p-6">
+                <div className="mb-8 flex items-center justify-between shrink-0">
+                  <h2 className="text-3xl font-black uppercase tracking-wide text-white">
+                    Your Workouts{" "}
+                    <span className={t.textAccent}>
+                      ({finalExercises.length})
+                    </span>
+                  </h2>
+                </div>
+                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto pr-3">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                    {finalExercises.map((ex, idx) => (
                       <button
                         key={ex.id}
                         onClick={() => {
                           setActiveIndex(idx);
                           setIsModalOpen(true);
                         }}
-                        className="border border-[#6D8DFF]/30 bg-[#1B43C4] p-5 text-left transition-all hover:border-[#22FFD1] hover:bg-[#2550E0]"
+                        className={`flex min-h-[110px] flex-col justify-center border-2 ${t.border} ${t.panel} p-6 text-left transition-colors ${t.hoverBorder} hover:text-white`}
                       >
-                        <div className="flex h-full flex-col gap-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0">
-                              <div className="mb-2 text-[11px] font-semibold tracking-[0.16em] text-[#22FFD1]">
-                                {(idx + 1).toString().padStart(2, "0")}
-                              </div>
-                              <h3 className="line-clamp-2 text-lg font-semibold tracking-tight text-white">
-                                {ex.name}
-                              </h3>
-                            </div>
-
-                            {added && (
-                              <span className="shrink-0 bg-[#22FFD1] px-3 py-1 text-[10px] font-semibold text-[#04114F]">
-                                Added
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            {ex.equipment && (
-                              <CleanTag>{ex.equipment}</CleanTag>
-                            )}
-                            {ex.category && <CleanTag>{ex.category}</CleanTag>}
-                            {ex.level && <CleanTag accent>{ex.level}</CleanTag>}
-                          </div>
-
-                          <div className="mt-auto border-t border-white/10 pt-3">
-                            <span className="text-sm font-medium text-slate-100">
-                              View exercise
-                            </span>
-                          </div>
-                        </div>
+                        <h3 className="text-lg font-bold text-white">
+                          {ex.name}
+                        </h3>
                       </button>
-                    );
-                  })}
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      {/* PREVIEW MODAL - Switched to Absolute inset-0 */}
+      <AnimatePresence>
+        {isModalOpen && currentPreview && (
+          <div
+            className={`absolute inset-0 z-50 flex items-center justify-center ${t.modalBg} p-4 md:p-8 backdrop-blur-md`}
+          >
+            <div
+              className={`relative flex h-full w-full max-w-6xl flex-col border-2 ${t.borderAccent} ${t.bg} md:flex-row shadow-2xl overflow-hidden`}
+            >
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className={`absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center border-2 ${t.border} ${t.panel} text-white transition-colors ${t.hoverBorder} ${t.hoverBg} ${t.textHover}`}
+              >
+                <X size={18} strokeWidth={3} />
+              </button>
+
+              <div
+                className={`flex h-[40%] w-full items-center justify-center border-b-2 ${t.border} ${t.panel} p-6 md:h-full md:w-1/2 md:border-b-0 md:border-r-2 shrink-0`}
+              >
+                <div className="relative flex h-full w-full max-w-md items-center justify-center">
+                  <RotatingImage
+                    images={currentPreview.images}
+                    name={currentPreview.name}
+                  />
+                </div>
+              </div>
+
+              <div className="flex min-h-0 flex-1 flex-col md:w-1/2">
+                <div className={`border-b-2 ${t.border} p-6 pr-16 shrink-0`}>
+                  <h3 className="text-3xl font-black uppercase tracking-wide text-white">
+                    {currentPreview.name}
+                  </h3>
+                  <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold text-white/60 uppercase tracking-widest">
+                    <span>{currentPreview.equipment}</span>
+                    <span>•</span>
+                    <span>{currentPreview.category}</span>
+                    <span>•</span>
+                    <span className={t.textAccent}>{currentPreview.level}</span>
+                  </div>
+                </div>
+
+                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-6 md:p-8">
+                  <div className="mb-10">
+                    <h4
+                      className={`mb-4 text-sm font-black uppercase tracking-widest ${t.textAccent}`}
+                    >
+                      Target Muscles
+                    </h4>
+                    <div className="flex flex-wrap gap-3">
+                      {currentPreview.primaryMuscles?.map((m) => (
+                        <span
+                          key={m}
+                          className={`border-2 ${t.border} ${t.panel} px-4 py-2 text-xs font-bold uppercase tracking-widest text-white`}
+                        >
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4
+                      className={`mb-5 text-sm font-black uppercase tracking-widest ${t.textAccent}`}
+                    >
+                      Instructions
+                    </h4>
+                    <div className="space-y-6">
+                      {currentPreview.instructions?.map((step, i) => (
+                        <div key={i} className="flex gap-5">
+                          <span
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 ${t.borderAccent} ${t.bgAccent} text-sm font-black ${t.textOnAccent}`}
+                          >
+                            {i + 1}
+                          </span>
+                          <p className="text-base font-medium leading-relaxed text-white/80 pt-1">
+                            {step}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`border-t-2 ${t.border} p-6 shrink-0`}>
+                  <button
+                    onClick={() => toggleRoutine(currentPreview)}
+                    className={`w-full border-2 p-5 text-sm font-black uppercase tracking-widest transition-colors ${
+                      routine.some((r) => r.id === currentPreview.id)
+                        ? "border-red-500 bg-transparent text-red-500 hover:bg-red-500 hover:text-white"
+                        : `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} hover:bg-white hover:border-white hover:text-black`
+                    }`}
+                  >
+                    {routine.some((r) => r.id === currentPreview.id)
+                      ? "Remove from Routine"
+                      : "Add to Routine"}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
+        )}
+      </AnimatePresence>
 
-          {isModalOpen && currentPreview && (
-            <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#04114F]/90 p-3 backdrop-blur-sm md:p-6">
-              <div className="relative flex h-[92dvh] w-full max-w-6xl flex-col overflow-hidden border border-white/10 bg-[#04114F] md:h-[88dvh] md:flex-row">
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center border border-white/10 bg-[#1B43C4] text-white transition-all hover:border-[#22FFD1] hover:text-[#22FFD1]"
-                >
-                  <X size={18} />
-                </button>
-
-                <div className="flex h-[38%] w-full items-center justify-center border-b border-white/10 bg-[#0A2A9B] p-4 md:h-full md:w-1/2 md:border-b-0 md:border-r md:p-8">
-                  <div className="relative flex h-full w-full max-w-md items-center justify-center">
-                    <RotatingImage
-                      images={currentPreview.images}
-                      name={currentPreview.name}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex min-h-0 h-[62%] w-full flex-col bg-[#04114F] md:h-full md:w-1/2">
-                  <div className="shrink-0 border-b border-white/10 px-5 py-5 pr-16 md:px-8 md:py-6">
-                    <h3 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-                      {currentPreview.name}
-                    </h3>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {currentPreview.equipment && (
-                        <CleanTag>{currentPreview.equipment}</CleanTag>
-                      )}
-                      {currentPreview.category && (
-                        <CleanTag>{currentPreview.category}</CleanTag>
-                      )}
-                      {currentPreview.level && (
-                        <CleanTag accent>{currentPreview.level}</CleanTag>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-8 md:py-6">
-                    <div>
-                      <p className="mb-3 text-[11px] font-semibold text-[#22FFD1]">
-                        Primary muscles
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {currentPreview.primaryMuscles?.map((m) => (
-                          <span
-                            key={m}
-                            className="border border-[#6D8DFF]/30 bg-[#1B43C4] px-3 py-2 text-[11px] font-medium capitalize text-white"
-                          >
-                            {m}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-8">
-                      <p className="mb-4 text-[11px] font-semibold text-[#22FFD1]">
-                        Instructions
-                      </p>
-                      <div className="space-y-4">
-                        {currentPreview.instructions?.map((step, i) => (
-                          <div key={i} className="flex gap-3 md:gap-4">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-[#22FFD1] text-[11px] font-semibold text-[#04114F] md:h-8 md:w-8">
-                              {i + 1}
-                            </span>
-                            <p className="pt-0.5 text-sm leading-relaxed text-slate-200 md:text-[15px]">
-                              {step}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="shrink-0 border-t border-white/10 bg-[#04114F] p-5 md:p-6">
-                    <button
-                      onClick={() => toggleRoutine(currentPreview)}
-                      className={`w-full py-4 text-sm font-semibold transition-all ${
-                        routine.some((r) => r.id === currentPreview.id)
-                          ? "border border-red-400 bg-transparent text-red-400 hover:bg-red-500/10"
-                          : "bg-[#22FFD1] text-[#04114F] hover:bg-[#54FFDC]"
-                      }`}
-                    >
-                      {routine.some((r) => r.id === currentPreview.id)
-                        ? "Remove from routine"
-                        : "Add to routine"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-      </div>
-
+      {/* ROUTINE MODAL - Switched to Absolute inset-0 */}
       <AnimatePresence>
         {isRoutineModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[220] flex items-center justify-center bg-[#04114F]/95 p-3 backdrop-blur-sm md:p-6"
+          <div
+            className={`absolute inset-0 z-50 flex items-center justify-center ${t.modalBg} p-4 md:p-8 backdrop-blur-md`}
           >
-            <div className="flex h-[90dvh] w-full max-w-2xl flex-col border border-white/10 bg-[#04114F] md:h-[80dvh]">
-              <div className="flex items-center justify-between border-b border-white/10 bg-[#0A2A9B] px-5 py-5 md:px-8">
-                <div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight text-white md:text-3xl">
-                    My <span className="text-[#22FFD1]">Routine</span>
-                  </h2>
-                </div>
-
-                <div className="flex items-center gap-2 md:gap-4">
+            <div
+              className={`flex h-full w-full max-w-3xl flex-col border-2 ${t.borderAccent} ${t.bg} shadow-2xl overflow-hidden`}
+            >
+              <div
+                className={`flex items-center justify-between border-b-2 ${t.border} ${t.panel} p-6 shrink-0`}
+              >
+                <h2 className="text-3xl font-black uppercase tracking-wide text-white">
+                  My Routine
+                </h2>
+                <div className="flex items-center gap-6">
                   <button
                     onClick={() => setRoutine([])}
-                    className="text-[10px] font-black uppercase tracking-[0.18em] text-red-400 transition-colors hover:text-white md:text-xs"
+                    className="text-xs font-bold uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors"
                   >
-                    Clear all
+                    Clear All
                   </button>
                   <button
                     onClick={() => setIsRoutineModalOpen(false)}
-                    className="flex h-10 w-10 items-center justify-center bg-[#22FFD1] text-[#04114F]"
+                    className={`flex h-10 w-10 items-center justify-center border-2 ${t.border} text-white transition-colors ${t.hoverBorder} ${t.hoverBg} ${t.textHover}`}
                   >
-                    <X size={18} />
+                    <X size={18} strokeWidth={3} />
                   </button>
                 </div>
               </div>
 
-              <div className="section-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto bg-[#04114F] p-4 md:p-6">
+              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-6 md:p-8">
                 {routine.length === 0 ? (
-                  <div className="flex h-full flex-col items-center justify-center text-center">
-                    <p className="text-sm font-black uppercase tracking-[0.18em] text-slate-300 md:text-base">
-                      No routine items yet
-                    </p>
+                  <div className="flex h-full items-center justify-center text-sm font-bold uppercase tracking-widest text-white/40">
+                    Your routine is empty
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {routine.map((ex) => (
                       <div
                         key={ex.id}
-                        className="flex items-center justify-between border border-[#6D8DFF]/30 bg-[#1B43C4] p-4 md:p-5"
+                        className={`flex items-center justify-between border-2 ${t.border} ${t.panel} p-6 transition-colors hover:${t.borderAccent}`}
                       >
-                        <div className="min-w-0">
-                          <span className="block truncate text-sm font-black uppercase tracking-tight text-white md:text-base">
+                        <div className="min-w-0 pr-4">
+                          <h3 className="truncate text-lg font-bold text-white">
                             {ex.name}
-                          </span>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {ex.equipment && (
-                              <CleanTag>{ex.equipment}</CleanTag>
-                            )}
-                            {ex.category && <CleanTag>{ex.category}</CleanTag>}
-                            {ex.level && <CleanTag accent>{ex.level}</CleanTag>}
-                          </div>
+                          </h3>
                         </div>
-
                         <button
                           onClick={() => toggleRoutine(ex)}
-                          className="ml-4 flex h-10 w-10 shrink-0 items-center justify-center border border-red-400 text-red-400 transition-all hover:bg-red-500/10"
+                          className="ml-4 flex h-12 w-12 shrink-0 items-center justify-center border-2 border-red-500 text-red-500 transition-colors hover:bg-red-500 hover:text-white"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -941,17 +846,22 @@ export default function WorkoutWizard() {
                 )}
               </div>
 
-              <div className="border-t border-white/10 bg-[#04114F] p-4 md:p-6">
+              <div className={`border-t-2 ${t.border} ${t.panel} p-6 shrink-0`}>
                 <button
                   onClick={exportRoutineCSV}
-                  className="flex w-full items-center justify-center gap-2 bg-[#22FFD1] py-4 text-[11px] font-black uppercase tracking-[0.2em] text-[#04114F] transition-all hover:bg-[#54FFDC] md:text-xs"
+                  disabled={routine.length === 0}
+                  className={`flex w-full items-center justify-center gap-3 border-2 p-5 text-sm font-black uppercase tracking-widest transition-colors ${
+                    routine.length === 0
+                      ? `border-transparent bg-white/5 text-white/30 cursor-not-allowed`
+                      : `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} hover:bg-white hover:border-white hover:text-black`
+                  }`}
                 >
-                  <Download size={16} />
-                  Export routine (.csv)
+                  <Download size={18} strokeWidth={3} />
+                  Export CSV
                 </button>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
