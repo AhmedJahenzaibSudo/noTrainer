@@ -27,34 +27,34 @@ import FrontView from "@/components/anatomy/FrontView";
 const config = {
   sections: {
     hero: {
-      bg: "#0F172A",
-      accent: "#22D3EE",
-      textAccent: "#22D3EE",
-      cardBg: "#FACC15",
-      cardText: "#0F172A",
+      bg: "#1E3A8A",
+      accent: "#38BDF8",
+      textAccent: "#38BDF8",
+      cardBg: "#FDE047",
+      cardText: "#1E293B",
     },
     muscle: {
-      bg: "#3B0764",
-      accent: "#FF4D8D",
-      textAccent: "#FF4D8D",
-      cardBg: "#FDE68A",
-      cardText: "#2A0447",
+      bg: "#6B21A8",
+      accent: "#FB7185",
+      textAccent: "#FB7185",
+      cardBg: "#FEF08A",
+      cardText: "#581C87",
     },
     problems: {
-      bg: "#052E2B",
-      accent: "#A3E635",
-      textAccent: "#A3E635",
-      cardBg: "#FDE68A",
-      cardText: "#052E2B",
-      buttonBg: "#0B4945",
-      buttonHover: "#11615C",
+      bg: "#047857",
+      accent: "#BEF264",
+      textAccent: "#BEF264",
+      cardBg: "#FEF08A",
+      cardText: "#064E3B",
+      buttonBg: "#047857",
+      buttonHover: "#059669",
     },
     features: {
-      bg: "#1E1B4B",
-      accent: "#C084FC",
-      textAccent: "#C084FC",
-      cardBg: "#22D3EE",
-      cardText: "#1E1B4B",
+      bg: "#4C1D95",
+      accent: "#E879F9",
+      textAccent: "#E879F9",
+      cardBg: "#38BDF8",
+      cardText: "#1E293B",
     },
   },
   animation: {
@@ -511,7 +511,7 @@ const Hero = () => {
                     onClick={() => setActiveProblem(problem)}
                     className="flex min-h-[100px] flex-col items-center justify-center gap-2 rounded-2xl px-3 py-4 text-center transition-all duration-300 md:min-h-[112px] md:px-4 md:py-5"
                     style={{
-                      backgroundColor: isActive ? problems.cardBg : "#163D2F",
+                      backgroundColor: isActive ? problems.cardBg : "#047857",
                       color: isActive ? problems.cardText : "#ffffff",
                       border: isActive
                         ? `2px solid ${problems.accent}`
@@ -522,13 +522,13 @@ const Hero = () => {
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.backgroundColor = "#1D4D3B";
+                        e.currentTarget.style.backgroundColor = "#059669";
                         e.currentTarget.style.border = `2px solid ${problems.accent}55`;
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.backgroundColor = "#163D2F";
+                        e.currentTarget.style.backgroundColor = "#047857";
                         e.currentTarget.style.border =
                           "2px solid rgba(255,255,255,0.08)";
                       }
@@ -734,11 +734,11 @@ const Hero = () => {
             <ul className="stack-container">
               {featureList.map((feature, idx) => {
                 const cardStyles = [
-                  { bg: "#1E293B", accent: "#60A5FA" },
-                  { bg: "#3B1E54", accent: "#C084FC" },
-                  { bg: "#4A1D32", accent: "#FB7185" },
-                  { bg: "#5A3A1A", accent: "#FACC15" },
-                  { bg: "#143B36", accent: "#34D399" },
+                  { bg: "#1E3A8A", accent: "#60A5FA", text: "#FFFFFF" },
+                  { bg: "#6B21A8", accent: "#C084FC", text: "#FFFFFF" },
+                  { bg: "#BE185D", accent: "#FB7185", text: "#FFFFFF" },
+                  { bg: "#B45309", accent: "#FDE047", text: "#FFFFFF" },
+                  { bg: "#047857", accent: "#34D399", text: "#FFFFFF" },
                 ];
 
                 const style = cardStyles[idx % cardStyles.length];
@@ -755,7 +755,7 @@ const Hero = () => {
                       className="stack-item-inner relative flex h-full items-center p-4 md:p-7"
                       style={{
                         backgroundColor: style.bg,
-                        color: "#ffffff",
+                        color: style.text,
                         border: `2px solid ${style.accent}`,
                         boxShadow: "0 16px 36px rgba(0,0,0,0.26)",
                       }}

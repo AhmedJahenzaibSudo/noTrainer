@@ -10,32 +10,31 @@ const HEADER_HEIGHT = 40;
 
 const config = {
   fontFamily: "'Krona One', sans-serif",
-  // Removed animations object
   colorPalettes: [
     {
-      bg: "#0a0e27",
-      text: "#ffffff",
-      accent: "#f7b731",
+      bg: "#1E3A8A",
+      text: "#FFFFFF",
+      accent: "#FDE047",
     },
     {
-      bg: "#2c003e",
-      text: "#ffffff",
-      accent: "#ff6b6b",
+      bg: "#7C3AED",
+      text: "#FFFFFF",
+      accent: "#FB7185",
     },
     {
-      bg: "#004643",
-      text: "#ffffff",
-      accent: "#abd1c6",
+      bg: "#047857",
+      text: "#FFFFFF",
+      accent: "#BEF264",
     },
     {
-      bg: "#3d0000",
-      text: "#ffffff",
-      accent: "#ffba08",
+      bg: "#DC2626",
+      text: "#FFFFFF",
+      accent: "#FDE047",
     },
     {
-      bg: "#1a2a3c",
-      text: "#ffffff",
-      accent: "#a8dadc",
+      bg: "#2563EB",
+      text: "#FFFFFF",
+      accent: "#38BDF8",
     },
   ],
 };
@@ -131,7 +130,10 @@ const GameCard = ({ game, palette }) => {
   return (
     <ClipSection bgColor={palette.bg}>
       <div className="text-center px-4 relative z-10">
-        <div className="mb-6 flex items-center justify-center w-20 h-20 mx-auto rounded-full bg-white/10">
+        <div
+          className="mb-6 flex items-center justify-center w-20 h-20 mx-auto rounded-full transition-transform hover:scale-110"
+          style={{ backgroundColor: `${palette.accent}20` }}
+        >
           <Icon size={48} style={{ color: palette.accent }} />
         </div>
 
@@ -144,22 +146,26 @@ const GameCard = ({ game, palette }) => {
 
         <p
           className="text-lg md:text-2xl font-semibold uppercase mb-2"
-          style={{ color: `${palette.text}cc` }}
+          style={{ color: `${palette.text}ee` }}
         >
           {game.desc}
         </p>
 
         <p
           className="text-sm md:text-lg italic mb-6"
-          style={{ color: `${palette.text}88` }}
+          style={{ color: `${palette.text}aa` }}
         >
           {game.why}
         </p>
 
         <Link
           href={game.href}
-          className="inline-block px-8 py-3 text-lg font-bold uppercase rounded-lg transition-transform hover:scale-105"
-          style={{ backgroundColor: palette.accent, color: palette.bg }}
+          className="inline-block px-10 py-4 text-lg font-bold uppercase rounded-xl transition-all hover:scale-105 hover:shadow-2xl"
+          style={{
+            backgroundColor: palette.accent,
+            color: palette.bg,
+            boxShadow: `0 4px 20px ${palette.accent}40`,
+          }}
         >
           Play
         </Link>
@@ -186,13 +192,13 @@ export default function GameDashboard() {
           </h1>
           <p
             className="text-xl md:text-2xl font-semibold"
-            style={{ color: `${introPalette.text}cc` }}
+            style={{ color: `${introPalette.text}ee` }}
           >
             Workout for your Brain
           </p>
           <p
             className="mt-2 text-sm md:text-lg italic"
-            style={{ color: `${introPalette.text}88` }}
+            style={{ color: `${introPalette.text}aa` }}
           >
             Scroll down to explore each game and its benefits
           </p>

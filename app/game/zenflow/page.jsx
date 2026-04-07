@@ -72,6 +72,7 @@ const ZenFlow = () => {
   const intervalRef  = useRef(null);
   const audioCtxRef  = useRef(null);
   const stopAmbient  = useRef(null);
+  const oscillatorsRef = useRef([]); // Track all oscillators
 
   // Detect md breakpoint
   useEffect(() => {
@@ -81,6 +82,61 @@ const ZenFlow = () => {
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
+
+  // Cleanup function to stop all audio
+  const cleanupAudio = useCallback(() => {
+    clearInterval(intervalRef.current);
+    
+    // Stop ambient sound
+    if (stopAmbient.current) {
+      stopAmbient.current();
+      stopAmbient.current = null;
+    }
+    
+    // Stop all tracked oscillators
+    oscillatorsRef.current.forEach(osc => {
+      try {
+        osc.stop();
+        osc.disconnect();
+      } catch (e) {
+        // Oscillator might already be stopped
+      }
+    });
+    oscillatorsRef.current = [];
+    
+    // Close audio context
+    if (audioCtxRef.current) {
+      try {
+        audioCtxRef.current.close();
+      } catch (e) {
+        // Context might already be closed
+      }
+      audioCtxRef.current = null;
+    }
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupAudio();
+    };
+  }, [cleanupAudio]);
+
+  // Cleanup on page visibility change (when user switches tabs)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isActive) {
+        cleanupAudio();
+        setIsActive(false);
+        setPhase("idle");
+        setElapsed(0);
+        setCycleCount(0);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isActive, cleanupAudio]);
 
   const sizeMin = isMd ? SIZE_MD_MIN : SIZE_MIN;
   const sizeMax = isMd ? SIZE_MD_MAX : SIZE_MAX;
@@ -153,9 +209,7 @@ const ZenFlow = () => {
 
   // ── Stop ───────────────────────────────────────────────────
   const stopSession = () => {
-    clearInterval(intervalRef.current);
-    if (stopAmbient.current) stopAmbient.current();
-    try { audioCtxRef.current?.close(); } catch {}
+    cleanupAudio();
     setIsActive(false);
     setPhase("idle");
     setElapsed(0);
