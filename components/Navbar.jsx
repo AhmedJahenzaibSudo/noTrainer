@@ -29,7 +29,7 @@ const navLinks = [
   { name: "Calculators", href: "/calculators", color: NEO_COLORS.orange, icon: Calculator },
   { name: "Game", href: "/game", color: NEO_COLORS.green, icon: Gamepad2 },
   { name: "Kanban", href: "/kanban", color: NEO_COLORS.pink, icon: LayoutDashboard },
-  { name: "About", href: "/about", color: NEO_COLORS.red, icon: Info },
+  { name: "Contact Us", href: "/contact", color: NEO_COLORS.red, icon: Info },
 ];
 
 function Navbar() {

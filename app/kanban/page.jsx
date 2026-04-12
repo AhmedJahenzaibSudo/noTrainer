@@ -18,11 +18,7 @@ import { supabase } from "@/lib/supabaseClient";
 // ============================================
 const config = {
   colors: {
-    bgPrimary: "#0A0F3C", // Bright deep blue
-    bgDark: "#040D2F", // Darker but still vibrant
-    accent: "#00FFB2", // Bright, saturated green
-    textPrimary: "#FFFFFF",
-    textOnAccent: "#0A0F3C",
+    bgPrimary: "#126162ff", // Blue 600
   },
 };
 
@@ -31,25 +27,31 @@ const columns = [
     key: "todo",
     title: "To Do",
     icon: Layout,
-    color: "#C9184A", // Muted red
-    borderColor: "#C9184A",
-    textColor: "#FFFFFF",
+    headerBg: "#4338CA", // Indigo
+    cardBg: "#EEF2FF", // Indigo 100
+    border: "#4338CA", // Indigo
+    text: "#312E81", // Indigo 900
+    accent: "#818CF8", // Indigo 400
   },
   {
     key: "progress",
     title: "In Progress",
     icon: Calendar,
-    color: "#F4A261", // Muted orange
-    borderColor: "#F4A261",
-    textColor: "#000000",
+    headerBg: "#C2410C", // Orange
+    cardBg: "#FFF7ED", // Orange 50
+    border: "#C2410C", // Orange
+    text: "#431407", // Orange 900
+    accent: "#FB923C", // Orange 400
   },
   {
     key: "done",
     title: "Done",
     icon: CheckCircle2,
-    color: "#2A9D8F", // Muted teal/green
-    borderColor: "#2A9D8F",
-    textColor: "#FFFFFF",
+    cardBg: "#ECFDF5", // Emerald 50
+    headerBg: "#047857", // Emerald
+    border: "#047857", // Emerald
+    text: "#022C22", // Emerald 900
+    accent: "#34D399", // Emerald 400
   },
 ];
 
@@ -328,10 +330,11 @@ export default function KanbanPage() {
           scrollbar-width: none;
         }
         .kanban-scroll::-webkit-scrollbar {
-          width: 4px;
+          width: 6px;
         }
         .kanban-scroll::-webkit-scrollbar-thumb {
-          background: rgba(0, 255, 178, 0.5);
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 0px;
         }
         .kanban-scroll::-webkit-scrollbar-track {
           background: transparent;
@@ -339,59 +342,51 @@ export default function KanbanPage() {
       `}</style>
 
       <div
-        className="relative flex w-full flex-col items-center overflow-hidden font-sans selection:bg-[#00FFB2] selection:text-white h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)]"
+        className="relative flex w-full flex-col items-center overflow-hidden font-sans selection:bg-indigo-600 selection:text-white h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)]"
         style={{ backgroundColor: config.colors.bgPrimary }}
       >
-        {/* Background Effects */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <motion.div
-            animate={{ x: [0, -30, 0], y: [0, 30, 0] }}
-            transition={{ repeat: Infinity, duration: 20, ease: "easeInOut" }}
-            className="absolute top-[-20%] left-[-10%] h-[600px] w-[600px] bg-[#00FFB2] blur-[140px] opacity-70"
-          />
-          <motion.div
-            animate={{ x: [0, 40, 0], y: [0, -20, 0] }}
-            transition={{ repeat: Infinity, duration: 15, ease: "easeInOut" }}
-            className="absolute bottom-[-10%] right-[-10%] h-[550px] w-[550px] bg-[#FF006E] blur-[130px] opacity-40"
-          />
-        </div>
-
         {/* Header */}
         <header className="relative z-10 w-full max-w-6xl px-6 pt-8 pb-4 text-center md:pt-10 md:pb-6 shrink-0">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-3xl font-black uppercase tracking-tight text-white md:text-5xl"
+            className="text-4xl font-black uppercase tracking-tight text-white md:text-6xl"
             style={{ fontFamily: "'Krona One', sans-serif" }}
           >
-            Kanban <span className="text-[#00FFB2]">Board</span>
+            Kanban <span className="text-yellow-300">Board</span>
           </motion.h1>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {TAGS.map((tag) => (
+            {TAGS.map((tag, i) => (
               <span
                 key={tag.name}
-                className="px-3 py-1 border border-[#00FFB2]/60 bg-[#00FFB2]/20 text-[10px] font-black uppercase tracking-[0.2em] text-[#00FFB2] transition-all hover:bg-[#00FFB2]/30"
+                className="px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] border-2 border-white"
+                style={{
+                  backgroundColor:
+                    i === 0 ? "#4338CA" : i === 1 ? "#C2410C" : "#047857",
+                  color: "#FFFFFF",
+                }}
               >
                 {tag.name}
               </span>
             ))}
           </div>
 
-          <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/80">
+          <div className="mt-4 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-100">
+            <div className="h-2 w-2 bg-blue-300"></div>
             Mode:{" "}
-            <span className="text-[#00FFB2]">
+            <span className="text-white font-black">
               {userId ? "Cloud Sync" : "Local Storage"}
             </span>
             {loadingCloud && (
               <span className="ml-2 inline-flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-[#00FFB2] animate-pulse"></span>
+                <span className="w-1.5 h-1.5 animate-pulse bg-white"></span>
                 <span
-                  className="w-1.5 h-1.5 bg-[#00FFB2] animate-pulse"
+                  className="w-1.5 h-1.5 animate-pulse bg-white"
                   style={{ animationDelay: "0.2s" }}
                 ></span>
                 <span
-                  className="w-1.5 h-1.5 bg-[#00FFB2] animate-pulse"
+                  className="w-1.5 h-1.5 animate-pulse bg-white"
                   style={{ animationDelay: "0.4s" }}
                 ></span>
               </span>
@@ -399,12 +394,17 @@ export default function KanbanPage() {
           </div>
 
           {/* Instruction Hint for Mobile */}
-          <div className="mt-2 text-[9px] font-bold uppercase tracking-[0.2em] text-white/60 md:hidden">
+          <div className="mt-2 text-[9px] font-bold uppercase tracking-[0.2em] text-blue-200 md:hidden">
             Hold card to drag
           </div>
 
           {cloudError && (
-            <div className="mt-2 px-3 py-1 bg-red-500/30 border border-red-400 text-xs font-bold uppercase tracking-widest text-red-300">
+            <div
+              className="mt-3 inline-block px-4 py-1.5 text-xs font-black uppercase tracking-widest text-white border-2 border-white"
+              style={{
+                backgroundColor: "#BE123C",
+              }}
+            >
               {cloudError}
             </div>
           )}
@@ -421,63 +421,45 @@ export default function KanbanPage() {
             <motion.div
               key={col.key}
               data-column-key={col.key}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
+              transition={{ delay: index * 0.15, duration: 0.5 }}
               onDragOver={handleDragOver}
               onDrop={() => onDrop(col.key)}
-              className={`flex flex-col border-4 transition-all
-                ${dragging && dragging.column !== col.key ? "border-white/30" : "border-white"}
-              `}
+              className="flex flex-col overflow-hidden transition-all"
               style={{
-                backgroundColor: col.color,
-                borderColor:
-                  dragging && dragging.column !== col.key
-                    ? "rgba(255,255,255,0.3)"
-                    : "rgba(255,255,255,0.8)",
+                backgroundColor: col.cardBg,
+                border: `4px solid ${col.headerBg}`,
               }}
             >
               {/* Column Header */}
               <div
-                className="flex items-center justify-between border-b-4 px-4 py-3 shrink-0"
+                className="flex items-center justify-between px-4 py-3 shrink-0 border-b-4"
                 style={{
-                  borderBottomColor: "rgba(255,255,255,0.8)",
-                  backgroundColor: "rgba(0,0,0,0.15)",
+                  backgroundColor: col.headerBg,
+                  borderBottomColor: col.border,
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <col.icon size={18} style={{ color: col.textColor }} />
-                  <h2
-                    className="text-sm font-black uppercase tracking-tight"
-                    style={{ color: col.textColor }}
-                  >
+                  <col.icon size={18} className="text-white" />
+                  <h2 className="text-sm font-black uppercase tracking-tight text-white">
                     {col.title}
                   </h2>
-                  <span
-                    className="px-2 py-0.5 text-[10px] font-black border-2"
-                    style={{
-                      backgroundColor: "rgba(255,255,255,0.9)",
-                      color: col.color,
-                      borderColor: col.textColor,
-                    }}
-                  >
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 text-xs font-black text-white bg-white/20 border border-white/40">
                     {data[col.key].length}
                   </span>
+                  <button
+                    onClick={() => {
+                      setActiveColumn(col.key);
+                      setModalOpen(true);
+                    }}
+                    className="flex h-7 w-7 items-center justify-center bg-white text-slate-900 border-2 border-white transition-all hover:bg-blue-50 active:scale-95"
+                  >
+                    <Plus size={18} strokeWidth={3} />
+                  </button>
                 </div>
-                <button
-                  onClick={() => {
-                    setActiveColumn(col.key);
-                    setModalOpen(true);
-                  }}
-                  className="flex h-7 w-7 items-center justify-center border-2 transition-all hover:scale-110 hover:shadow-lg active:scale-95"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.9)",
-                    borderColor: col.textColor,
-                    color: col.color,
-                  }}
-                >
-                  <Plus size={18} strokeWidth={3} />
-                </button>
               </div>
 
               {/* Cards Container */}
@@ -490,19 +472,16 @@ export default function KanbanPage() {
                       exit={{ opacity: 0 }}
                       className="flex h-full items-center justify-center"
                     >
-                      <div className="text-center">
-                        <div
-                          className="text-[9px] uppercase tracking-widest opacity-60 md:hidden"
-                          style={{ color: col.textColor }}
-                        >
-                          Drop here
-                        </div>
-                        <div
-                          className="hidden md:block text-[10px] uppercase tracking-widest opacity-60"
-                          style={{ color: col.textColor }}
+                      <div
+                        className="text-center px-4 py-8 border-2 border-dashed"
+                        style={{ borderColor: col.border }}
+                      >
+                        <p
+                          className="text-xs font-bold uppercase tracking-widest"
+                          style={{ color: col.text }}
                         >
                           Drop tasks here
-                        </div>
+                        </p>
                       </div>
                     </motion.div>
                   )}
@@ -514,39 +493,36 @@ export default function KanbanPage() {
                       <motion.div
                         key={item.id}
                         layout
-                        initial={{ opacity: 0, scale: 0.9 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{
                           opacity: isThisDragging ? 0.3 : 1,
                           scale: 1,
+                          y: 0,
                         }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        whileHover={{ scale: 1.02 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                        whileHover={{ scale: 1.02, y: -2 }}
                         draggable
                         onDragStart={(e) => handleDragStart(e, item, col.key)}
                         onTouchStart={(e) => handleTouchStart(e, item, col.key)}
-                        className={`group relative cursor-grab border-4 p-4 active:cursor-grabbing transition-all
-                          ${isThisDragging ? "opacity-30 shadow-2xl" : "border-white/90 hover:border-white hover:shadow-xl"}
-                        `}
+                        className="group relative cursor-grab active:cursor-grabbing transition-shadow"
                         style={{
-                          backgroundColor: "rgba(255,255,255,0.95)",
-                          borderColor: isThisDragging
-                            ? col.color
-                            : "rgba(255,255,255,0.9)",
+                          backgroundColor: "#FFFFFF",
+                          border: `2px solid ${col.border}`,
+                          padding: "14px 16px",
                           boxShadow: isThisDragging
-                            ? `0 0 40px ${col.color}`
-                            : undefined,
+                            ? `0 10px 25px -5px ${col.accent}50`
+                            : `0 1px 2px 0 rgba(0,0,0,0.05)`,
                         }}
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-start gap-3 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
                             <GripVertical
                               size={16}
-                              className="mt-0.5 shrink-0"
-                              style={{ color: `${col.color}CC` }}
+                              className="mt-0.5 shrink-0 text-slate-300 group-hover:text-slate-500 transition-colors"
                             />
                             <p
-                              className="text-sm font-bold uppercase leading-snug tracking-tight break-words"
-                              style={{ color: col.color }}
+                              className="text-sm font-bold leading-snug tracking-tight break-words"
+                              style={{ color: col.text }}
                             >
                               {item.title}
                             </p>
@@ -558,8 +534,7 @@ export default function KanbanPage() {
                               e.stopPropagation();
                               deleteTask(col.key, item.id);
                             }}
-                            className="shrink-0 p-1 opacity-60 hover:opacity-100 hover:bg-red-500/20 transition-all md:opacity-0 md:group-hover:opacity-100"
-                            style={{ color: col.color }}
+                            className="shrink-0 flex h-6 w-6 items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all md:opacity-0 md:group-hover:opacity-100"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -576,19 +551,17 @@ export default function KanbanPage() {
         {/* Floating Ghost Element for Mobile Drag */}
         {dragging && isDragReady && (
           <div
-            className="fixed z-[100] pointer-events-none w-[200px] p-4 border-4 font-bold uppercase text-sm"
+            className="fixed z-[100] pointer-events-none w-[220px] p-4 font-bold uppercase text-sm"
             style={{
-              left: touchPos.x - 100,
+              left: touchPos.x - 110,
               top: touchPos.y - 30,
-              transform: "rotate(2deg)",
-              backgroundColor: "rgba(255,255,255,0.95)",
-              borderColor:
-                columns.find((c) => c.key === dragging.column)?.color ||
-                "#00FFB2",
+              transform: "rotate(2deg) scale(1.05)",
+              backgroundColor: "#FFFFFF",
+              border: `2px solid ${columns.find((c) => c.key === dragging.column)?.border || "#4338CA"}`,
               color:
-                columns.find((c) => c.key === dragging.column)?.color ||
-                "#00FFB2",
-              boxShadow: `0 0 40px ${columns.find((c) => c.key === dragging.column)?.color || "#00FFB2"}99`,
+                columns.find((c) => c.key === dragging.column)?.text ||
+                "#312E81",
+              boxShadow: `0 20px 40px -10px ${columns.find((c) => c.key === dragging.column)?.accent || "#818CF8"}50`,
             }}
           >
             {dragging.item.title}
@@ -602,7 +575,7 @@ export default function KanbanPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6 backdrop-blur-sm"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6 backdrop-blur-sm"
               onClick={() => setModalOpen(false)}
             >
               <motion.div
@@ -610,50 +583,50 @@ export default function KanbanPage() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-w-sm overflow-hidden p-8 shadow-2xl border-4"
+                className="relative w-full max-w-sm overflow-hidden shadow-2xl"
                 style={{
-                  backgroundColor: activeColMeta?.color || "#00FFB2",
-                  borderColor: "rgba(255,255,255,0.8)",
+                  backgroundColor: "#FFFFFF",
+                  border: `4px solid ${activeColMeta?.border || "#4338CA"}`,
+                  padding: "32px",
                 }}
               >
-                <div
-                  className="absolute inset-x-0 top-0 h-1"
-                  style={{ backgroundColor: config.colors.bgPrimary }}
-                />
-                <div className="mb-6 flex items-center justify-between">
-                  <h3
-                    className="text-2xl font-black uppercase tracking-tight"
-                    style={{ color: activeColMeta?.textColor || "#FFFFFF" }}
-                  >
-                    New Task
-                  </h3>
+                <div className="mb-8 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-10 w-10 items-center justify-center border-2 border-white"
+                      style={{
+                        backgroundColor: activeColMeta?.headerBg || "#4338CA",
+                      }}
+                    >
+                      {activeColMeta && (
+                        <activeColMeta.icon size={20} className="text-white" />
+                      )}
+                    </div>
+                    <h3 className="text-xl font-black uppercase tracking-tight text-slate-900">
+                      New Task
+                    </h3>
+                  </div>
                   <button
                     onClick={() => setModalOpen(false)}
-                    className="p-1 transition-all hover:bg-black/10"
-                    style={{ color: activeColMeta?.textColor || "#FFFFFF" }}
+                    className="flex h-8 w-8 items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent hover:border-slate-300 transition-colors"
                   >
-                    <X size={24} strokeWidth={3} />
+                    <X size={20} strokeWidth={2.5} />
                   </button>
                 </div>
+
                 <input
                   autoFocus
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addTask()}
                   placeholder="Task title..."
-                  className="w-full border-b-4 bg-transparent py-3 text-lg font-bold placeholder:text-white/50 focus:border-white focus:outline-none transition-colors"
-                  style={{
-                    color: activeColMeta?.textColor || "#FFFFFF",
-                    borderColor: "rgba(255,255,255,0.3)",
-                  }}
+                  className="w-full bg-slate-50 border-b-2 border-slate-200 focus:border-slate-400 py-3 px-2 text-base font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors"
                 />
                 <button
                   onClick={addTask}
-                  className="mt-8 w-full py-3 text-sm font-black uppercase tracking-[0.2em] border-4 transition-all hover:shadow-lg hover:shadow-black/30 active:scale-95"
+                  className="mt-6 w-full py-3.5 text-sm font-black uppercase tracking-[0.2em] text-white border-2 border-white transition-all hover:brightness-110 active:scale-[0.98]"
                   style={{
-                    backgroundColor: config.colors.bgPrimary,
-                    color: activeColMeta?.color || "#00FFB2",
-                    borderColor: "rgba(255,255,255,0.8)",
+                    backgroundColor: activeColMeta?.headerBg || "#4338CA",
                   }}
                 >
                   Create Task

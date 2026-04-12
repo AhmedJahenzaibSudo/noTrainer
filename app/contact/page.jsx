@@ -74,8 +74,8 @@ export default function ContactPage() {
       `}</style>
 
       <div
-        className="relative w-full h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)] overflow-hidden font-sans selection:bg-rose-500 selection:text-white no-scrollbar flex flex-col"
-        style={{ backgroundColor: "#6366F1" }} // Indigo 500
+        className="relative w-full h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)] overflow-hidden font-sans selection:bg-amber-400 selection:text-blue-900 no-scrollbar flex flex-col"
+        style={{ backgroundColor: "#1D4ED8" }} // Blue 700
       >
         <div className="flex-1 flex flex-col justify-center px-6 py-10 md:py-16">
           <div className="mx-auto w-full max-w-4xl">
@@ -90,9 +90,9 @@ export default function ContactPage() {
                 className="text-3xl font-black uppercase tracking-tight text-white md:text-5xl"
                 style={{ fontFamily: "'Krona One', sans-serif" }}
               >
-                Contact <span className="text-yellow-300">Us</span>
+                Contact <span className="text-amber-300">Us</span>
               </h1>
-              <p className="mt-3 mx-auto max-w-xl text-sm font-bold uppercase tracking-widest text-indigo-100">
+              <p className="mt-3 mx-auto max-w-xl text-sm font-bold uppercase tracking-widest text-blue-100">
                 Have a question or want to work together? Send us a message.
               </p>
             </motion.div>
@@ -105,41 +105,47 @@ export default function ContactPage() {
                 transition={{ delay: 0.2, duration: 0.6 }}
                 className="flex flex-col gap-3"
               >
-                <div className="flex items-center gap-4 border-2 border-white/40 bg-cyan-400 p-4">
-                  <Mail size={24} className="text-cyan-800 shrink-0" />
+                <div className="flex items-center gap-4 border-2 border-white bg-white/15 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-amber-300 text-blue-900 border-2 border-white">
+                    <Mail size={20} />
+                  </div>
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-cyan-800 mb-0.5">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-blue-100 mb-0.5">
                       Email
                     </div>
                     <a
                       href={`mailto:${config.contact.email}`}
-                      className="text-sm font-bold text-blue-900 hover:text-cyan-900 transition-colors"
+                      className="text-sm font-bold text-white hover:text-amber-300 transition-colors"
                     >
                       {config.contact.email}
                     </a>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 border-2 border-white/40 bg-amber-400 p-4">
-                  <Phone size={24} className="text-amber-800 shrink-0" />
+                <div className="flex items-center gap-4 border-2 border-white bg-white/15 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-emerald-400 text-blue-900 border-2 border-white">
+                    <Phone size={20} />
+                  </div>
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-amber-800 mb-0.5">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-blue-100 mb-0.5">
                       Phone
                     </div>
                     <a
                       href={`tel:${config.contact.phone}`}
-                      className="text-sm font-bold text-amber-900 hover:text-amber-800 transition-colors"
+                      className="text-sm font-bold text-white hover:text-emerald-300 transition-colors"
                     >
                       {config.contact.phone}
                     </a>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 border-2 border-white/40 bg-rose-400 p-4">
-                  <MapPin size={24} className="text-rose-800 shrink-0" />
+                <div className="flex items-center gap-4 border-2 border-white bg-white/15 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-rose-400 text-blue-900 border-2 border-white">
+                    <MapPin size={20} />
+                  </div>
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-rose-800 mb-0.5">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-blue-100 mb-0.5">
                       Address
                     </div>
-                    <div className="text-sm font-bold text-rose-900">
+                    <div className="text-sm font-bold text-white">
                       {config.contact.address}
                     </div>
                   </div>
@@ -152,11 +158,12 @@ export default function ContactPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
                 onSubmit={handleSubmit}
-                className="border-2 border-white/40 bg-white p-6 flex flex-col"
+                className="border-2 border-white p-6 flex flex-col"
+                style={{ backgroundColor: "#1E40AF" }} // Blue 800
               >
                 <div className="space-y-4 flex-1">
                   <div>
-                    <label className="mb-1.5 block text-xs font-black uppercase tracking-widest text-indigo-600">
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-widest text-blue-100">
                       Your Name
                     </label>
                     <input
@@ -165,12 +172,13 @@ export default function ContactPage() {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full border-2 border-indigo-200 bg-indigo-50 py-2.5 px-3 text-sm font-bold text-indigo-900 placeholder-indigo-300 focus:border-indigo-500 focus:outline-none transition-colors"
+                      className="w-full border-2 border-white/30 py-2.5 px-3 text-sm font-bold text-white placeholder-white/40 focus:border-amber-300 focus:outline-none transition-colors"
+                      style={{ backgroundColor: "#1D4ED8" }} // Blue 700
                       placeholder="Enter your name"
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-black uppercase tracking-widest text-indigo-600">
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-widest text-blue-100">
                       Email Address
                     </label>
                     <input
@@ -179,12 +187,13 @@ export default function ContactPage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full border-2 border-indigo-200 bg-indigo-50 py-2.5 px-3 text-sm font-bold text-indigo-900 placeholder-indigo-300 focus:border-indigo-500 focus:outline-none transition-colors"
+                      className="w-full border-2 border-white/30 py-2.5 px-3 text-sm font-bold text-white placeholder-white/40 focus:border-amber-300 focus:outline-none transition-colors"
+                      style={{ backgroundColor: "#1D4ED8" }}
                       placeholder="your@email.com"
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-black uppercase tracking-widest text-indigo-600">
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-widest text-blue-100">
                       Message
                     </label>
                     <textarea
@@ -193,7 +202,8 @@ export default function ContactPage() {
                       onChange={handleInputChange}
                       required
                       rows={4}
-                      className="w-full border-2 border-indigo-200 bg-indigo-50 py-2.5 px-3 text-sm font-bold text-indigo-900 placeholder-indigo-300 focus:border-indigo-500 focus:outline-none transition-colors resize-none"
+                      className="w-full border-2 border-white/30 py-2.5 px-3 text-sm font-bold text-white placeholder-white/40 focus:border-amber-300 focus:outline-none transition-colors resize-none"
+                      style={{ backgroundColor: "#1D4ED8" }}
                       placeholder="Tell us how we can help you..."
                     />
                   </div>
@@ -203,7 +213,7 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="group relative w-full flex items-center justify-center gap-3 border-2 border-emerald-600 bg-emerald-500 px-6 py-3 font-black uppercase tracking-widest text-sm text-white transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="group relative w-full flex items-center justify-center gap-3 border-2 border-white bg-amber-300 px-6 py-3 font-black uppercase tracking-widest text-sm text-blue-900 transition-all hover:bg-amber-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>
@@ -214,7 +224,7 @@ export default function ContactPage() {
                             repeat: Infinity,
                             ease: "linear",
                           }}
-                          className="w-5 h-5 border-2 border-white border-t-transparent"
+                          className="w-5 h-5 border-2 border-blue-900 border-t-transparent"
                         />
                         Opening WhatsApp...
                       </>
@@ -242,10 +252,10 @@ export default function ContactPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="fixed bottom-8 right-8 z-50 flex items-center gap-3 border-2 border-emerald-300 px-5 py-3 shadow-lg bg-emerald-600"
+              className="fixed bottom-8 right-8 z-50 flex items-center gap-3 border-2 border-blue-900 px-5 py-3 shadow-lg bg-amber-300"
             >
-              <Check size={18} className="text-white" />
-              <span className="text-sm font-black text-white uppercase tracking-widest">
+              <Check size={18} className="text-blue-900" />
+              <span className="text-sm font-black text-blue-900 uppercase tracking-widest">
                 Opening WhatsApp...
               </span>
             </motion.div>
