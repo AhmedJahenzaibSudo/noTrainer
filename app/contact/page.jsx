@@ -75,7 +75,7 @@ export default function ContactPage() {
 
       <div
         className="relative w-full h-[calc(100dvh-40px)] md:h-[calc(100dvh-48px)] overflow-hidden font-sans selection:bg-amber-400 selection:text-blue-900 no-scrollbar flex flex-col"
-        style={{ backgroundColor: "#1D4ED8" }} // Blue 700
+        style={{ backgroundColor: "#113188ff" }} // Blue 700
       >
         <div className="flex-1 flex flex-col justify-center px-6 py-10 md:py-16">
           <div className="mx-auto w-full max-w-4xl">

@@ -444,7 +444,6 @@ export default function WorkoutWizard() {
             className="flex h-full w-full flex-col"
           >
             {/* STEP 0: HERO */}
-            {/* STEP 0: HERO */}
             {currentStep === 0 && (
               <div className="relative flex h-full flex-col items-center justify-center p-6 text-center">
                 <div className="absolute right-6 top-6 z-10">
@@ -690,8 +689,9 @@ export default function WorkoutWizard() {
             className={`absolute inset-0 z-50 flex items-center justify-center ${t.modalBg} p-4 md:p-8 backdrop-blur-md`}
           >
             <div
-              className={`relative flex h-full w-full max-w-6xl flex-col border-2 ${t.borderAccent} ${t.bg} md:flex-row shadow-2xl overflow-hidden`}
+              className={`relative w-full max-w-3xl max-h-[90vh] flex flex-col border-2 ${t.borderAccent} ${t.bg} shadow-2xl overflow-hidden`}
             >
+              {/* CLOSE BUTTON */}
               <button
                 onClick={() => setIsModalOpen(false)}
                 className={`absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center border-2 ${t.border} ${t.panel} text-white transition-colors ${t.hoverBorder} ${t.hoverBg} ${t.textHover}`}
@@ -699,87 +699,91 @@ export default function WorkoutWizard() {
                 <X size={18} strokeWidth={3} />
               </button>
 
-              <div
-                className={`flex h-[40%] w-full items-center justify-center border-b-2 ${t.border} ${t.panel} p-6 md:h-full md:w-1/2 md:border-b-0 md:border-r-2 shrink-0`}
-              >
-                <div className="relative flex h-full w-full max-w-md items-center justify-center">
-                  <RotatingImage
-                    images={currentPreview.images}
-                    name={currentPreview.name}
-                  />
-                </div>
-              </div>
+              {/* SCROLLABLE CONTENT */}
+              <div className="custom-scrollbar overflow-y-auto p-6 md:p-8">
+                {/* TITLE */}
+                <h3 className="text-3xl font-black uppercase tracking-wide text-white mb-6">
+                  {currentPreview.name}
+                </h3>
 
-              <div className="flex min-h-0 flex-1 flex-col md:w-1/2">
-                <div className={`border-b-2 ${t.border} p-6 pr-16 shrink-0`}>
-                  <h3 className="text-3xl font-black uppercase tracking-wide text-white">
-                    {currentPreview.name}
-                  </h3>
-                  <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold text-white/60 uppercase tracking-widest">
-                    <span>{currentPreview.equipment}</span>
-                    <span>•</span>
-                    <span>{currentPreview.category}</span>
-                    <span>•</span>
-                    <span className={t.textAccent}>{currentPreview.level}</span>
+                {/* IMAGE (FIXED HEIGHT VIA ASPECT RATIO) */}
+                <div
+                  className={`w-full border-2 ${t.border} ${t.panel} mb-8 flex justify-center`}
+                >
+                  <div className="relative w-full max-w-md aspect-[4/3]">
+                    <RotatingImage
+                      images={currentPreview.images}
+                      name={currentPreview.name}
+                    />
                   </div>
                 </div>
 
-                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-6 md:p-8">
-                  <div className="mb-10">
-                    <h4
-                      className={`mb-4 text-sm font-black uppercase tracking-widest ${t.textAccent}`}
-                    >
-                      Target Muscles
-                    </h4>
-                    <div className="flex flex-wrap gap-3">
-                      {currentPreview.primaryMuscles?.map((m) => (
-                        <span
-                          key={m}
-                          className={`border-2 ${t.border} ${t.panel} px-4 py-2 text-xs font-bold uppercase tracking-widest text-white`}
-                        >
-                          {m}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4
-                      className={`mb-5 text-sm font-black uppercase tracking-widest ${t.textAccent}`}
-                    >
-                      Instructions
-                    </h4>
-                    <div className="space-y-6">
-                      {currentPreview.instructions?.map((step, i) => (
-                        <div key={i} className="flex gap-5">
-                          <span
-                            className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 ${t.borderAccent} ${t.bgAccent} text-sm font-black ${t.textOnAccent}`}
-                          >
-                            {i + 1}
-                          </span>
-                          <p className="text-base font-medium leading-relaxed text-white/80 pt-1">
-                            {step}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                {/* META */}
+                <div className="flex flex-wrap gap-4 text-sm font-bold text-white/60 uppercase tracking-widest mb-8">
+                  <span>{currentPreview.equipment}</span>
+                  <span>•</span>
+                  <span>{currentPreview.category}</span>
+                  <span>•</span>
+                  <span className={t.textAccent}>{currentPreview.level}</span>
                 </div>
 
-                <div className={`border-t-2 ${t.border} p-6 shrink-0`}>
-                  <button
-                    onClick={() => toggleRoutine(currentPreview)}
-                    className={`w-full border-2 p-5 text-sm font-black uppercase tracking-widest transition-colors ${
-                      routine.some((r) => r.id === currentPreview.id)
-                        ? "border-red-500 bg-transparent text-red-500 hover:bg-red-500 hover:text-white"
-                        : `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} hover:bg-white hover:border-white hover:text-black`
-                    }`}
+                {/* MUSCLES */}
+                <div className="mb-10">
+                  <h4
+                    className={`mb-4 text-sm font-black uppercase tracking-widest ${t.textAccent}`}
                   >
-                    {routine.some((r) => r.id === currentPreview.id)
-                      ? "Remove from Routine"
-                      : "Add to Routine"}
-                  </button>
+                    Target Muscles
+                  </h4>
+
+                  <div className="flex flex-wrap gap-3">
+                    {currentPreview.primaryMuscles?.map((m) => (
+                      <span
+                        key={m}
+                        className={`border-2 ${t.border} ${t.panel} px-4 py-2 text-xs font-bold uppercase tracking-widest text-white`}
+                      >
+                        {m}
+                      </span>
+                    ))}
+                  </div>
                 </div>
+
+                {/* INSTRUCTIONS */}
+                <div className="mb-12">
+                  <h4
+                    className={`mb-5 text-sm font-black uppercase tracking-widest ${t.textAccent}`}
+                  >
+                    Instructions
+                  </h4>
+
+                  <div className="space-y-6">
+                    {currentPreview.instructions?.map((step, i) => (
+                      <div key={i} className="flex gap-5">
+                        <span
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 ${t.borderAccent} ${t.bgAccent} text-sm font-black ${t.textOnAccent}`}
+                        >
+                          {i + 1}
+                        </span>
+                        <p className="text-base font-medium leading-relaxed text-white/80 pt-1">
+                          {step}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* BUTTON */}
+                <button
+                  onClick={() => toggleRoutine(currentPreview)}
+                  className={`w-full border-2 p-5 text-sm font-black uppercase tracking-widest transition-colors ${
+                    routine.some((r) => r.id === currentPreview.id)
+                      ? "border-red-500 bg-transparent text-red-500 hover:bg-red-500 hover:text-white"
+                      : `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} hover:bg-white hover:border-white hover:text-black`
+                  }`}
+                >
+                  {routine.some((r) => r.id === currentPreview.id)
+                    ? "Remove from Routine"
+                    : "Add to Routine"}
+                </button>
               </div>
             </div>
           </div>
