@@ -2,15 +2,25 @@
 
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { LogIn, LogOut, X, User2, KeyRound, Mail } from "lucide-react";
+import {
+  LogIn,
+  LogOut,
+  X,
+  User2,
+  KeyRound,
+  Mail,
+} from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+
+/* =========================================================
+   AUTH CONFIG
+========================================================= */
 
 const config = {
   colors: {
-    bgPrimary: "#051061",
-    bgDark: "#020a21",
-    accent: "#1AF0BE",
-    textPrimary: "#ffffff",
+    background: "color(display-p3 0.056 0.958 0.949)",
+    dark: "color(display-p3 0.079 0.201 0.346)",
+    accent: "color(display-p3 1 0 0)",
   },
 };
 
@@ -27,22 +37,31 @@ export default function AuthButton() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () =>
+      setIsMobile(window.innerWidth < 768);
+
     checkMobile();
+
     window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+
+    return () =>
+      window.removeEventListener("resize", checkMobile);
   }, []);
 
   useEffect(() => {
     let mounted = true;
 
     supabase.auth.getSession().then(({ data }) => {
-      if (mounted) setSession(data.session ?? null);
+      if (mounted) {
+        setSession(data.session ?? null);
+      }
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => setSession(newSession ?? null)
-    );
+    const { data: sub } =
+      supabase.auth.onAuthStateChange(
+        (_event, newSession) =>
+          setSession(newSession ?? null),
+      );
 
     return () => {
       mounted = false;
@@ -55,15 +74,20 @@ export default function AuthButton() {
   const signUp = async () => {
     resetMsg();
     setBusy(true);
+
     try {
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
       });
+
       if (error) throw error;
+
       setMsg("✅ Signed up!");
     } catch (e) {
-      setMsg(`❌ ${e?.message ?? "Sign up failed."}`);
+      setMsg(
+        `❌ ${e?.message ?? "Sign up failed."}`,
+      );
     } finally {
       setBusy(false);
     }
@@ -72,15 +96,21 @@ export default function AuthButton() {
   const signIn = async () => {
     resetMsg();
     setBusy(true);
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const { error } =
+        await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
       if (error) throw error;
+
       setMsg("✅ Logged in!");
     } catch (e) {
-      setMsg(`❌ ${e?.message ?? "Login failed."}`);
+      setMsg(
+        `❌ ${e?.message ?? "Login failed."}`,
+      );
     } finally {
       setBusy(false);
     }
@@ -89,12 +119,18 @@ export default function AuthButton() {
   const signOut = async () => {
     resetMsg();
     setBusy(true);
+
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } =
+        await supabase.auth.signOut();
+
       if (error) throw error;
+
       setOpen(false);
     } catch (e) {
-      setMsg(`❌ ${e?.message ?? "Sign out failed."}`);
+      setMsg(
+        `❌ ${e?.message ?? "Sign out failed."}`,
+      );
     } finally {
       setBusy(false);
     }
@@ -102,40 +138,73 @@ export default function AuthButton() {
 
   return (
     <div className="relative">
+      {/* AUTH TOGGLE */}
+
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border text-white transition-all active:scale-95"
+        className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border-2 transition-all active:scale-95"
         style={{
-          backgroundColor: "rgba(54, 73, 218, 0.9)",
-          borderColor: "rgba(26, 240, 190, 0.3)",
+          backgroundColor: config.colors.background,
+          borderColor: config.colors.background,
+          color: config.colors.dark,
         }}
+        aria-label="Account"
       >
-        <User2 size={14} />
+        <User2 size={14} strokeWidth={2.5} />
       </button>
 
       <AnimatePresence>
         {open && (
           <>
+            {/* BACKDROP */}
+
             <div
-              className="fixed inset-0 z-40 bg-black/20"
+              className="fixed inset-0 z-40"
+              style={{
+                backgroundColor:
+                  "color(display-p3 0.079 0.201 0.346 / 0.35)",
+              }}
               onClick={() => setOpen(false)}
             />
+
+            {/* AUTH PANEL */}
 
             <motion.div
               initial={
                 isMobile
-                  ? { opacity: 0, y: "100%" }
-                  : { opacity: 0, y: 8, scale: 0.98 }
+                  ? {
+                      opacity: 0,
+                      y: "100%",
+                    }
+                  : {
+                      opacity: 0,
+                      y: 8,
+                      scale: 0.98,
+                    }
               }
               animate={
                 isMobile
-                  ? { opacity: 1, y: 0 }
-                  : { opacity: 1, y: 0, scale: 1 }
+                  ? {
+                      opacity: 1,
+                      y: 0,
+                    }
+                  : {
+                      opacity: 1,
+                      y: 0,
+                      scale: 1,
+                    }
               }
               exit={
                 isMobile
-                  ? { opacity: 0, y: "100%" }
-                  : { opacity: 0, y: 8, scale: 0.98 }
+                  ? {
+                      opacity: 0,
+                      y: "100%",
+                    }
+                  : {
+                      opacity: 0,
+                      y: 8,
+                      scale: 0.98,
+                    }
               }
               transition={{
                 duration: 0.2,
@@ -145,72 +214,142 @@ export default function AuthButton() {
               }}
               className={
                 isMobile
-                  ? "fixed inset-x-0 bottom-0 z-50 w-full rounded-t-2xl border-t-2 shadow-2xl max-h-[90vh] overflow-y-auto pb-8"
-                  : "absolute right-0 mt-2 z-50 w-[300px] border-2 shadow-2xl"
+                  ? "fixed inset-x-0 bottom-0 z-50 w-full border-t-4 max-h-[90vh] overflow-y-auto pb-8"
+                  : "absolute right-0 mt-2 z-50 w-[300px] border-4"
               }
               style={{
-                backgroundColor: config.colors.bgDark,
-                borderColor: config.colors.accent,
+                backgroundColor:
+                  config.colors.background,
+                borderColor: config.colors.dark,
               }}
             >
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
+              {/* HEADER */}
+
+              <div
+                className="flex items-center justify-between p-4 border-b-4"
+                style={{
+                  backgroundColor:
+                    config.colors.dark,
+                  borderColor:
+                    config.colors.dark,
+                }}
+              >
                 <div className="flex items-center gap-2">
-                  <User2 size={16} style={{ color: config.colors.accent }} />
-                  <p className="text-[11px] font-black uppercase tracking-widest text-white">
+                  <User2
+                    size={17}
+                    style={{
+                      color:
+                        config.colors.background,
+                    }}
+                  />
+
+                  <p
+                    className="text-[12px] font-black uppercase tracking-widest"
+                    style={{
+                      color:
+                        config.colors.background,
+                    }}
+                  >
                     Auth
                   </p>
                 </div>
 
                 <button
                   onClick={() => setOpen(false)}
-                  className="text-white/70 hover:text-white p-1 -mr-1"
+                  className="p-1 transition-all active:scale-90"
+                  style={{
+                    color:
+                      config.colors.background,
+                  }}
+                  aria-label="Close"
                 >
-                  <X size={18} />
+                  <X size={19} />
                 </button>
               </div>
 
               <div className="p-4">
                 {session ? (
                   <>
-                    <p className="text-[11px] font-black uppercase tracking-widest text-white/60 mb-2">
+                    {/* SIGNED IN */}
+
+                    <p
+                      className="text-[10px] font-black uppercase tracking-widest mb-2"
+                      style={{
+                        color:
+                          config.colors.dark,
+                        opacity: 0.7,
+                      }}
+                    >
                       Signed in as
                     </p>
 
-                    <div className="mb-4 border border-white/10 bg-black/25 px-3 py-2">
-                      <p className="text-[12px] font-black uppercase tracking-tight text-white truncate">
+                    <div
+                      className="mb-4 border-2 px-3 py-3"
+                      style={{
+                        backgroundColor:
+                          config.colors.dark,
+                        borderColor:
+                          config.colors.dark,
+                      }}
+                    >
+                      <p
+                        className="text-[12px] font-black uppercase tracking-tight truncate"
+                        style={{
+                          color:
+                            config.colors.background,
+                        }}
+                      >
                         {session.user.email}
                       </p>
                     </div>
 
+                    {/* SIGN OUT */}
+
                     <button
                       onClick={signOut}
                       disabled={busy}
-                      className="w-full py-3 font-black uppercase tracking-widest text-[11px] text-white border border-white/10 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 bg-red-600 hover:bg-red-500"
+                      className="w-full py-3 font-black uppercase tracking-widest text-[11px] border-2 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60"
+                      style={{
+                        backgroundColor:
+                          config.colors.accent,
+                        borderColor:
+                          config.colors.dark,
+                        color:
+                          config.colors.dark,
+                      }}
                     >
-                      <LogOut size={16} /> Sign out
+                      <LogOut size={16} />
+
+                      {busy
+                        ? "Wait..."
+                        : "Sign out"}
                     </button>
                   </>
                 ) : (
                   <>
-                    <div className="flex gap-2 mb-4">
+                    {/* SIGN IN / SIGN UP TABS */}
+
+                    <div className="grid grid-cols-2 gap-2 mb-5">
                       <button
                         onClick={() => {
                           setMode("signin");
                           setMsg("");
                         }}
-                        className={`flex-1 py-2 font-black uppercase tracking-widest text-[10px] border transition-all ${
-                          mode === "signin"
-                            ? "border-transparent"
-                            : "bg-transparent text-white/80 border-white/10"
-                        }`}
-                        style={
-                          mode === "signin"
-                            ? {
-                                backgroundColor: config.colors.accent,
-                                color: config.colors.bgPrimary,
-                              }
-                            : {}
-                        }
+                        className="py-2.5 font-black uppercase tracking-widest text-[10px] border-2 transition-all"
+                        style={{
+                          backgroundColor:
+                            mode === "signin"
+                              ? config.colors.dark
+                              : config.colors.background,
+
+                          color:
+                            mode === "signin"
+                              ? config.colors.background
+                              : config.colors.dark,
+
+                          borderColor:
+                            config.colors.dark,
+                        }}
                       >
                         Sign in
                       </button>
@@ -220,54 +359,111 @@ export default function AuthButton() {
                           setMode("signup");
                           setMsg("");
                         }}
-                        className={`flex-1 py-2 font-black uppercase tracking-widest text-[10px] border transition-all ${
-                          mode === "signup"
-                            ? "border-transparent"
-                            : "bg-transparent text-white/80 border-white/10"
-                        }`}
-                        style={
-                          mode === "signup"
-                            ? {
-                                backgroundColor: config.colors.accent,
-                                color: config.colors.bgPrimary,
-                              }
-                            : {}
-                        }
+                        className="py-2.5 font-black uppercase tracking-widest text-[10px] border-2 transition-all"
+                        style={{
+                          backgroundColor:
+                            mode === "signup"
+                              ? config.colors.dark
+                              : config.colors.background,
+
+                          color:
+                            mode === "signup"
+                              ? config.colors.background
+                              : config.colors.dark,
+
+                          borderColor:
+                            config.colors.dark,
+                        }}
                       >
                         Sign up
                       </button>
                     </div>
 
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">
+                    {/* EMAIL */}
+
+                    <label
+                      className="block text-[10px] font-black uppercase tracking-widest mb-2"
+                      style={{
+                        color:
+                          config.colors.dark,
+                      }}
+                    >
                       Email
                     </label>
 
-                    <div className="flex items-center gap-2 border-2 px-3 py-2 mb-3 border-white/15 bg-black/30">
-                      <Mail size={16} style={{ color: config.colors.accent }} />
+                    <div
+                      className="flex items-center gap-2 border-2 px-3 py-2.5 mb-4"
+                      style={{
+                        backgroundColor:
+                          config.colors.background,
+                        borderColor:
+                          config.colors.dark,
+                      }}
+                    >
+                      <Mail
+                        size={16}
+                        style={{
+                          color:
+                            config.colors.dark,
+                        }}
+                      />
+
                       <input
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) =>
+                          setEmail(e.target.value)
+                        }
                         placeholder="you@example.com"
-                        className="w-full bg-transparent outline-none text-sm font-bold text-white placeholder:text-white/35"
+                        className="auth-input w-full bg-transparent outline-none text-sm font-bold"
+                        style={{
+                          color:
+                            config.colors.dark,
+                        }}
                         type="email"
                         autoComplete="email"
                       />
                     </div>
 
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">
+                    {/* PASSWORD */}
+
+                    <label
+                      className="block text-[10px] font-black uppercase tracking-widest mb-2"
+                      style={{
+                        color:
+                          config.colors.dark,
+                      }}
+                    >
                       Password
                     </label>
 
-                    <div className="flex items-center gap-2 border-2 px-3 py-2 mb-4 border-white/15 bg-black/30">
+                    <div
+                      className="flex items-center gap-2 border-2 px-3 py-2.5 mb-5"
+                      style={{
+                        backgroundColor:
+                          config.colors.background,
+                        borderColor:
+                          config.colors.dark,
+                      }}
+                    >
                       <KeyRound
                         size={16}
-                        style={{ color: config.colors.accent }}
+                        style={{
+                          color:
+                            config.colors.dark,
+                        }}
                       />
+
                       <input
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) =>
+                          setPassword(e.target.value)
+                        }
                         placeholder="••••••••"
-                        className="w-full bg-transparent outline-none text-sm font-bold text-white placeholder:text-white/35"
+                        className="auth-input w-full bg-transparent outline-none text-sm font-bold"
+                        style={{
+                          color:
+                            config.colors.dark,
+                        }}
                         type="password"
                         autoComplete={
                           mode === "signup"
@@ -277,32 +473,59 @@ export default function AuthButton() {
                       />
                     </div>
 
+                    {/* LOGIN / CREATE ACCOUNT */}
+
                     <button
-                      onClick={mode === "signup" ? signUp : signIn}
-                      disabled={busy || !email.trim() || password.length < 6}
-                      className="w-full py-3 font-black uppercase tracking-widest text-[11px] border border-white/10 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60"
+                      onClick={
+                        mode === "signup"
+                          ? signUp
+                          : signIn
+                      }
+                      disabled={
+                        busy ||
+                        !email.trim() ||
+                        password.length < 6
+                      }
+                      className="w-full py-3 font-black uppercase tracking-widest text-[11px] border-2 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40"
                       style={{
-                        backgroundColor: config.colors.bgPrimary,
-                        color: config.colors.accent,
+                        backgroundColor:
+                          config.colors.dark,
+                        borderColor:
+                          config.colors.dark,
+                        color:
+                          config.colors.background,
                       }}
                     >
                       <LogIn size={16} />
+
                       {busy
                         ? "Wait..."
                         : mode === "signup"
-                        ? "Create account"
-                        : "Login"}
+                          ? "Create account"
+                          : "Login"}
                     </button>
                   </>
                 )}
 
+                {/* MESSAGE */}
+
                 {msg && (
                   <div
-                    className={`mt-4 text-[11px] font-black uppercase tracking-widest border px-3 py-2 ${
-                      msg.startsWith("✅")
-                        ? "bg-[#1AF0BE]/10 text-[#1AF0BE] border-[#1AF0BE]/40"
-                        : "bg-red-500/10 text-red-200 border-red-400/40"
-                    }`}
+                    className="mt-4 text-[11px] font-black uppercase tracking-widest border-2 px-3 py-2"
+                    style={{
+                      backgroundColor:
+                        msg.startsWith("✅")
+                          ? config.colors.dark
+                          : config.colors.accent,
+
+                      color:
+                        msg.startsWith("✅")
+                          ? config.colors.background
+                          : config.colors.dark,
+
+                      borderColor:
+                        config.colors.dark,
+                    }}
                   >
                     {msg}
                   </div>
@@ -312,6 +535,13 @@ export default function AuthButton() {
           </>
         )}
       </AnimatePresence>
+
+      <style jsx global>{`
+        .auth-input::placeholder {
+          color: color(display-p3 0.079 0.201 0.346);
+          opacity: 0.45;
+        }
+      `}</style>
     </div>
   );
 }

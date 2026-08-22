@@ -6,37 +6,15 @@ import Link from "next/link";
 // =======================
 // Config
 // =======================
+
 const HEADER_HEIGHT = 40;
 
 const config = {
   fontFamily: "'Krona One', sans-serif",
-  colorPalettes: [
-    {
-      bg: "#1E3A8A",
-      text: "#FFFFFF",
-      accent: "#FDE047",
-    },
-    {
-      bg: "#7C3AED",
-      text: "#FFFFFF",
-      accent: "#FB7185",
-    },
-    {
-      bg: "#047857",
-      text: "#FFFFFF",
-      accent: "#BEF264",
-    },
-    {
-      bg: "#DC2626",
-      text: "#FFFFFF",
-      accent: "#FDE047",
-    },
-    {
-      bg: "#2563EB",
-      text: "#FFFFFF",
-      accent: "#38BDF8",
-    },
-  ],
+
+  cyan: "color(display-p3 0.056 0.958 0.949)",
+  dark: "color(display-p3 0.079 0.201 0.346)",
+  accent: "color(display-p3 0.98 0.78 0.12)",
 };
 
 const GAMES = [
@@ -73,7 +51,8 @@ const GAMES = [
 // =======================
 // Components
 // =======================
-const ClipSection = ({ children, bgColor }) => (
+
+const ClipSection = ({ children, background }) => (
   <div
     className="snap-start"
     style={{
@@ -98,10 +77,11 @@ const ClipSection = ({ children, bgColor }) => (
           left: 0,
           width: "100%",
           height: `calc(100vh - ${HEADER_HEIGHT}px)`,
-          backgroundColor: bgColor,
+          backgroundColor: background,
           zIndex: 0,
         }}
       />
+
       <div
         style={{
           position: "fixed",
@@ -124,47 +104,79 @@ const ClipSection = ({ children, bgColor }) => (
   </div>
 );
 
-const GameCard = ({ game, palette }) => {
+const GameCard = ({ game, index }) => {
   const Icon = game.icon;
 
+  const isDark = index % 2 === 1;
+
+  const background = isDark
+    ? config.dark
+    : config.cyan;
+
+  const textColor = isDark
+    ? config.cyan
+    : config.dark;
+
   return (
-    <ClipSection bgColor={palette.bg}>
-      <div className="text-center px-4 relative z-10">
+    <ClipSection background={background}>
+      <div className="relative z-10 px-4 text-center">
+        {/* Icon */}
+
         <div
-          className="mb-6 flex items-center justify-center w-20 h-20 mx-auto rounded-full transition-transform hover:scale-110"
-          style={{ backgroundColor: `${palette.accent}20` }}
+          className="mx-auto mb-7 flex h-20 w-20 items-center justify-center border-2 transition-transform hover:scale-105"
+          style={{
+            backgroundColor: textColor,
+            color: background,
+            borderColor: textColor,
+          }}
         >
-          <Icon size={48} style={{ color: palette.accent }} />
+          <Icon size={44} strokeWidth={1.8} />
         </div>
 
+        {/* Title */}
+
         <h2
-          className="text-5xl md:text-7xl font-black uppercase mb-4"
-          style={{ fontFamily: config.fontFamily, color: palette.text }}
+          className="mb-5 text-5xl font-black uppercase leading-none tracking-tight md:text-7xl"
+          style={{
+            fontFamily: config.fontFamily,
+            color: textColor,
+          }}
         >
           {game.title}
         </h2>
 
+        {/* Description */}
+
         <p
-          className="text-lg md:text-2xl font-semibold uppercase mb-2"
-          style={{ color: `${palette.text}ee` }}
+          className="mb-3 text-lg font-bold uppercase tracking-wide md:text-2xl"
+          style={{
+            color: textColor,
+          }}
         >
           {game.desc}
         </p>
 
+        {/* Why */}
+
         <p
-          className="text-sm md:text-lg italic mb-6"
-          style={{ color: `${palette.text}aa` }}
+          className="mx-auto mb-8 max-w-xl text-sm font-medium md:text-lg"
+          style={{
+            color: textColor,
+            opacity: 0.7,
+          }}
         >
           {game.why}
         </p>
 
+        {/* Play */}
+
         <Link
           href={game.href}
-          className="inline-block px-10 py-4 text-lg font-bold uppercase rounded-xl transition-all hover:scale-105 hover:shadow-2xl"
+          className="inline-flex min-w-[150px] items-center justify-center border-2 px-10 py-4 text-lg font-black uppercase tracking-widest transition-transform hover:scale-105"
           style={{
-            backgroundColor: palette.accent,
-            color: palette.bg,
-            boxShadow: `0 4px 20px ${palette.accent}40`,
+            backgroundColor: config.accent,
+            color: config.dark,
+            borderColor: textColor,
           }}
         >
           Play
@@ -177,39 +189,68 @@ const GameCard = ({ game, palette }) => {
 // =======================
 // Main Page
 // =======================
-export default function GameDashboard() {
-  const introPalette = config.colorPalettes[0];
 
+export default function GameDashboard() {
   return (
     <main className="snap-y snap-mandatory overflow-y-scroll font-sans">
-      <ClipSection bgColor={introPalette.bg}>
-        <div className="text-center px-4 relative z-10">
+      {/* Intro - Cyan */}
+
+      <ClipSection background={config.cyan}>
+        <div className="relative z-10 px-4 text-center">
           <h1
-            className="text-6xl md:text-8xl font-black uppercase mb-4"
-            style={{ fontFamily: config.fontFamily, color: introPalette.text }}
+            className="mb-5 text-6xl font-black uppercase leading-none tracking-tight md:text-8xl"
+            style={{
+              fontFamily: config.fontFamily,
+              color: config.dark,
+            }}
           >
-            Mind <span style={{ color: introPalette.accent }}>Games</span>
+            Mind{" "}
+            <span
+              className="inline-block px-3 py-1"
+              style={{
+                backgroundColor: config.dark,
+                color: config.cyan,
+              }}
+            >
+              Games
+            </span>
           </h1>
+
           <p
-            className="text-xl md:text-2xl font-semibold"
-            style={{ color: `${introPalette.text}ee` }}
+            className="text-xl font-bold uppercase tracking-wide md:text-2xl"
+            style={{
+              color: config.dark,
+            }}
           >
             Workout for your Brain
           </p>
+
           <p
-            className="mt-2 text-sm md:text-lg italic"
-            style={{ color: `${introPalette.text}aa` }}
+            className="mt-3 text-sm font-medium md:text-lg"
+            style={{
+              color: config.dark,
+              opacity: 0.65,
+            }}
           >
             Scroll down to explore each game and its benefits
           </p>
+
+          <div
+            className="mx-auto mt-10 h-1 w-20"
+            style={{
+              backgroundColor: config.accent,
+            }}
+          />
         </div>
       </ClipSection>
 
-      {GAMES.map((game, idx) => (
+      {/* Alternating Game Sections */}
+
+      {GAMES.map((game, index) => (
         <GameCard
           key={game.title}
           game={game}
-          palette={config.colorPalettes[idx + 1]}
+          index={index + 1}
         />
       ))}
     </main>
