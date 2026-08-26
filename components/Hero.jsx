@@ -67,7 +67,7 @@ const heroTags = ["Home Gym", "Workout Guide", "AI Trainer", "Fitness Hub"];
 const featureList = [
   {
     title: "Workout Wizard",
-    description: "Select muscles and generate workouts instantly.",
+    description: "Select muscles and generate workouts.",
     icon: Wand2,
   },
   {
@@ -522,10 +522,7 @@ const Hero = () => {
                   </div>
 
                   <div className="flex items-start gap-3 pl-1">
-                    <ArrowRight
-                      className="mt-1 h-4 w-4 shrink-0"
-                      strokeWidth={2}
-                    />
+                    
 
                     <span
                       className="font-medium leading-relaxed"
