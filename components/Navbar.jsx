@@ -42,93 +42,93 @@ function Navbar() {
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
       `}</style>
 
-{/* Toggle Button + Menu Text */}
-<div
-  className="relative z-[110] flex items-center gap-2 px-2 py-1.5"
-  style={{
-    backgroundColor: "color(display-p3 0.98 0.78 0.12)",
-  }}
->
-  <button
-    onClick={() => setIsOpen(!isOpen)}
-    className="relative w-8 h-8 md:w-9 md:h-9 flex flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90"
-    style={{
-      backgroundColor: isOpen
-        ? "color(display-p3 0.98 0.78 0.12)"
-        : "color(display-p3 0.079 0.201 0.346)",
+      {/* Toggle Button + Menu Text */}
+      <div
+        className="relative z-[110] flex items-center gap-2 px-2 py-1.5"
+        style={{
+          backgroundColor: "color(display-p3 0.98 0.78 0.12)",
+        }}
+      >
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative w-8 h-8 md:w-9 md:h-9 flex flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90"
+          style={{
+            backgroundColor: isOpen
+              ? "color(display-p3 0.98 0.78 0.12)"
+              : "color(display-p3 0.079 0.201 0.346)",
 
-      border: isOpen
-        ? "2px solid color(display-p3 0.079 0.201 0.346)"
-        : "2px solid color(display-p3 0.056 0.958 0.949)",
+            border: isOpen
+              ? "2px solid color(display-p3 0.079 0.201 0.346)"
+              : "2px solid color(display-p3 0.056 0.958 0.949)",
 
-      boxShadow: "none",
-    }}
-    aria-label="Toggle menu"
-  >
-    <motion.span
-      animate={
-        isOpen
-          ? {
-              rotate: 45,
-              y: 5.5,
-              scaleX: 1.1,
+            boxShadow: "none",
+          }}
+          aria-label="Toggle menu"
+        >
+          <motion.span
+            animate={
+              isOpen
+                ? {
+                    rotate: 45,
+                    y: 5.5,
+                    scaleX: 1.1,
+                  }
+                : {
+                    rotate: 0,
+                    y: 0,
+                    scaleX: 1,
+                  }
             }
-          : {
-              rotate: 0,
-              y: 0,
-              scaleX: 1,
-            }
-      }
-      className="h-0.5 w-4 md:w-5 rounded-full"
-      style={{
-        backgroundColor: isOpen
-          ? "color(display-p3 0.079 0.201 0.346)"
-          : "color(display-p3 0.056 0.958 0.949)",
-      }}
-    />
+            className="h-0.5 w-4 md:w-5 rounded-full"
+            style={{
+              backgroundColor: isOpen
+                ? "color(display-p3 0.079 0.201 0.346)"
+                : "color(display-p3 0.056 0.958 0.949)",
+            }}
+          />
 
-    <motion.span
-      animate={isOpen ? { opacity: 0 } : { opacity: 1 }}
-      className="h-0.5 w-4 md:w-5 rounded-full"
-      style={{
-        backgroundColor: "color(display-p3 0.056 0.958 0.949)",
-      }}
-    />
+          <motion.span
+            animate={isOpen ? { opacity: 0 } : { opacity: 1 }}
+            className="h-0.5 w-4 md:w-5 rounded-full"
+            style={{
+              backgroundColor: "color(display-p3 0.056 0.958 0.949)",
+            }}
+          />
 
-    <motion.span
-      animate={
-        isOpen
-          ? {
-              rotate: -45,
-              y: -5.5,
-              scaleX: 1.1,
+          <motion.span
+            animate={
+              isOpen
+                ? {
+                    rotate: -45,
+                    y: -5.5,
+                    scaleX: 1.1,
+                  }
+                : {
+                    rotate: 0,
+                    y: 0,
+                    scaleX: 1,
+                  }
             }
-          : {
-              rotate: 0,
-              y: 0,
-              scaleX: 1,
-            }
-      }
-      className="h-0.5 w-4 md:w-5 rounded-full"
-      style={{
-        backgroundColor: isOpen
-          ? "color(display-p3 0.079 0.201 0.346)"
-          : "color(display-p3 0.056 0.958 0.949)",
-      }}
-    />
-  </button>
+            className="h-0.5 w-4 md:w-5 rounded-full"
+            style={{
+              backgroundColor: isOpen
+                ? "color(display-p3 0.079 0.201 0.346)"
+                : "color(display-p3 0.056 0.958 0.949)",
+            }}
+          />
+        </button>
 
-  {/* MENU TEXT */}
-  <span
-  className="text-sm md:text-base font-bold uppercase tracking-wider"
-  style={{
-    fontFamily: "'Inter', sans-serif",
-    color: "color(display-p3 0.079 0.201 0.346)",
-  }}
->
-  Menu
-</span>
-</div>
+        {/* MENU TEXT */}
+        <span
+          className="text-sm md:text-base font-bold uppercase tracking-wider"
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            color: "color(display-p3 0.079 0.201 0.346)",
+          }}
+        >
+          Menu
+        </span>
+      </div>
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -153,20 +153,13 @@ function Navbar() {
                 {navLinks.map((link, index) => {
                   const Icon = link.icon;
 
-                  const isActive =
-                    activeLink?.name === link.name;
+                  const isActive = activeLink?.name === link.name;
 
                   return (
                     <motion.div
                       key={link.name}
-                      onMouseEnter={() =>
-                        !isMobile &&
-                        setActiveLink(link)
-                      }
-                      onMouseLeave={() =>
-                        !isMobile &&
-                        setActiveLink(null)
-                      }
+                      onMouseEnter={() => !isMobile && setActiveLink(link)}
+                      onMouseLeave={() => !isMobile && setActiveLink(null)}
                       initial={{
                         opacity: 0,
                         x: -30,
@@ -176,9 +169,7 @@ function Navbar() {
                         x: 0,
                       }}
                       transition={{
-                        delay:
-                          index * 0.05 +
-                          0.2,
+                        delay: index * 0.05 + 0.2,
                       }}
                     >
                       <Link
@@ -194,8 +185,7 @@ function Navbar() {
                         <span
                           className="text-sm md:text-lg font-mono font-bold min-w-[28px] md:min-w-[40px]"
                           style={{
-                            color:
-                              "color(display-p3 0.079 0.201 0.346)",
+                            color: "color(display-p3 0.079 0.201 0.346)",
 
                             opacity: 0.55,
                           }}
@@ -216,19 +206,12 @@ function Navbar() {
                                 ? "color(display-p3 0.079 0.201 0.346)"
                                 : "color(display-p3 0.056 0.958 0.949)",
 
-                              backgroundColor:
-                                isActive
-                                  ? "color(display-p3 0.98 0.78 0.12)"
-                                  : "color(display-p3 0.079 0.201 0.346)",
+                              backgroundColor: isActive
+                                ? "color(display-p3 0.98 0.78 0.12)"
+                                : "color(display-p3 0.079 0.201 0.346)",
                             }}
                           >
-                            <Icon
-                              size={
-                                isMobile
-                                  ? 18
-                                  : 22
-                              }
-                            />
+                            <Icon size={isMobile ? 18 : 22} />
                           </div>
 
                           {/* TEXT */}
@@ -237,17 +220,15 @@ function Navbar() {
                             <span
                               className="text-2xl sm:text-4xl md:text-6xl font-black uppercase tracking-tighter transition-transform duration-200 block leading-none"
                               style={{
-                                fontFamily:
-                                  "'Inter', sans-serif",
+                                fontFamily: "'Inter', sans-serif",
 
                                 color: isActive
                                   ? "color(display-p3 0.98 0.78 0.12)"
                                   : "color(display-p3 0.079 0.201 0.346)",
 
-                                transform:
-                                  isActive
-                                    ? "translateX(12px)"
-                                    : "translateX(0)",
+                                transform: isActive
+                                  ? "translateX(12px)"
+                                  : "translateX(0)",
                               }}
                             >
                               {link.name}
@@ -258,10 +239,7 @@ function Navbar() {
                                 scaleX: 0,
                               }}
                               animate={{
-                                scaleX:
-                                  isActive
-                                    ? 1
-                                    : 0,
+                                scaleX: isActive ? 1 : 0,
                               }}
                               className="h-1 md:h-1.5 w-full mt-1 origin-left"
                               style={{
@@ -283,9 +261,7 @@ function Navbar() {
                 <AnimatePresence mode="wait">
                   {activeLink && (
                     <motion.div
-                      key={
-                        activeLink.name
-                      }
+                      key={activeLink.name}
                       initial={{
                         opacity: 0,
                         scale: 0.8,
@@ -299,15 +275,11 @@ function Navbar() {
                         scale: 0.8,
                       }}
                       style={{
-                        color:
-                          "color(display-p3 0.079 0.201 0.346)",
+                        color: "color(display-p3 0.079 0.201 0.346)",
                       }}
                       className="flex items-center justify-center"
                     >
-                      <activeLink.icon
-                        size={300}
-                        strokeWidth={2}
-                      />
+                      <activeLink.icon size={300} strokeWidth={2} />
                     </motion.div>
                   )}
                 </AnimatePresence>

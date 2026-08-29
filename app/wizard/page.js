@@ -856,112 +856,149 @@ export default function WorkoutWizard() {
       <AnimatePresence>
         {isModalOpen && currentPreview && (
           <div
-            className={`absolute inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md md:p-8 ${t.modalBg}`}
+            className={`absolute inset-0 z-50 flex items-center justify-center p-3 md:p-6 ${t.modalBg}`}
           >
             <div
-              className={`relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden border-2 shadow-2xl ${t.borderAccent} ${t.bg}`}
+              className={`relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden border-2 ${t.borderAccent} ${t.bg}`}
             >
+              {/* CLOSE BUTTON */}
+
               <button
                 onClick={() => setIsModalOpen(false)}
-                className={`absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center border-2 transition-colors ${t.border} ${t.panel} ${t.hoverBg}`}
+                className={`absolute right-4 top-4 z-30 flex h-10 w-10 items-center justify-center border-2 ${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} transition-opacity hover:opacity-80`}
+                aria-label="Close"
               >
                 <X size={18} strokeWidth={3} />
               </button>
 
-              <div className="custom-scrollbar overflow-y-auto p-6 md:p-8">
-                <h3
-                  className="mb-6 font-black uppercase leading-tight"
-                  style={{
-                    fontSize: DESIGN.fontSize.section,
-                  }}
+              <div className="custom-scrollbar overflow-y-auto">
+                {/* TITLE */}
+
+                <div
+                  className={`border-b-2 p-6 pr-20 md:p-8 md:pr-24 ${t.bgAccent} ${t.textOnAccent} ${t.borderAccent}`}
                 >
-                  {currentPreview.name}
-                </h3>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] opacity-70">
+                    Exercise
+                  </p>
+
+                  <h3
+                    className="font-black uppercase leading-none tracking-tight"
+                    style={{
+                      fontSize: DESIGN.fontSize.section,
+                    }}
+                  >
+                    {currentPreview.name}
+                  </h3>
+                </div>
 
                 {/* IMAGE */}
 
                 <div
-                  className={`mb-8 flex w-full justify-center border-2 ${t.border} ${t.panel}`}
+                  className={`relative flex h-[280px] w-full items-center justify-center overflow-hidden ${t.panel}`}
                 >
-                  <div className="relative aspect-[4/3] w-full max-w-md">
-                    <RotatingImage
-                      images={currentPreview.images}
-                      name={currentPreview.name}
-                    />
+                  <RotatingImage
+                    images={currentPreview.images}
+                    name={currentPreview.name}
+                  />
+                </div>
+
+                {/* BASIC INFO */}
+
+                <div className={`grid grid-cols-3 border-y-2 ${t.border}`}>
+                  <div className={`p-4 md:p-5 border-r-2 ${t.border}`}>
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest opacity-50">
+                      Equipment
+                    </p>
+
+                    <p className="text-sm font-black uppercase">
+                      {currentPreview.equipment}
+                    </p>
+                  </div>
+
+                  <div className={`p-4 md:p-5 border-r-2 ${t.border}`}>
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest opacity-50">
+                      Category
+                    </p>
+
+                    <p className="text-sm font-black uppercase">
+                      {currentPreview.category}
+                    </p>
+                  </div>
+
+                  <div className="p-4 md:p-5">
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest opacity-50">
+                      Level
+                    </p>
+
+                    <p className="text-sm font-black uppercase">
+                      {currentPreview.level}
+                    </p>
                   </div>
                 </div>
 
-                {/* META */}
+                {/* TARGET MUSCLES */}
 
-                <div className="mb-8 flex flex-wrap gap-4 text-sm font-bold uppercase tracking-widest opacity-60">
-                  <span>{currentPreview.equipment}</span>
+                <div className={`border-b-2 p-5 md:p-6 ${t.border}`}>
+                  <p className="mb-3 text-xs font-black uppercase tracking-widest">
+                    Target Muscles
+                  </p>
 
-                  <span>•</span>
-
-                  <span>{currentPreview.category}</span>
-
-                  <span>•</span>
-
-                  <span>{currentPreview.level}</span>
+                  <p className="text-sm font-bold uppercase leading-relaxed opacity-70">
+                    {currentPreview.primaryMuscles?.join("  •  ")}
+                  </p>
                 </div>
 
-                {/* MUSCLES */}
+                {/* INSTRUCTIONS HEADER */}
 
-                <div className="mb-10">
-                  <h4 className="mb-4 text-sm font-black uppercase tracking-widest">
-                    Target Muscles
+                <div
+                  className={`flex items-center justify-between border-b-2 p-5 md:p-6 ${t.border}`}
+                >
+                  <h4 className="text-sm font-black uppercase tracking-widest">
+                    Instructions
                   </h4>
 
-                  <div className="flex flex-wrap gap-3">
-                    {currentPreview.primaryMuscles?.map((m) => (
-                      <span
-                        key={m}
-                        className={`border-2 px-4 py-2 text-xs font-bold uppercase tracking-widest ${t.border} ${t.panel}`}
-                      >
-                        {m}
-                      </span>
-                    ))}
-                  </div>
+                  <span className="text-xs font-bold opacity-50">
+                    {currentPreview.instructions?.length || 0} STEPS
+                  </span>
                 </div>
 
                 {/* INSTRUCTIONS */}
 
-                <div className="mb-12">
-                  <h4 className="mb-5 text-sm font-black uppercase tracking-widest">
-                    Instructions
-                  </h4>
-
-                  <div className="space-y-6">
-                    {currentPreview.instructions?.map((step, i) => (
-                      <div key={i} className="flex gap-5">
-                        <span
-                          className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 text-sm font-black ${t.borderAccent} ${t.bgAccent} ${t.textOnAccent}`}
-                        >
-                          {i + 1}
-                        </span>
-
-                        <p className="pt-1 text-base font-medium leading-relaxed opacity-80">
-                          {step}
-                        </p>
+                <div>
+                  {currentPreview.instructions?.map((step, i) => (
+                    <div
+                      key={i}
+                      className={`flex gap-4 border-b-2 p-5 md:p-6 ${t.border}`}
+                    >
+                      <div
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center text-xs font-black ${t.bgAccent} ${t.textOnAccent}`}
+                      >
+                        {String(i + 1).padStart(2, "0")}
                       </div>
-                    ))}
-                  </div>
+
+                      <p className="text-sm leading-relaxed opacity-80 md:text-base">
+                        {step}
+                      </p>
+                    </div>
+                  ))}
                 </div>
 
-                {/* ADD / REMOVE */}
+                {/* ACTION */}
 
-                <button
-                  onClick={() => toggleRoutine(currentPreview)}
-                  className={`w-full border-2 p-5 text-sm font-black uppercase tracking-widest transition-colors ${
-                    routine.some((r) => r.id === currentPreview.id)
-                      ? `${t.borderAccent} ${t.textAccent} ${t.hoverBg}`
-                      : `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} ${t.hoverBg}`
-                  }`}
-                >
-                  {routine.some((r) => r.id === currentPreview.id)
-                    ? "Remove from Routine"
-                    : "Add to Routine"}
-                </button>
+                <div className="p-5 md:p-6">
+                  <button
+                    onClick={() => toggleRoutine(currentPreview)}
+                    className={`w-full border-2 p-4 text-sm font-black uppercase tracking-widest transition-opacity hover:opacity-80 ${
+                      routine.some((r) => r.id === currentPreview.id)
+                        ? `${t.borderAccent} ${t.panel} ${t.textAccent}`
+                        : `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent}`
+                    }`}
+                  >
+                    {routine.some((r) => r.id === currentPreview.id)
+                      ? "Remove from Routine"
+                      : "Add to Routine"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

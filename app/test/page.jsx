@@ -1,7 +1,14 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
+
 import { motion, AnimatePresence } from "framer-motion";
+
 import {
   Zap,
   Dumbbell,
@@ -22,36 +29,66 @@ import {
 import FrontView from "@/components/anatomy/FrontView";
 
 /* =========================================================
-   DESIGN CONFIG
+   COLORS
 ========================================================= */
 
-const CONFIG = {
-  colors: {
-    bg: "color(display-p3 0.056 0.958 0.949)",
-    element: "color(display-p3 0.079 0.201 0.346)",
-  },
-  radius: {
-    panel: "2rem",
-    pill: "999px",
-  },
-};
+const BG =
+  "color(display-p3 0.056 0.958 0.949)";
 
-const BG = CONFIG.colors.bg;
-const ELEMENT = CONFIG.colors.element;
+const ELEMENT =
+  "color(display-p3 0.079 0.201 0.346)";
+
+const ACCENT =
+  "color(display-p3 0.98 0.78 0.12)";
 
 /* =========================================================
    DATA
 ========================================================= */
 
-const heroTags = ["Home Gym", "Workout Guide", "AI Trainer", "Fitness Hub"];
+const heroTags = [
+  "Home Workouts",
+  "Exercise Library",
+  "AI Trainer",
+  "Fitness Tools",
+];
 
 const featureList = [
-  { title: "Workout Wizard", description: "Select muscles and generate workouts.", icon: Wand2 },
-  { title: "Rich Dataset", description: "Categorized exercises for all goals.", icon: Database },
-  { title: "Calculators", description: "BMI, calories, and protein formulas.", icon: Calculator },
-  { title: "AI Chatbot", description: "24/7 intelligent fitness assistant.", icon: MessageSquare },
-  { title: "Kanban Board", description: "Visual tracking for fitness tasks.", icon: Columns3 },
-  { title: "Mini Games", description: "Boost focus and motivation.", icon: Gamepad2 },
+  {
+    title: "Workout Wizard",
+    description:
+      "Build a workout based on the muscles you want to train.",
+    icon: Wand2,
+  },
+  {
+    title: "Exercise Library",
+    description:
+      "Explore hundreds of exercises with clear instructions.",
+    icon: Database,
+  },
+  {
+    title: "Calculators",
+    description:
+      "Calculate BMI, calories, protein, and more.",
+    icon: Calculator,
+  },
+  {
+    title: "AI Trainer",
+    description:
+      "Get instant answers and guidance whenever you need it.",
+    icon: MessageSquare,
+  },
+  {
+    title: "Kanban Board",
+    description:
+      "Organize your training and keep track of your progress.",
+    icon: Columns3,
+  },
+  {
+    title: "Mini Games",
+    description:
+      "Take a break, stay focused, and keep moving.",
+    icon: Gamepad2,
+  },
 ];
 
 /* =========================================================
@@ -59,229 +96,503 @@ const featureList = [
 ========================================================= */
 
 const Hero = () => {
-  const [selectedMuscle, setSelectedMuscle] = useState(null);
-  const [highlightedMuscle, setHighlightedMuscle] = useState(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [selectedMuscle, setSelectedMuscle] =
+    useState(null);
+
+  const [highlightedMuscle, setHighlightedMuscle] =
+    useState(null);
+
+  const [mousePos, setMousePos] = useState({
+    x: 0,
+    y: 0,
+  });
 
   const anatomyBoxRef = useRef(null);
 
+  /* =======================================================
+     PROBLEMS
+  ======================================================= */
+
   const problemList = useMemo(
     () => [
-      { id: 1, text: "No gym access", solution: "Bodyweight & home equipment routines.", icon: MapPin },
-      { id: 2, text: "Too expensive", solution: "Free workout plans & calculators.", icon: Calculator },
-      { id: 3, text: "Don't know how", solution: "Step-by-step exercise guides.", icon: Info },
-      { id: 4, text: "Need privacy", solution: "24/7 AI trainer, no judgment.", icon: MessageSquare },
-      { id: 5, text: "Lack of knowledge", solution: "800+ exercises with instructions.", icon: Dumbbell },
-      { id: 6, text: "Can't go out", solution: "Effective home workout programs.", icon: Zap },
-      { id: 7, text: "Need structure", solution: "Visual Kanban Board tracking.", icon: LayoutDashboard },
-      { id: 8, text: "No motivation", solution: "Motivation Marquee always on top.", icon: Target },
-      { id: 9, text: "No equipment", solution: "Trainings with just your body weights.", icon: Package },
+      {
+        id: 1,
+        text: "No gym",
+        solution: "Train at home with minimal equipment.",
+        icon: MapPin,
+      },
+      {
+        id: 2,
+        text: "High cost",
+        solution: "Free workouts, tools, and guidance.",
+        icon: Calculator,
+      },
+      {
+        id: 3,
+        text: "Not sure what to do",
+        solution: "Follow simple, step-by-step exercises.",
+        icon: Info,
+      },
+      {
+        id: 4,
+        text: "Need guidance",
+        solution: "Ask the AI trainer whenever you need help.",
+        icon: MessageSquare,
+      },
+      {
+        id: 5,
+        text: "Limited knowledge",
+        solution: "Learn from a large exercise library.",
+        icon: Dumbbell,
+      },
+      {
+        id: 6,
+        text: "Can't get to the gym",
+        solution: "Follow effective home workout plans.",
+        icon: Zap,
+      },
+      {
+        id: 7,
+        text: "Need structure",
+        solution: "Organize your training with Kanban.",
+        icon: LayoutDashboard,
+      },
+      {
+        id: 8,
+        text: "Need motivation",
+        solution: "Stay engaged with simple daily tools.",
+        icon: Target,
+      },
+      {
+        id: 9,
+        text: "No equipment",
+        solution: "Start with bodyweight exercises.",
+        icon: Package,
+      },
     ],
     []
   );
 
+  /* =======================================================
+     POINTER
+  ======================================================= */
+
   const handlePointerMove = useCallback((e) => {
     if (!anatomyBoxRef.current) return;
-    const rect = anatomyBoxRef.current.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    setMousePos({ x: clientX - rect.left, y: clientY - rect.top });
+
+    const rect =
+      anatomyBoxRef.current.getBoundingClientRect();
+
+    const clientX = e.touches
+      ? e.touches[0].clientX
+      : e.clientX;
+
+    const clientY = e.touches
+      ? e.touches[0].clientY
+      : e.clientY;
+
+    setMousePos({
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    });
   }, []);
 
-  // Shared animation variants for staggered loading
+  /* =======================================================
+     ANIMATION
+  ======================================================= */
+
   const panelVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: {
+      opacity: 0,
+      y: 15,
+    },
+
     visible: (custom) => ({
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, delay: custom * 0.15 },
+      transition: {
+        duration: 0.45,
+        delay: custom * 0.1,
+      },
     }),
   };
 
-  const sharedPanelClasses = "mx-auto w-full max-w-4xl overflow-hidden px-6 py-12 sm:px-12 sm:py-16";
+  /* =======================================================
+     SHARED PANEL
+  ======================================================= */
+
+  const panel =
+    "mx-auto w-full max-w-5xl overflow-hidden border-2";
 
   return (
     <main
-      className="min-h-screen w-full flex flex-col gap-6 px-4 py-8 sm:px-6 md:py-12 lg:px-8 font-light antialiased"
-      style={{ backgroundColor: BG, color: ELEMENT }}
+      className="min-h-screen w-full space-y-4 px-3 py-5 sm:px-5 md:space-y-5 md:px-8 md:py-8"
+      style={{
+        backgroundColor: BG,
+        color: ELEMENT,
+      }}
     >
-      {/* === PANEL 1: HEADER AREA === */}
-      <motion.div
+
+      {/* =====================================================
+          HERO
+      ===================================================== */}
+
+      <motion.section
         custom={0}
         initial="hidden"
         animate="visible"
         variants={panelVariants}
-        className={`${sharedPanelClasses} flex flex-col items-center justify-center text-center`}
-        style={{ backgroundColor: ELEMENT, color: BG, borderRadius: CONFIG.radius.panel }}
+        className={panel}
+        style={{
+          borderColor: ELEMENT,
+          backgroundColor: ELEMENT,
+          color: BG,
+        }}
       >
-        <h1 className="flex flex-wrap items-center justify-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extralight tracking-tight leading-none">
-          <span>noTrainer</span>
-          <span className="ml-2 md:ml-4 font-normal opacity-90">AI</span>
-        </h1>
+        <div className="p-7 text-center sm:p-10 md:p-14">
 
-        <p className="mt-6 max-w-lg text-base sm:text-xl font-normal leading-relaxed opacity-90">
-          Train Anywhere. <span className="font-semibold block sm:inline">No Trainer Needed.</span>
-        </p>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.25em] opacity-60">
+            Your Personal Fitness Hub
+          </p>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-          {heroTags.map((tag) => (
-            <span
-              key={tag}
-              className="px-4 py-2 text-[10px] sm:text-xs font-medium uppercase tracking-wider border border-white/20"
-              style={{ borderRadius: CONFIG.radius.pill }}
-            >
-              {tag}
+          <h1 className="text-5xl font-light leading-none tracking-tight sm:text-7xl md:text-8xl">
+            noTrainer{" "}
+            <span className="font-normal">
+              AI
             </span>
-          ))}
-        </div>
-      </motion.div>
+          </h1>
 
-      {/* === PANEL 2: MUSCLE ANATOMY AREA === */}
-      <motion.div
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed opacity-80 sm:text-lg">
+            Work out anywhere, learn as you go, and
+            build a routine that works for you.
+          </p>
+
+          <div className="mt-8 flex flex-wrap justify-center">
+            {heroTags.map((tag, index) => (
+              <span
+                key={tag}
+                className={`border-2 px-4 py-2 text-[10px] font-bold uppercase tracking-wider ${
+                  index !== heroTags.length - 1
+                    ? "border-r-0"
+                    : ""
+                }`}
+                style={{
+                  borderColor: BG,
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+        </div>
+      </motion.section>
+
+      {/* =====================================================
+          ANATOMY
+      ===================================================== */}
+
+      <motion.section
         custom={1}
         initial="hidden"
         animate="visible"
         variants={panelVariants}
-        className={`${sharedPanelClasses} flex flex-col items-center`}
-        style={{ backgroundColor: BG, color: ELEMENT, borderRadius: CONFIG.radius.panel }}
+        className={panel}
+        style={{
+          borderColor: ELEMENT,
+          backgroundColor: "transparent",
+        }}
       >
-        <h2 className="mb-8 text-2xl sm:text-4xl font-light tracking-tight text-center">
-           <span className="font-semibold">Target Every Muscle</span>
-        </h2>
 
-        <div className="mb-10 w-full max-w-xs rounded-full border border-white/20 bg-white/5 py-3 text-center backdrop-blur-sm">
-          {selectedMuscle ? (
-            <span className="text-sm sm:text-base font-medium capitalize tracking-wide">
-              {String(selectedMuscle)}
+        {/* HEADER */}
+
+        <div
+          className="border-b-2 p-6 sm:p-8"
+          style={{
+            borderColor: ELEMENT,
+          }}
+        >
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] opacity-50">
+            Explore Your Body
+          </p>
+
+          <h2 className="text-3xl font-light uppercase tracking-tight sm:text-5xl">
+            Choose a{" "}
+            <span className="font-semibold">
+              Muscle
             </span>
-          ) : (
-            <span className="text-xs sm:text-sm font-medium uppercase tracking-[0.2em] opacity-80">
-              Select a Muscle
-            </span>
-          )}
+          </h2>
+
+          <p className="mt-3 max-w-xl text-sm leading-relaxed opacity-60">
+            Select a muscle to find exercises that
+            target it.
+          </p>
         </div>
+
+        {/* SELECTED MUSCLE */}
+
+        <div
+          className="flex min-h-[60px] items-center justify-between border-b-2 px-6 py-4 sm:px-8"
+          style={{
+            borderColor: ELEMENT,
+          }}
+        >
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">
+            Selected
+          </span>
+
+          <span className="text-sm font-black uppercase">
+            {selectedMuscle
+              ? String(selectedMuscle)
+              : "Select a muscle"}
+          </span>
+        </div>
+
+        {/* ANATOMY */}
 
         <div
           ref={anatomyBoxRef}
           onMouseMove={handlePointerMove}
           onTouchMove={handlePointerMove}
-          className="
-            relative flex w-full justify-center
-            [&_svg]:block [&_svg]:h-auto
-            [&_svg]:w-[250px] sm:[&_svg]:w-[320px] md:[&_svg]:w-[400px]
-            [&_svg]:cursor-pointer
-          "
+          className="relative flex w-full items-center justify-center overflow-auto p-6 sm:p-8 md:p-10"
         >
           <AnimatePresence>
             {highlightedMuscle && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1, x: mousePos.x + 16, y: mousePos.y - 32 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="pointer-events-none absolute left-0 top-0 z-50 rounded-md bg-white px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-900 shadow-xl"
+                initial={{
+                  opacity: 0,
+                  scale: 0.9,
+                }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  x: mousePos.x + 16,
+                  y: mousePos.y - 32,
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.9,
+                }}
+                className="pointer-events-none absolute left-0 top-0 z-50 border-2 px-3 py-2 text-[10px] font-black uppercase tracking-widest"
+                style={{
+                  backgroundColor: BG,
+                  color: ELEMENT,
+                  borderColor: ELEMENT,
+                }}
               >
                 {highlightedMuscle}
               </motion.div>
             )}
           </AnimatePresence>
 
-          <FrontView
-            onHover={setHighlightedMuscle}
-            onLeave={() => setHighlightedMuscle(null)}
-            onSelect={setSelectedMuscle}
-            selectedMuscle={selectedMuscle}
-            highlightedMuscle={highlightedMuscle}
-          />
-        </div>
-      </motion.div>
+          {/* SVG IS NOT RESIZED HERE.
+              FrontView controls its own size. */}
 
-      {/* === PANEL 3: PROBLEMS TO SOLUTIONS LIST === */}
-      <motion.div
+          <div className="shrink-0">
+            <FrontView
+              onHover={setHighlightedMuscle}
+              onLeave={() =>
+                setHighlightedMuscle(null)
+              }
+              onSelect={setSelectedMuscle}
+              selectedMuscle={selectedMuscle}
+              highlightedMuscle={highlightedMuscle}
+            />
+          </div>
+        </div>
+      </motion.section>
+
+      {/* =====================================================
+          SOLUTIONS
+      ===================================================== */}
+
+      <motion.section
         custom={2}
         initial="hidden"
         animate="visible"
         variants={panelVariants}
-        className={`${sharedPanelClasses} flex flex-col`}
-        style={{ backgroundColor: ELEMENT, color: BG, borderRadius: CONFIG.radius.panel }}
+        className={panel}
+        style={{
+          backgroundColor: ELEMENT,
+          color: BG,
+          borderColor: ELEMENT,
+        }}
       >
-        <div className="mb-10 flex items-center justify-between">
-          <h2 className="text-2xl sm:text-4xl font-light uppercase tracking-widest">
-            Solutions
+
+        {/* HEADER */}
+
+        <div
+          className="border-b-2 p-6 sm:p-8"
+          style={{
+            borderColor:
+              "rgba(56, 244, 242, 0.2)",
+          }}
+        >
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] opacity-50">
+            What You Need
+          </p>
+
+          <h2 className="text-3xl font-light uppercase tracking-tight sm:text-5xl">
+            Simple{" "}
+            <span className="font-semibold">
+              Solutions
+            </span>
           </h2>
         </div>
 
-        <div className="flex flex-col">
+        {/* LIST */}
+
+        <div>
           {problemList.map((problem) => {
             const Icon = problem.icon;
+
             return (
               <div
                 key={problem.id}
-                className="group flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 py-5 border-b border-white/10 last:border-0"
+                className="grid grid-cols-[32px_1fr] gap-4 border-b-2 p-5 last:border-b-0 sm:grid-cols-[40px_1fr_1fr] sm:items-center sm:gap-6 sm:p-6"
+                style={{
+                  borderColor:
+                    "rgba(56, 244, 242, 0.12)",
+                }}
               >
-                <div className="flex items-center gap-3 sm:w-1/2">
-                  <Icon size={20} className="opacity-70" />
-                  <span className="font-semibold uppercase tracking-wider text-sm sm:text-base">
+
+                {/* NUMBER */}
+
+                <span className="text-xs font-black opacity-40">
+                  {String(problem.id).padStart(
+                    2,
+                    "0"
+                  )}
+                </span>
+
+                {/* PROBLEM */}
+
+                <div className="flex items-center gap-3">
+                  <Icon
+                    size={18}
+                    strokeWidth={2}
+                    className="shrink-0 opacity-60"
+                  />
+
+                  <span className="text-sm font-black uppercase tracking-wide">
                     {problem.text}
                   </span>
                 </div>
 
-                <div className="hidden sm:flex items-center justify-center w-8">
-                  <ArrowRight size={16} className="opacity-40" />
+                {/* SOLUTION */}
+
+                <div className="col-start-2 flex items-start gap-2 sm:col-auto">
+                  <ArrowRight
+                    size={16}
+                    className="mt-0.5 shrink-0 opacity-40"
+                  />
+
+                  <p className="text-sm leading-relaxed opacity-70">
+                    {problem.solution}
+                  </p>
                 </div>
 
-                <div className="pl-8 sm:pl-0 sm:w-1/2">
-                  <span className="text-sm sm:text-base font-medium opacity-90 leading-relaxed">
-                    {problem.solution}
-                  </span>
-                </div>
               </div>
             );
           })}
         </div>
-      </motion.div>
+      </motion.section>
 
-      {/* === PANEL 4: FEATURES LIST === */}
-      <motion.div
+      {/* =====================================================
+          FEATURES
+      ===================================================== */}
+
+      <motion.section
         custom={3}
         initial="hidden"
         animate="visible"
         variants={panelVariants}
-        className={`${sharedPanelClasses} flex flex-col`}
-        style={{ backgroundColor: ELEMENT, color: BG, borderRadius: CONFIG.radius.panel }}
+        className={panel}
+        style={{
+          backgroundColor: ELEMENT,
+          color: BG,
+          borderColor: ELEMENT,
+        }}
       >
-        <div className="mb-10">
-          <h2 className="text-2xl sm:text-4xl font-light uppercase tracking-widest">
-            Features
-          </h2>
-          <p className="mt-2 text-sm sm:text-base font-medium opacity-80">
-            Everything you need to succeed
+
+        {/* HEADER */}
+
+        <div
+          className="border-b-2 p-6 sm:p-8"
+          style={{
+            borderColor:
+              "rgba(56, 244, 242, 0.2)",
+          }}
+        >
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] opacity-50">
+            Inside noTrainer
           </p>
+
+          <h2 className="text-3xl font-light uppercase tracking-tight sm:text-5xl">
+            Built to{" "}
+            <span className="font-semibold">
+              Help You Train
+            </span>
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-0">
-          {featureList.map((feature) => {
+        {/* FEATURES */}
+
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          {featureList.map((feature, index) => {
             const Icon = feature.icon;
+
             return (
               <div
                 key={feature.title}
-                className="flex items-start gap-4 py-5 border-b border-white/10 md:[&:nth-last-child(-n+2)]:border-0 last:border-0"
+                className={`flex gap-4 p-5 sm:p-6 ${
+                  index % 2 === 0
+                    ? "md:border-r-2"
+                    : ""
+                } ${
+                  index <
+                  featureList.length - 2
+                    ? "border-b-2"
+                    : ""
+                }`}
+                style={{
+                  borderColor:
+                    "rgba(56, 244, 242, 0.12)",
+                }}
               >
-                <div className="mt-1 flex-shrink-0 bg-white/10 p-2 rounded-lg">
-                  <Icon size={20} />
+
+                {/* ICON */}
+
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center"
+                  style={{
+                    backgroundColor: BG,
+                    color: ELEMENT,
+                  }}
+                >
+                  <Icon
+                    size={19}
+                    strokeWidth={2.5}
+                  />
                 </div>
+
+                {/* TEXT */}
+
                 <div>
-                  <h3 className="font-semibold text-base sm:text-lg tracking-wide mb-1">
+                  <h3 className="mb-1 text-sm font-black uppercase tracking-wide">
                     {feature.title}
                   </h3>
-                  <p className="text-sm font-semibold sm:text-base opacity-80 leading-relaxed">
+
+                  <p className="text-sm leading-relaxed opacity-70">
                     {feature.description}
                   </p>
                 </div>
+
               </div>
             );
           })}
         </div>
-      </motion.div>
+      </motion.section>
     </main>
   );
 };
