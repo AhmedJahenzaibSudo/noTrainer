@@ -42,80 +42,93 @@ function Navbar() {
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
       `}</style>
 
-      {/* Toggle Button - inside marquee */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative z-[110] w-8 h-8 md:w-9 md:h-9 flex flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90"
-        style={{
-          backgroundColor: isOpen
-            ? "color(display-p3 0.98 0.78 0.12)"
-            : "color(display-p3 0.079 0.201 0.346)",
+{/* Toggle Button + Menu Text */}
+<div
+  className="relative z-[110] flex items-center gap-2 px-2 py-1.5"
+  style={{
+    backgroundColor: "color(display-p3 0.98 0.78 0.12)",
+  }}
+>
+  <button
+    onClick={() => setIsOpen(!isOpen)}
+    className="relative w-8 h-8 md:w-9 md:h-9 flex flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90"
+    style={{
+      backgroundColor: isOpen
+        ? "color(display-p3 0.98 0.78 0.12)"
+        : "color(display-p3 0.079 0.201 0.346)",
 
-          border: isOpen
-            ? "2px solid color(display-p3 0.079 0.201 0.346)"
-            : "2px solid color(display-p3 0.056 0.958 0.949)",
+      border: isOpen
+        ? "2px solid color(display-p3 0.079 0.201 0.346)"
+        : "2px solid color(display-p3 0.056 0.958 0.949)",
 
-          boxShadow: "none",
-        }}
-        aria-label="Toggle menu"
-      >
-        <motion.span
-          animate={
-            isOpen
-              ? {
-                  rotate: 45,
-                  y: 5.5,
-                  scaleX: 1.1,
-                }
-              : {
-                  rotate: 0,
-                  y: 0,
-                  scaleX: 1,
-                }
-          }
-          className="h-0.5 w-4 md:w-5 rounded-full"
-          style={{
-            backgroundColor: isOpen
-              ? "color(display-p3 0.079 0.201 0.346)"
-              : "color(display-p3 0.056 0.958 0.949)",
-          }}
-        />
+      boxShadow: "none",
+    }}
+    aria-label="Toggle menu"
+  >
+    <motion.span
+      animate={
+        isOpen
+          ? {
+              rotate: 45,
+              y: 5.5,
+              scaleX: 1.1,
+            }
+          : {
+              rotate: 0,
+              y: 0,
+              scaleX: 1,
+            }
+      }
+      className="h-0.5 w-4 md:w-5 rounded-full"
+      style={{
+        backgroundColor: isOpen
+          ? "color(display-p3 0.079 0.201 0.346)"
+          : "color(display-p3 0.056 0.958 0.949)",
+      }}
+    />
 
-        <motion.span
-          animate={
-            isOpen
-              ? { opacity: 0 }
-              : { opacity: 1 }
-          }
-          className="h-0.5 w-4 md:w-5 rounded-full"
-          style={{
-            backgroundColor: "color(display-p3 0.056 0.958 0.949)",
-          }}
-        />
+    <motion.span
+      animate={isOpen ? { opacity: 0 } : { opacity: 1 }}
+      className="h-0.5 w-4 md:w-5 rounded-full"
+      style={{
+        backgroundColor: "color(display-p3 0.056 0.958 0.949)",
+      }}
+    />
 
-        <motion.span
-          animate={
-            isOpen
-              ? {
-                  rotate: -45,
-                  y: -5.5,
-                  scaleX: 1.1,
-                }
-              : {
-                  rotate: 0,
-                  y: 0,
-                  scaleX: 1,
-                }
-          }
-          className="h-0.5 w-4 md:w-5 rounded-full"
-          style={{
-            backgroundColor: isOpen
-              ? "color(display-p3 0.079 0.201 0.346)"
-              : "color(display-p3 0.056 0.958 0.949)",
-          }}
-        />
-      </button>
+    <motion.span
+      animate={
+        isOpen
+          ? {
+              rotate: -45,
+              y: -5.5,
+              scaleX: 1.1,
+            }
+          : {
+              rotate: 0,
+              y: 0,
+              scaleX: 1,
+            }
+      }
+      className="h-0.5 w-4 md:w-5 rounded-full"
+      style={{
+        backgroundColor: isOpen
+          ? "color(display-p3 0.079 0.201 0.346)"
+          : "color(display-p3 0.056 0.958 0.949)",
+      }}
+    />
+  </button>
 
+  {/* MENU TEXT */}
+  <span
+  className="text-sm md:text-base font-bold uppercase tracking-wider"
+  style={{
+    fontFamily: "'Inter', sans-serif",
+    color: "color(display-p3 0.079 0.201 0.346)",
+  }}
+>
+  Menu
+</span>
+</div>
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -228,7 +241,7 @@ function Navbar() {
                                   "'Inter', sans-serif",
 
                                 color: isActive
-                                  ? "color(display-p3 0.98 0.38 0.12)"
+                                  ? "color(display-p3 0.98 0.78 0.12)"
                                   : "color(display-p3 0.079 0.201 0.346)",
 
                                 transform:
