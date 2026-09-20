@@ -1,80 +1,31 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import FrontView from "@/components/anatomy/FrontView";
-import BackView from "@/components/anatomy/BackView";
-import exercisesData from "@/public/exercises.json";
+import React, { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowRight,
+  Download,
+  LayoutList,
   RotateCcw,
   Trash2,
   X,
-  LayoutList,
-  Download,
-  ArrowRight,
 } from "lucide-react";
 
-/* =========================================================
-   DESIGN CONFIG
-========================================================= */
+import FrontView from "@/components/anatomy/FrontView";
+import BackView from "@/components/anatomy/BackView";
+import exercisesData from "@/public/exercises.json";
 
-const DESIGN = {
-  colors: {
-    background: "color(display-p3 0.056 0.958 0.949)",
-    element: "color(display-p3 0.079 0.201 0.346)",
+const BG = "color(display-p3 0.056 0.958 0.949)";
+const ELEMENT = "color(display-p3 0.079 0.201 0.346)";
+const SELECTED = "color(display-p3 0.98 0.78 0.12)";
+const SELECTED_TEXT = "color(display-p3 0.079 0.201 0.346)";
 
-    // selected state
-    selected: "color(display-p3 0.98 0.78 0.12)",
-    selectedText: "color(display-p3 0.079 0.201 0.346)",
-  },
-
-  fontSize: {
-    hero: "clamp(3.75rem, 8vw, 6rem)",
-    section: "clamp(1.9rem, 3vw, 2.4rem)",
-    cardTitle: "1.25rem",
-    body: "1rem",
-    small: "0.875rem",
-  },
-
-  borderWidth: "2px",
-};
-
-const baseTheme = {
-  bg: "wizard-bg",
-  header: "wizard-block",
-  panel: "wizard-block",
-  border: "wizard-border",
-  textAccent: "wizard-text",
-  bgAccent: "wizard-block",
-  borderAccent: "wizard-border",
-  hoverBorder: "wizard-hover-border",
-  hoverBg: "wizard-hover-fill",
-  textHover: "wizard-hover-text",
-  textOnAccent: "wizard-block-text",
-  modalBg: "wizard-modal-bg",
-  scrollThumb: DESIGN.colors.element,
-  scrollThumbHover: DESIGN.colors.element,
-};
-
-const themes = {
-  0: baseTheme,
-  1: baseTheme,
-  2: baseTheme,
-  3: baseTheme,
-  4: baseTheme,
-  5: baseTheme,
-};
-
-/* =========================================================
-   ROTATING IMAGE
-========================================================= */
-
-const RotatingImage = ({ images = [], name, className = "" }) => {
+const RotatingImage = ({ images = [], name }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     setCurrentIndex(0);
-  }, [images?.length]);
+  }, [images]);
 
   useEffect(() => {
     if (images.length <= 1) return;
@@ -86,62 +37,79 @@ const RotatingImage = ({ images = [], name, className = "" }) => {
     return () => clearInterval(interval);
   }, [images.length]);
 
+  if (!images.length) {
+    return (
+      <div className="flex h-full w-full items-center justify-center px-6 text-center text-xs font-bold uppercase tracking-widest opacity-40">
+        No image available
+      </div>
+    );
+  }
+
   return (
-    <div className={`relative h-full w-full overflow-hidden ${className}`}>
+    <div className="relative h-full w-full overflow-hidden">
       {images.map((image, index) => (
-        <div
+        <img
           key={`${image}-${index}`}
-          className={`absolute inset-0 transition-opacity duration-0 ${
+          src={`/exercises/${image || "placeholder.png"}`}
+          alt={`${name} view ${index + 1}`}
+          className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${
             index === currentIndex ? "opacity-100" : "opacity-0"
           }`}
-        >
-          <img
-            src={`/exercises/${image || "placeholder.png"}`}
-            alt={`${name} view ${index + 1}`}
-            className="h-full w-full object-contain"
-          />
-        </div>
+        />
       ))}
     </div>
   );
 };
 
-/* =========================================================
-   SELECTION CARD
-========================================================= */
+const SelectionCard = ({ title, count, active, onClick }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full border-2 p-4 text-left transition-transform duration-200 sm:p-5 ${
+        active ? "wizard-selected" : "wizard-card"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="min-w-0 break-words text-base font-bold capitalize sm:text-lg">
+          {title}
+        </h3>
 
-const SelectionCard = ({ title, count, active, onClick, t }) => (
-  <button
-    onClick={onClick}
-    className={`w-full border-2 p-5 text-left transition-colors duration-200 ${
-      active ? "wizard-selected" : `${t.border} ${t.panel} ${t.hoverBorder}`
-    }`}
-  >
-    <div className="flex flex-col gap-4">
-      <h3 className="text-xl font-bold capitalize">{title}</h3>
-
-      <div>
-        <span
-          className={`inline-flex border-2 px-3 py-1 text-xs font-bold uppercase tracking-widest ${
-            active ? "border-current" : `${t.borderAccent} ${t.textOnAccent}`
-          }`}
-        >
-          {count} options
+        <span className="shrink-0 border-2 border-current px-2 py-1 text-[10px] font-bold uppercase tracking-wider sm:px-3 sm:text-xs">
+          {count}
         </span>
       </div>
-    </div>
-  </button>
-);
+    </button>
+  );
+};
 
-/* =========================================================
-   WORKOUT WIZARD
-========================================================= */
+const StepHeader = ({ children }) => {
+  return (
+    <div className="mb-6 text-center sm:mb-8">
+      <h2 className="text-2xl font-black uppercase tracking-tight sm:text-3xl md:text-4xl">
+        {children}
+      </h2>
+    </div>
+  );
+};
+
+const PrimaryButton = ({ children, onClick, disabled = false }) => {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex w-full items-center justify-center gap-3 border-2 px-5 py-4 text-sm font-black uppercase tracking-widest transition-all sm:py-5 sm:text-base ${
+        disabled
+          ? "cursor-not-allowed border-current opacity-30"
+          : "wizard-primary"
+      }`}
+    >
+      {children}
+    </button>
+  );
+};
 
 export default function WorkoutWizard() {
   const [currentStep, setCurrentStep] = useState(0);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
 
   const [view, setView] = useState("front");
 
@@ -156,122 +124,145 @@ export default function WorkoutWizard() {
 
   const [activeIndex, setActiveIndex] = useState(0);
 
-  /* =======================================================
-     DATA FILTERING
-  ======================================================= */
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
 
   const exercisesForMuscle = useMemo(() => {
     if (!muscle) return [];
 
     return exercisesData.filter(
-      (ex) =>
-        ex.primaryMuscles?.includes(muscle) ||
-        ex.secondaryMuscles?.includes(muscle),
+      (exercise) =>
+        exercise.primaryMuscles?.includes(muscle) ||
+        exercise.secondaryMuscles?.includes(muscle),
     );
   }, [muscle]);
 
-  const availableEquipment = useMemo(
-    () =>
-      [
-        ...new Set(
-          exercisesForMuscle.map((ex) => ex.equipment).filter(Boolean),
-        ),
-      ].sort(),
-    [exercisesForMuscle],
-  );
+  const availableEquipment = useMemo(() => {
+    return [
+      ...new Set(
+        exercisesForMuscle
+          .map((exercise) => exercise.equipment)
+          .filter(Boolean),
+      ),
+    ].sort();
+  }, [exercisesForMuscle]);
 
   const equipmentCounts = useMemo(() => {
     const counts = {};
 
-    availableEquipment.forEach((eq) => {
-      counts[eq] = exercisesForMuscle.filter(
-        (ex) => ex.equipment === eq,
+    availableEquipment.forEach((item) => {
+      counts[item] = exercisesForMuscle.filter(
+        (exercise) => exercise.equipment === item,
       ).length;
     });
 
     return counts;
   }, [availableEquipment, exercisesForMuscle]);
 
-  const exercisesForEquipment = useMemo(
-    () =>
-      exercisesForMuscle.filter(
-        (ex) => !equipment || ex.equipment === equipment,
-      ),
-    [exercisesForMuscle, equipment],
-  );
+  const exercisesForEquipment = useMemo(() => {
+    return exercisesForMuscle.filter(
+      (exercise) => !equipment || exercise.equipment === equipment,
+    );
+  }, [exercisesForMuscle, equipment]);
 
-  const availableCategories = useMemo(
-    () =>
-      [
-        ...new Set(
-          exercisesForEquipment.map((ex) => ex.category).filter(Boolean),
-        ),
-      ].sort(),
-    [exercisesForEquipment],
-  );
+  const availableCategories = useMemo(() => {
+    return [
+      ...new Set(
+        exercisesForEquipment
+          .map((exercise) => exercise.category)
+          .filter(Boolean),
+      ),
+    ].sort();
+  }, [exercisesForEquipment]);
 
   const categoryCounts = useMemo(() => {
     const counts = {};
 
-    availableCategories.forEach((cat) => {
-      counts[cat] = exercisesForEquipment.filter(
-        (ex) => ex.category === cat,
+    availableCategories.forEach((item) => {
+      counts[item] = exercisesForEquipment.filter(
+        (exercise) => exercise.category === item,
       ).length;
     });
 
     return counts;
   }, [availableCategories, exercisesForEquipment]);
 
-  const exercisesForCategory = useMemo(
-    () =>
-      exercisesForEquipment.filter(
-        (ex) => !category || ex.category === category,
-      ),
-    [exercisesForEquipment, category],
-  );
+  const exercisesForCategory = useMemo(() => {
+    return exercisesForEquipment.filter(
+      (exercise) => !category || exercise.category === category,
+    );
+  }, [exercisesForEquipment, category]);
 
-  const availableLevels = useMemo(
-    () => [
-      ...new Set(exercisesForCategory.map((ex) => ex.level).filter(Boolean)),
-    ],
-    [exercisesForCategory],
-  );
+  const availableLevels = useMemo(() => {
+    return [
+      ...new Set(
+        exercisesForCategory.map((exercise) => exercise.level).filter(Boolean),
+      ),
+    ].sort();
+  }, [exercisesForCategory]);
 
   const levelCounts = useMemo(() => {
     const counts = {};
 
-    availableLevels.forEach((lvl) => {
-      counts[lvl] = exercisesForCategory.filter(
-        (ex) => ex.level === lvl,
+    availableLevels.forEach((item) => {
+      counts[item] = exercisesForCategory.filter(
+        (exercise) => exercise.level === item,
       ).length;
     });
 
     return counts;
   }, [availableLevels, exercisesForCategory]);
 
-  const finalExercises = useMemo(
-    () => exercisesForCategory.filter((ex) => !level || ex.level === level),
-    [exercisesForCategory, level],
-  );
+  const finalExercises = useMemo(() => {
+    return exercisesForCategory.filter(
+      (exercise) => !level || exercise.level === level,
+    );
+  }, [exercisesForCategory, level]);
 
   const currentPreview = finalExercises[activeIndex];
 
-  /* =======================================================
-     HANDLERS
-  ======================================================= */
+  const breadcrumbText = [muscle, equipment, category, level]
+    .filter(Boolean)
+    .join(" / ");
+
+  useEffect(() => {
+    if (!isModalOpen && !isRoutineModalOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isModalOpen, isRoutineModalOpen]);
 
   const handleNext = () => {
-    setCurrentStep((prev) => prev + 1);
+    setCurrentStep((prev) => Math.min(prev + 1, 5));
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const resetWizard = () => {
+    setCurrentStep(0);
+
+    setView("front");
+
     setMuscle(null);
     setEquipment(null);
     setCategory(null);
     setLevel(null);
 
+    setHighlightedMuscle(null);
     setActiveIndex(0);
-    setCurrentStep(0);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const handleSelectMuscle = (selected) => {
@@ -280,30 +271,40 @@ export default function WorkoutWizard() {
     setEquipment(null);
     setCategory(null);
     setLevel(null);
+    setActiveIndex(0);
   };
 
-  const handleSelectEquipment = (item) => {
-    setEquipment(item);
+  const handleSelectEquipment = (selected) => {
+    setEquipment(selected);
 
     setCategory(null);
     setLevel(null);
+    setActiveIndex(0);
   };
 
-  const handleSelectCategory = (cat) => {
-    setCategory(cat);
+  const handleSelectCategory = (selected) => {
+    setCategory(selected);
+
     setLevel(null);
+    setActiveIndex(0);
   };
 
-  const handleSelectLevel = (lvl) => {
-    setLevel(lvl);
+  const handleSelectLevel = (selected) => {
+    setLevel(selected);
+
+    setActiveIndex(0);
   };
 
-  const toggleRoutine = (ex) => {
-    setRoutine((prev) =>
-      prev.some((item) => item.id === ex.id)
-        ? prev.filter((item) => item.id !== ex.id)
-        : [...prev, ex],
-    );
+  const toggleRoutine = (exercise) => {
+    setRoutine((current) => {
+      const exists = current.some((item) => item.id === exercise.id);
+
+      if (exists) {
+        return current.filter((item) => item.id !== exercise.id);
+      }
+
+      return [...current, exercise];
+    });
   };
 
   const exportRoutineCSV = () => {
@@ -311,13 +312,12 @@ export default function WorkoutWizard() {
 
     const rows = [
       ["Name", "Equipment", "Type", "Difficulty", "Primary Muscles"],
-
-      ...routine.map((ex) => [
-        ex.name || "",
-        ex.equipment || "",
-        ex.category || "",
-        ex.level || "",
-        (ex.primaryMuscles || []).join(", "),
+      ...routine.map((exercise) => [
+        exercise.name || "",
+        exercise.equipment || "",
+        exercise.category || "",
+        exercise.level || "",
+        (exercise.primaryMuscles || []).join(", "),
       ]),
     ];
 
@@ -336,7 +336,7 @@ export default function WorkoutWizard() {
     const link = document.createElement("a");
 
     link.href = url;
-    link.setAttribute("download", "workout-routine.csv");
+    link.download = "workout-routine.csv";
 
     document.body.appendChild(link);
 
@@ -347,229 +347,130 @@ export default function WorkoutWizard() {
     URL.revokeObjectURL(url);
   };
 
-  const breadcrumbText = [muscle, equipment, category, level]
-    .filter(Boolean)
-    .join(" / ");
-
-  const t = themes[currentStep] || themes[0];
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
-
   return (
     <div
-      className={`wizard-page relative flex h-[calc(100dvh-40px)] w-full flex-col overflow-hidden md:h-[calc(100dvh-48px)] ${t.bg}`}
+      className="wizard-page relative w-full overflow-x-hidden"
+      style={{
+        backgroundColor: BG,
+        color: ELEMENT,
+      }}
     >
       <style>{`
         .wizard-page {
-          --wizard-bg: ${DESIGN.colors.background};
-          --wizard-element: ${DESIGN.colors.element};
-
+          --wizard-bg: ${BG};
+          --wizard-element: ${ELEMENT};
+          --wizard-selected: ${SELECTED};
+          --wizard-selected-text: ${SELECTED_TEXT};
+          min-height: 100svh;
           background: var(--wizard-bg);
           color: var(--wizard-element);
         }
 
-        .wizard-selected {
-  background: ${DESIGN.colors.selected} !important;
-  border-color: ${DESIGN.colors.selected} !important;
-  color: ${DESIGN.colors.selectedText} !important;
-}
-
-.wizard-selected * {
-  color: ${DESIGN.colors.selectedText} !important;
-}
-
-.wizard-selected:hover {
-  background: ${DESIGN.colors.selected} !important;
-  border-color: ${DESIGN.colors.selectedText} !important;
-}
-
-        /* =========================
-           BASE COLORS
-        ========================= */
-
-        .wizard-bg {
-          background: var(--wizard-bg) !important;
-          color: var(--wizard-element) !important;
-        }
-
-        .wizard-text {
-          color: var(--wizard-element) !important;
-        }
-
-        .wizard-border {
-          border-color: var(--wizard-element) !important;
-        }
-
-        /* =========================
-           DARK BLOCKS
-        ========================= */
-
-        .wizard-block {
-          background: var(--wizard-element) !important;
-          border-color: var(--wizard-element) !important;
-          color: var(--wizard-bg) !important;
-        }
-
-        .wizard-block-text {
-          color: var(--wizard-bg) !important;
-        }
-
-        .wizard-block * {
+        .wizard-card {
+          background: var(--wizard-element);
+          border-color: var(--wizard-element);
           color: var(--wizard-bg);
         }
 
-        /* =========================
-           HOVER
-        ========================= */
-
-        .wizard-hover-border:hover {
-          border-color: var(--wizard-element) !important;
+        .wizard-card:hover {
+          transform: translateY(-2px);
         }
 
-        .wizard-hover-fill:hover {
-          background: var(--wizard-bg) !important;
-          border-color: var(--wizard-element) !important;
-          color: var(--wizard-element) !important;
+        .wizard-selected {
+          background: var(--wizard-selected);
+          border-color: var(--wizard-selected-text);
+          color: var(--wizard-selected-text);
         }
 
-        .wizard-hover-fill:hover * {
-          color: var(--wizard-element) !important;
+        .wizard-primary {
+          background: var(--wizard-element);
+          border-color: var(--wizard-element);
+          color: var(--wizard-bg);
         }
 
-        .wizard-hover-text:hover {
-          color: var(--wizard-element) !important;
+        .wizard-primary:hover {
+          opacity: 0.9;
         }
 
-        /* =========================
-           MODAL BACKGROUND
-        ========================= */
-
-        .wizard-modal-bg {
-          background: color-mix(
-            in srgb,
-            ${DESIGN.colors.element} 88%,
-            transparent
-          ) !important;
+        .wizard-outline {
+          background: transparent;
+          border-color: var(--wizard-element);
+          color: var(--wizard-element);
         }
 
-        /* =========================
-           TYPOGRAPHY
-        ========================= */
-
-        .wizard-page h1,
-        .wizard-page h2,
-        .wizard-page h3,
-        .wizard-page h4 {
-          color: inherit;
+        .wizard-outline:hover {
+          background: var(--wizard-element);
+          color: var(--wizard-bg);
         }
 
-        .wizard-page h1 {
-          letter-spacing: -0.035em;
+        .wizard-scroll::-webkit-scrollbar {
+          width: 6px;
         }
 
-        .wizard-page h2 {
-          font-size: ${DESIGN.fontSize.section};
+        .wizard-scroll::-webkit-scrollbar-track {
+          background: transparent;
         }
 
-        .wizard-hero-title {
-          font-size: ${DESIGN.fontSize.hero};
-          letter-spacing: -0.055em !important;
+        .wizard-scroll::-webkit-scrollbar-thumb {
+          background: var(--wizard-element);
         }
-
-        /* =========================
-           ANATOMY
-        ========================= */
 
         .anatomy-svg-wrapper svg {
-          width: 100% !important;
-          height: 100% !important;
-
-          max-width: 100%;
-          max-height: 100%;
-
           display: block;
+          width: 100% !important;
+          height: auto !important;
+          max-width: 100%;
           margin: 0 auto;
-        }
-
-        /* =========================
-           SCROLLBAR
-        ========================= */
-
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: color-mix(
-            in srgb,
-            ${DESIGN.colors.element} 10%,
-            transparent
-          );
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: ${t.scrollThumb};
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: ${t.scrollThumbHover};
         }
       `}</style>
 
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
       {currentStep > 0 && (
-        <header
-          className={`flex h-16 shrink-0 items-center justify-between border-b-2 px-6 ${t.border} ${t.header}`}
-        >
-          <div className="flex min-w-0 items-center gap-4">
-            <h1 className="shrink-0 text-xl font-bold uppercase">
-              Workout <span className="font-black">Wizard</span>
-            </h1>
+        <header className="relative z-20 w-full border-b-2 border-current">
+          <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+            <div className="min-w-0">
+              <h1 className="text-sm font-black uppercase tracking-tight sm:text-lg">
+                Workout Wizard
+              </h1>
 
-            {breadcrumbText && (
-              <span className="hidden truncate text-sm font-bold opacity-60 md:block">
-                {breadcrumbText}
-              </span>
-            )}
-          </div>
+              {breadcrumbText && (
+                <p className="mt-1 hidden max-w-xl truncate text-xs font-bold opacity-50 md:block">
+                  {breadcrumbText}
+                </p>
+              )}
+            </div>
 
-          <div className="flex shrink-0 items-center gap-3">
-            <button
-              onClick={resetWizard}
-              className={`flex items-center gap-2 border-2 px-4 py-2 text-xs font-bold uppercase tracking-widest ${t.border} ${t.panel} ${t.hoverBorder}`}
-            >
-              <RotateCcw size={14} />
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                onClick={resetWizard}
+                className="wizard-outline flex h-10 items-center justify-center gap-2 border-2 px-3 text-xs font-bold uppercase tracking-wider sm:px-4"
+              >
+                <RotateCcw size={14} />
 
-              <span className="hidden sm:inline">Reset</span>
-            </button>
+                <span className="hidden sm:inline">Reset</span>
+              </button>
 
-            <button
-              onClick={() => setIsRoutineModalOpen(true)}
-              className={`flex items-center gap-2 border-2 px-4 py-2 text-xs font-bold uppercase tracking-widest ${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} ${t.hoverBg}`}
-            >
-              <LayoutList size={14} />
-              Routine ({routine.length})
-            </button>
+              <button
+                onClick={() => setIsRoutineModalOpen(true)}
+                className="wizard-primary flex h-10 items-center justify-center gap-2 border-2 px-3 text-xs font-bold uppercase tracking-wider sm:px-4"
+              >
+                <LayoutList size={14} />
+
+                <span className="hidden sm:inline">Routine</span>
+
+                <span>({routine.length})</span>
+              </button>
+            </div>
           </div>
         </header>
       )}
 
-      {/* =====================================================
-          MAIN
-      ===================================================== */}
-
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <main className="relative w-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
             initial={{
               opacity: 0,
-              y: 10,
+              y: 12,
             }}
             animate={{
               opacity: 1,
@@ -577,130 +478,112 @@ export default function WorkoutWizard() {
             }}
             exit={{
               opacity: 0,
-              y: -10,
+              y: -8,
             }}
             transition={{
               duration: 0.2,
             }}
-            className="flex h-full w-full flex-col"
+            className="w-full"
           >
-            {/* =================================================
-                STEP 0 — HERO
-            ================================================= */}
-
             {currentStep === 0 && (
-              <div className="relative flex h-full flex-col items-center justify-center p-6 text-center">
-                <div className="absolute right-6 top-6 z-10">
-                  <button
-                    onClick={() => setIsRoutineModalOpen(true)}
-                    className={`flex items-center gap-2 border-2 px-4 py-3 text-xs font-bold uppercase tracking-widest ${t.border} ${t.panel} ${t.hoverBorder}`}
-                  >
-                    <LayoutList size={14} />
-                    Routine ({routine.length})
-                  </button>
-                </div>
+              <section className="relative flex min-h-[100svh] w-full items-center justify-center px-5 py-20 sm:px-8 sm:py-24">
+                <button
+                  onClick={() => setIsRoutineModalOpen(true)}
+                  className="wizard-outline absolute right-4 top-5 flex items-center gap-2 border-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider sm:right-6 sm:top-6 sm:px-4 sm:py-3 sm:text-xs"
+                >
+                  <LayoutList size={14} />
+                  Routine ({routine.length})
+                </button>
 
-                <div className="flex w-full max-w-3xl flex-col items-center justify-center">
-                  <h1 className="wizard-hero-title font-black uppercase leading-[0.88]">
+                <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
+                  <h1 className="text-[clamp(3.3rem,16vw,7rem)] font-black uppercase leading-[0.88] tracking-[-0.055em]">
                     Workout
                     <br />
                     Wizard
                   </h1>
 
-                  <p className="mt-8 text-lg font-bold uppercase tracking-widest opacity-60">
+                  <p className="mt-6 max-w-md text-xs font-bold uppercase leading-relaxed tracking-[0.14em] opacity-60 sm:mt-8 sm:text-sm sm:tracking-widest md:text-base">
                     Find the right exercises for you
                   </p>
 
                   <button
                     onClick={handleNext}
-                    className={`mt-16 flex w-full max-w-sm items-center justify-center gap-4 border-2 py-5 text-xl font-black uppercase tracking-widest ${t.borderAccent} ${t.textAccent} ${t.hoverBg}`}
+                    className="wizard-primary mt-10 flex w-full max-w-sm items-center justify-center gap-3 border-2 px-5 py-4 text-base font-black uppercase tracking-widest sm:mt-14 sm:py-5 sm:text-lg"
                   >
                     Start
-                    <ArrowRight size={24} strokeWidth={3} />
+                    <ArrowRight size={20} strokeWidth={3} />
                   </button>
                 </div>
-              </div>
+              </section>
             )}
 
-            {/* =================================================
-                STEP 1 — MUSCLE
-            ================================================= */}
-
             {currentStep === 1 && (
-              <div className="flex h-full flex-col p-6">
-                <div className="mb-6 flex shrink-0 flex-col items-center">
-                  <h2 className="font-black uppercase">Select a Target</h2>
+              <section className="relative w-full px-5 py-14 sm:px-8 sm:py-20">
+                <div className="mx-auto w-full max-w-5xl">
+                  <StepHeader>Select a Target</StepHeader>
 
-                  <div className="mt-6 flex gap-3">
-                    {["front", "back"].map((v) => (
+                  <div className="mb-7 flex justify-center gap-2 sm:mb-8 sm:gap-3">
+                    {["front", "back"].map((item) => (
                       <button
-                        key={v}
-                        onClick={() => setView(v)}
-                        className={`border-2 px-8 py-3 text-sm font-bold uppercase tracking-widest transition-colors ${
-                          view === v
-                            ? "wizard-selected"
-                            : `${t.border} ${t.panel} ${t.hoverBorder}`
+                        key={item}
+                        onClick={() => setView(item)}
+                        className={`border-2 px-5 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors sm:px-8 sm:py-3 sm:text-sm ${
+                          view === item ? "wizard-selected" : "wizard-outline"
                         }`}
                       >
-                        {v}
+                        {item}
                       </button>
                     ))}
                   </div>
-                </div>
 
-                <div className="min-h-0 flex-1 overflow-hidden">
-                  <div className="anatomy-svg-wrapper flex h-full w-full items-center justify-center overflow-hidden">
-                    <div className="flex h-full w-full scale-[0.94] items-center justify-center sm:scale-[0.98] md:scale-[1.04]">
-                      {view === "front" ? (
-                        <FrontView
-                          onSelect={handleSelectMuscle}
-                          selectedMuscle={muscle}
-                          highlightedMuscle={highlightedMuscle}
-                          onHover={setHighlightedMuscle}
-                          onLeave={() => setHighlightedMuscle(null)}
-                        />
-                      ) : (
-                        <BackView
-                          onSelect={handleSelectMuscle}
-                          selectedMuscle={muscle}
-                          highlightedMuscle={highlightedMuscle}
-                          onHover={setHighlightedMuscle}
-                          onLeave={() => setHighlightedMuscle(null)}
-                        />
-                      )}
+                  <div className="anatomy-svg-wrapper mx-auto flex w-full max-w-[225px] items-center justify-center sm:max-w-[290px] md:max-w-[360px] lg:max-w-[400px]">
+                    {view === "front" ? (
+                      <FrontView
+                        onSelect={handleSelectMuscle}
+                        selectedMuscle={muscle}
+                        highlightedMuscle={highlightedMuscle}
+                        onHover={setHighlightedMuscle}
+                        onLeave={() => setHighlightedMuscle(null)}
+                      />
+                    ) : (
+                      <BackView
+                        onSelect={handleSelectMuscle}
+                        selectedMuscle={muscle}
+                        highlightedMuscle={highlightedMuscle}
+                        onHover={setHighlightedMuscle}
+                        onLeave={() => setHighlightedMuscle(null)}
+                      />
+                    )}
+                  </div>
+
+                  {muscle && (
+                    <div
+                      className="mx-auto mt-6 w-fit px-4 py-2 text-center text-xs font-bold uppercase tracking-wider sm:text-sm"
+                      style={{
+                        backgroundColor: SELECTED,
+                        color: SELECTED_TEXT,
+                      }}
+                    >
+                      {muscle}
                     </div>
+                  )}
+
+                  <div className="mx-auto mt-9 w-full max-w-md sm:mt-10">
+                    <PrimaryButton onClick={handleNext} disabled={!muscle}>
+                      Next Step
+                      <ArrowRight size={18} />
+                    </PrimaryButton>
                   </div>
                 </div>
-
-                <div className="mt-6 flex shrink-0 justify-center">
-                  <button
-                    onClick={handleNext}
-                    disabled={!muscle}
-                    className={`flex w-full max-w-md items-center justify-center gap-3 border-2 p-5 text-base font-bold uppercase tracking-widest transition-colors ${
-                      muscle
-                        ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} ${t.hoverBg}`
-                        : `cursor-not-allowed ${t.border} ${t.panel} opacity-40`
-                    }`}
-                  >
-                    Next Step
-                    <ArrowRight size={20} />
-                  </button>
-                </div>
-              </div>
+              </section>
             )}
 
-            {/* =================================================
-                STEP 2 — EQUIPMENT
-            ================================================= */}
-
             {currentStep === 2 && (
-              <div className="mx-auto flex h-full w-full max-w-4xl flex-col p-6">
-                <h2 className="mb-8 shrink-0 text-center font-black uppercase">
-                  Select Equipment
-                </h2>
+              <section className="relative w-full px-5 py-14 sm:px-8 sm:py-20">
+                <div className="mx-auto w-full max-w-4xl">
+                  <StepHeader>Select Equipment</StepHeader>
 
-                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto pr-3">
-                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                     {availableEquipment.map((item) => (
                       <SelectionCard
                         key={item}
@@ -708,364 +591,371 @@ export default function WorkoutWizard() {
                         count={equipmentCounts[item]}
                         active={equipment === item}
                         onClick={() => handleSelectEquipment(item)}
-                        t={t}
                       />
                     ))}
                   </div>
-                </div>
 
-                <div className="mt-8 shrink-0">
-                  <button
-                    onClick={handleNext}
-                    disabled={!equipment}
-                    className={`flex w-full items-center justify-center gap-3 border-2 p-5 text-base font-bold uppercase tracking-widest transition-colors ${
-                      equipment
-                        ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} ${t.hoverBg}`
-                        : `cursor-not-allowed ${t.border} ${t.panel} opacity-40`
-                    }`}
-                  >
-                    Next Step
-                    <ArrowRight size={20} />
-                  </button>
+                  <div className="mt-8 sm:mt-10">
+                    <PrimaryButton onClick={handleNext} disabled={!equipment}>
+                      Next Step
+                      <ArrowRight size={18} />
+                    </PrimaryButton>
+                  </div>
                 </div>
-              </div>
+              </section>
             )}
-
-            {/* =================================================
-                STEP 3 — CATEGORY
-            ================================================= */}
 
             {currentStep === 3 && (
-              <div className="mx-auto flex h-full w-full max-w-4xl flex-col p-6">
-                <h2 className="mb-8 shrink-0 text-center font-black uppercase">
-                  Select Type
-                </h2>
+              <section className="relative w-full px-5 py-14 sm:px-8 sm:py-20">
+                <div className="mx-auto w-full max-w-4xl">
+                  <StepHeader>Select Type</StepHeader>
 
-                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto pr-3">
-                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    {availableCategories.map((cat) => (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+                    {availableCategories.map((item) => (
                       <SelectionCard
-                        key={cat}
-                        title={cat}
-                        count={categoryCounts[cat]}
-                        active={category === cat}
-                        onClick={() => handleSelectCategory(cat)}
-                        t={t}
+                        key={item}
+                        title={item}
+                        count={categoryCounts[item]}
+                        active={category === item}
+                        onClick={() => handleSelectCategory(item)}
                       />
                     ))}
                   </div>
-                </div>
 
-                <div className="mt-8 shrink-0">
-                  <button
-                    onClick={handleNext}
-                    disabled={!category}
-                    className={`flex w-full items-center justify-center gap-3 border-2 p-5 text-base font-bold uppercase tracking-widest transition-colors ${
-                      category
-                        ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} ${t.hoverBg}`
-                        : `cursor-not-allowed ${t.border} ${t.panel} opacity-40`
-                    }`}
-                  >
-                    Next Step
-                    <ArrowRight size={20} />
-                  </button>
+                  <div className="mt-8 sm:mt-10">
+                    <PrimaryButton onClick={handleNext} disabled={!category}>
+                      Next Step
+                      <ArrowRight size={18} />
+                    </PrimaryButton>
+                  </div>
                 </div>
-              </div>
+              </section>
             )}
-
-            {/* =================================================
-                STEP 4 — DIFFICULTY
-            ================================================= */}
 
             {currentStep === 4 && (
-              <div className="mx-auto flex h-full w-full max-w-4xl flex-col p-6">
-                <h2 className="mb-8 shrink-0 text-center font-black uppercase">
-                  Select Difficulty
-                </h2>
+              <section className="relative w-full px-5 py-14 sm:px-8 sm:py-20">
+                <div className="mx-auto w-full max-w-4xl">
+                  <StepHeader>Select Difficulty</StepHeader>
 
-                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto pr-3">
-                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    {availableLevels.map((lvl) => (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+                    {availableLevels.map((item) => (
                       <SelectionCard
-                        key={lvl}
-                        title={lvl}
-                        count={levelCounts[lvl]}
-                        active={level === lvl}
-                        onClick={() => handleSelectLevel(lvl)}
-                        t={t}
+                        key={item}
+                        title={item}
+                        count={levelCounts[item]}
+                        active={level === item}
+                        onClick={() => handleSelectLevel(item)}
                       />
                     ))}
                   </div>
-                </div>
 
-                <div className="mt-8 shrink-0">
-                  <button
-                    onClick={handleNext}
-                    disabled={!level}
-                    className={`flex w-full items-center justify-center gap-3 border-2 p-5 text-base font-bold uppercase tracking-widest transition-colors ${
-                      level
-                        ? `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} ${t.hoverBg}`
-                        : `cursor-not-allowed ${t.border} ${t.panel} opacity-40`
-                    }`}
-                  >
-                    Show Workouts
-                    <ArrowRight size={20} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* =================================================
-                STEP 5 — RESULTS
-            ================================================= */}
-
-            {currentStep === 5 && (
-              <div className="mx-auto flex h-full w-full max-w-5xl flex-col p-6">
-                <div className="mb-8 flex shrink-0 items-center justify-between">
-                  <h2 className="font-black uppercase">
-                    Your Workouts <span>({finalExercises.length})</span>
-                  </h2>
-                </div>
-
-                <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto pr-3">
-                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                    {finalExercises.map((ex, idx) => (
-                      <button
-                        key={ex.id}
-                        onClick={() => {
-                          setActiveIndex(idx);
-                          setIsModalOpen(true);
-                        }}
-                        className={`flex min-h-[110px] flex-col justify-center border-2 p-6 text-left transition-colors ${t.border} ${t.panel} ${t.hoverBorder}`}
-                      >
-                        <h3 className="text-lg font-bold">{ex.name}</h3>
-                      </button>
-                    ))}
+                  <div className="mt-8 sm:mt-10">
+                    <PrimaryButton onClick={handleNext} disabled={!level}>
+                      Show Workouts
+                      <ArrowRight size={18} />
+                    </PrimaryButton>
                   </div>
                 </div>
-              </div>
+              </section>
+            )}
+
+            {currentStep === 5 && (
+              <section className="relative w-full px-5 py-14 sm:px-8 sm:py-20">
+                <div className="mx-auto w-full max-w-6xl">
+                  <div className="mb-8 flex flex-col gap-2 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+                    <h2 className="text-2xl font-black uppercase tracking-tight sm:text-3xl md:text-4xl">
+                      Your Workouts
+                    </h2>
+
+                    <p className="text-xs font-bold uppercase tracking-widest opacity-50 sm:text-sm">
+                      {finalExercises.length} results
+                    </p>
+                  </div>
+
+                  {finalExercises.length ? (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+                      {finalExercises.map((exercise, index) => (
+                        <button
+                          key={exercise.id}
+                          onClick={() => {
+                            setActiveIndex(index);
+                            setIsModalOpen(true);
+                          }}
+                          className="wizard-card flex min-h-[96px] w-full items-center border-2 p-4 text-left transition-transform sm:min-h-[115px] sm:p-5"
+                        >
+                          <h3 className="break-words text-base font-bold leading-snug sm:text-lg">
+                            {exercise.name}
+                          </h3>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="border-2 border-current p-8 text-center sm:p-12">
+                      <p className="text-sm font-bold uppercase tracking-widest opacity-50">
+                        No workouts found
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
             )}
           </motion.div>
         </AnimatePresence>
       </main>
 
-      {/* =====================================================
-          EXERCISE MODAL
-      ===================================================== */}
-
       <AnimatePresence>
         {isModalOpen && currentPreview && (
-          <div
-            className={`absolute inset-0 z-50 flex items-center justify-center p-3 md:p-6 ${t.modalBg}`}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-3 sm:p-5"
+            onClick={() => setIsModalOpen(false)}
           >
-            <div
-              className={`relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden border-2 ${t.borderAccent} ${t.bg}`}
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: 20,
+                scale: 0.98,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+              }}
+              exit={{
+                opacity: 0,
+                y: 15,
+                scale: 0.98,
+              }}
+              onClick={(event) => event.stopPropagation()}
+              className="wizard-scroll relative max-h-[90svh] w-full max-w-3xl overflow-y-auto border-2 border-current"
+              style={{
+                backgroundColor: BG,
+                color: ELEMENT,
+              }}
             >
-              {/* CLOSE BUTTON */}
-
               <button
                 onClick={() => setIsModalOpen(false)}
-                className={`absolute right-4 top-4 z-30 flex h-10 w-10 items-center justify-center border-2 ${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} transition-opacity hover:opacity-80`}
+                className="wizard-primary absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center border-2 sm:right-4 sm:top-4 sm:h-10 sm:w-10"
                 aria-label="Close"
               >
-                <X size={18} strokeWidth={3} />
+                <X size={17} strokeWidth={3} />
               </button>
 
-              <div className="custom-scrollbar overflow-y-auto">
-                {/* TITLE */}
+              <div
+                className="border-b-2 border-current px-5 py-5 pr-16 sm:px-7 sm:py-7 sm:pr-20"
+                style={{
+                  backgroundColor: ELEMENT,
+                  color: BG,
+                }}
+              >
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] opacity-60 sm:text-xs">
+                  Exercise
+                </p>
 
-                <div
-                  className={`border-b-2 p-6 pr-20 md:p-8 md:pr-24 ${t.bgAccent} ${t.textOnAccent} ${t.borderAccent}`}
-                >
-                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] opacity-70">
-                    Exercise
+                <h3 className="break-words text-xl font-black uppercase leading-tight sm:text-2xl md:text-3xl">
+                  {currentPreview.name}
+                </h3>
+              </div>
+
+              <div
+                className="relative flex h-[200px] w-full items-center justify-center overflow-hidden sm:h-[280px]"
+                style={{
+                  backgroundColor: ELEMENT,
+                }}
+              >
+                <RotatingImage
+                  images={currentPreview.images}
+                  name={currentPreview.name}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 border-b-2 border-current sm:grid-cols-3">
+                <div className="border-b-2 border-current p-4 sm:border-b-0 sm:border-r-2 sm:p-5">
+                  <p className="mb-1 text-[9px] font-bold uppercase tracking-widest opacity-50 sm:text-[10px]">
+                    Equipment
                   </p>
 
-                  <h3
-                    className="font-black uppercase leading-none tracking-tight"
-                    style={{
-                      fontSize: DESIGN.fontSize.section,
-                    }}
-                  >
-                    {currentPreview.name}
-                  </h3>
-                </div>
-
-                {/* IMAGE */}
-
-                <div
-                  className={`relative flex h-[280px] w-full items-center justify-center overflow-hidden ${t.panel}`}
-                >
-                  <RotatingImage
-                    images={currentPreview.images}
-                    name={currentPreview.name}
-                  />
-                </div>
-
-                {/* BASIC INFO */}
-
-                <div className={`grid grid-cols-3 border-y-2 ${t.border}`}>
-                  <div className={`p-4 md:p-5 border-r-2 ${t.border}`}>
-                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest opacity-50">
-                      Equipment
-                    </p>
-
-                    <p className="text-sm font-black uppercase">
-                      {currentPreview.equipment}
-                    </p>
-                  </div>
-
-                  <div className={`p-4 md:p-5 border-r-2 ${t.border}`}>
-                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest opacity-50">
-                      Category
-                    </p>
-
-                    <p className="text-sm font-black uppercase">
-                      {currentPreview.category}
-                    </p>
-                  </div>
-
-                  <div className="p-4 md:p-5">
-                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest opacity-50">
-                      Level
-                    </p>
-
-                    <p className="text-sm font-black uppercase">
-                      {currentPreview.level}
-                    </p>
-                  </div>
-                </div>
-
-                {/* TARGET MUSCLES */}
-
-                <div className={`border-b-2 p-5 md:p-6 ${t.border}`}>
-                  <p className="mb-3 text-xs font-black uppercase tracking-widest">
-                    Target Muscles
-                  </p>
-
-                  <p className="text-sm font-bold uppercase leading-relaxed opacity-70">
-                    {currentPreview.primaryMuscles?.join("  •  ")}
+                  <p className="break-words text-xs font-black uppercase sm:text-sm">
+                    {currentPreview.equipment}
                   </p>
                 </div>
 
-                {/* INSTRUCTIONS HEADER */}
+                <div className="border-b-2 border-current p-4 sm:border-b-0 sm:border-r-2 sm:p-5">
+                  <p className="mb-1 text-[9px] font-bold uppercase tracking-widest opacity-50 sm:text-[10px]">
+                    Category
+                  </p>
 
-                <div
-                  className={`flex items-center justify-between border-b-2 p-5 md:p-6 ${t.border}`}
-                >
-                  <h4 className="text-sm font-black uppercase tracking-widest">
-                    Instructions
-                  </h4>
-
-                  <span className="text-xs font-bold opacity-50">
-                    {currentPreview.instructions?.length || 0} STEPS
-                  </span>
+                  <p className="break-words text-xs font-black uppercase sm:text-sm">
+                    {currentPreview.category}
+                  </p>
                 </div>
 
-                {/* INSTRUCTIONS */}
+                <div className="p-4 sm:p-5">
+                  <p className="mb-1 text-[9px] font-bold uppercase tracking-widest opacity-50 sm:text-[10px]">
+                    Level
+                  </p>
 
-                <div>
-                  {currentPreview.instructions?.map((step, i) => (
-                    <div
-                      key={i}
-                      className={`flex gap-4 border-b-2 p-5 md:p-6 ${t.border}`}
-                    >
-                      <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center text-xs font-black ${t.bgAccent} ${t.textOnAccent}`}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
-
-                      <p className="text-sm leading-relaxed opacity-80 md:text-base">
-                        {step}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* ACTION */}
-
-                <div className="p-5 md:p-6">
-                  <button
-                    onClick={() => toggleRoutine(currentPreview)}
-                    className={`w-full border-2 p-4 text-sm font-black uppercase tracking-widest transition-opacity hover:opacity-80 ${
-                      routine.some((r) => r.id === currentPreview.id)
-                        ? `${t.borderAccent} ${t.panel} ${t.textAccent}`
-                        : `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent}`
-                    }`}
-                  >
-                    {routine.some((r) => r.id === currentPreview.id)
-                      ? "Remove from Routine"
-                      : "Add to Routine"}
-                  </button>
+                  <p className="break-words text-xs font-black uppercase sm:text-sm">
+                    {currentPreview.level}
+                  </p>
                 </div>
               </div>
-            </div>
-          </div>
+
+              <div className="border-b-2 border-current p-5 sm:p-6">
+                <p className="mb-2 text-xs font-black uppercase tracking-widest">
+                  Target Muscles
+                </p>
+
+                <p className="text-sm font-bold uppercase leading-relaxed opacity-70">
+                  {currentPreview.primaryMuscles?.join(" • ")}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 border-b-2 border-current p-5 sm:p-6">
+                <h4 className="text-xs font-black uppercase tracking-widest sm:text-sm">
+                  Instructions
+                </h4>
+
+                <span className="shrink-0 text-[10px] font-bold uppercase opacity-50 sm:text-xs">
+                  {currentPreview.instructions?.length || 0} Steps
+                </span>
+              </div>
+
+              <div>
+                {currentPreview.instructions?.map((step, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-3 border-b-2 border-current p-4 sm:gap-4 sm:p-6"
+                  >
+                    <div
+                      className="flex h-7 w-7 shrink-0 items-center justify-center text-[10px] font-black sm:h-8 sm:w-8 sm:text-xs"
+                      style={{
+                        backgroundColor: ELEMENT,
+                        color: BG,
+                      }}
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </div>
+
+                    <p className="text-sm leading-relaxed opacity-80 sm:text-base">
+                      {step}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-4 sm:p-6">
+                <button
+                  onClick={() => toggleRoutine(currentPreview)}
+                  className={`w-full border-2 px-4 py-4 text-xs font-black uppercase tracking-widest sm:text-sm ${
+                    routine.some((item) => item.id === currentPreview.id)
+                      ? "wizard-outline"
+                      : "wizard-primary"
+                  }`}
+                >
+                  {routine.some((item) => item.id === currentPreview.id)
+                    ? "Remove from Routine"
+                    : "Add to Routine"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* =====================================================
-          ROUTINE MODAL
-      ===================================================== */}
-
       <AnimatePresence>
         {isRoutineModalOpen && (
-          <div
-            className={`absolute inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md md:p-8 ${t.modalBg}`}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsRoutineModalOpen(false)}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-3 sm:p-5"
           >
-            <div
-              className={`flex h-full w-full max-w-3xl flex-col overflow-hidden border-2 shadow-2xl ${t.borderAccent} ${t.bg}`}
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: 20,
+                scale: 0.98,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+              }}
+              exit={{
+                opacity: 0,
+                y: 15,
+                scale: 0.98,
+              }}
+              onClick={(event) => event.stopPropagation()}
+              className="flex max-h-[90svh] w-full max-w-3xl flex-col overflow-hidden border-2 border-current"
+              style={{
+                backgroundColor: BG,
+                color: ELEMENT,
+              }}
             >
-              {/* HEADER */}
-
               <div
-                className={`flex shrink-0 items-center justify-between border-b-2 p-6 ${t.border} ${t.panel}`}
+                className="flex items-center justify-between gap-3 border-b-2 border-current p-4 sm:p-5"
+                style={{
+                  backgroundColor: ELEMENT,
+                  color: BG,
+                }}
               >
-                <h2 className="font-black uppercase">My Routine</h2>
+                <div>
+                  <h2 className="text-lg font-black uppercase sm:text-2xl">
+                    My Routine
+                  </h2>
 
-                <div className="flex items-center gap-6">
-                  <button
-                    onClick={() => setRoutine([])}
-                    className="text-xs font-bold uppercase tracking-widest transition-opacity hover:opacity-60"
-                  >
-                    Clear All
-                  </button>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-widest opacity-60 sm:text-xs">
+                    {routine.length} exercises
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {routine.length > 0 && (
+                    <button
+                      onClick={() => setRoutine([])}
+                      className="px-2 py-2 text-[10px] font-bold uppercase tracking-wider opacity-70 transition-opacity hover:opacity-100 sm:px-3 sm:text-xs"
+                    >
+                      Clear
+                    </button>
+                  )}
 
                   <button
                     onClick={() => setIsRoutineModalOpen(false)}
-                    className={`flex h-10 w-10 items-center justify-center border-2 transition-colors ${t.border} ${t.hoverBg}`}
+                    className="flex h-9 w-9 items-center justify-center border-2 border-current sm:h-10 sm:w-10"
+                    aria-label="Close routine"
                   >
-                    <X size={18} strokeWidth={3} />
+                    <X size={17} strokeWidth={3} />
                   </button>
                 </div>
               </div>
 
-              {/* ROUTINE CONTENT */}
-
-              <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-6 md:p-8">
+              <div className="wizard-scroll min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
                 {routine.length === 0 ? (
-                  <div className="flex h-full items-center justify-center text-sm font-bold uppercase tracking-widest opacity-40">
+                  <div className="flex min-h-[180px] items-center justify-center text-center text-xs font-bold uppercase tracking-widest opacity-40 sm:text-sm">
                     Your routine is empty
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {routine.map((ex) => (
+                  <div className="space-y-3">
+                    {routine.map((exercise) => (
                       <div
-                        key={ex.id}
-                        className={`flex items-center justify-between border-2 p-6 transition-colors ${t.border} ${t.panel} ${t.hoverBorder}`}
+                        key={exercise.id}
+                        className="wizard-card flex items-center justify-between gap-3 border-2 p-4 sm:p-5"
                       >
-                        <div className="min-w-0 pr-4">
-                          <h3 className="truncate text-lg font-bold">
-                            {ex.name}
-                          </h3>
-                        </div>
+                        <h3 className="min-w-0 break-words text-sm font-bold sm:text-base">
+                          {exercise.name}
+                        </h3>
 
                         <button
-                          onClick={() => toggleRoutine(ex)}
-                          className={`ml-4 flex h-12 w-12 shrink-0 items-center justify-center border-2 transition-colors ${t.borderAccent} ${t.hoverBg}`}
+                          onClick={() => toggleRoutine(exercise)}
+                          className="flex h-9 w-9 shrink-0 items-center justify-center border-2 border-current sm:h-10 sm:w-10"
+                          aria-label={`Remove ${exercise.name}`}
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     ))}
@@ -1073,24 +963,22 @@ export default function WorkoutWizard() {
                 )}
               </div>
 
-              {/* EXPORT */}
-
-              <div className={`shrink-0 border-t-2 p-6 ${t.border} ${t.panel}`}>
+              <div className="border-t-2 border-current p-4 sm:p-5">
                 <button
                   onClick={exportRoutineCSV}
-                  disabled={routine.length === 0}
-                  className={`flex w-full items-center justify-center gap-3 border-2 p-5 text-sm font-black uppercase tracking-widest transition-colors ${
-                    routine.length === 0
-                      ? `${t.borderAccent} opacity-30 cursor-not-allowed`
-                      : `${t.borderAccent} ${t.bgAccent} ${t.textOnAccent} ${t.hoverBg}`
+                  disabled={!routine.length}
+                  className={`flex w-full items-center justify-center gap-3 border-2 px-4 py-4 text-xs font-black uppercase tracking-widest sm:text-sm ${
+                    routine.length
+                      ? "wizard-primary"
+                      : "cursor-not-allowed border-current opacity-30"
                   }`}
                 >
-                  <Download size={18} strokeWidth={3} />
+                  <Download size={17} strokeWidth={3} />
                   Export CSV
                 </button>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

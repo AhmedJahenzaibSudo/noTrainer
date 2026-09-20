@@ -1,14 +1,7 @@
 "use client";
 
-import React, {
-  useState,
-  useMemo,
-  useRef,
-  useCallback,
-} from "react";
-
+import React, { useState, useMemo, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
 import {
   Zap,
   Dumbbell,
@@ -28,571 +21,419 @@ import {
 
 import FrontView from "@/components/anatomy/FrontView";
 
-/* =========================================================
-   COLORS
-========================================================= */
+const CONFIG = {
+  colors: {
+    bg: "#4d3285ff",       // Deep Indigo
+    element: "#FFFFFF",  // Pure White for text
+    accent: "#f65e91ff",    // Neon Pink
+  },
+  fontSize: {
+    hero: "clamp(3.5rem, 10vw, 7rem)",
+    section: "clamp(2.5rem, 6vw, 4rem)",
+    cardTitle: "1.25rem",
+    body: "1.1rem",
+  },
+  radius: {
+    small: "0.5rem",
+    medium: "1rem",
+    large: "1.5rem",
+    pill: "999px",
+  },
+  animation: {
+    duration: 0.5,
+    stagger: 0.05,
+  },
+};
 
-const BG =
-  "color(display-p3 0.056 0.958 0.949)";
+const BG = CONFIG.colors.bg;
+const ELEMENT = CONFIG.colors.element;
+const ACCENT = CONFIG.colors.accent;
 
-const ELEMENT =
-  "color(display-p3 0.079 0.201 0.346)";
-
-const ACCENT =
-  "color(display-p3 0.98 0.78 0.12)";
-
-/* =========================================================
-   DATA
-========================================================= */
-
-const heroTags = [
-  "Home Workouts",
-  "Exercise Library",
-  "AI Trainer",
-  "Fitness Tools",
-];
+const heroTags = ["Workout Wizard", "Kanban Board", "AI Chat", "Calculators", "Brain Training"];
 
 const featureList = [
-  {
-    title: "Workout Wizard",
-    description:
-      "Build a workout based on the muscles you want to train.",
-    icon: Wand2,
-  },
-  {
-    title: "Exercise Library",
-    description:
-      "Explore hundreds of exercises with clear instructions.",
-    icon: Database,
-  },
-  {
-    title: "Calculators",
-    description:
-      "Calculate BMI, calories, protein, and more.",
-    icon: Calculator,
-  },
-  {
-    title: "AI Trainer",
-    description:
-      "Get instant answers and guidance whenever you need it.",
-    icon: MessageSquare,
-  },
-  {
-    title: "Kanban Board",
-    description:
-      "Organize your training and keep track of your progress.",
-    icon: Columns3,
-  },
-  {
-    title: "Mini Games",
-    description:
-      "Take a break, stay focused, and keep moving.",
-    icon: Gamepad2,
-  },
+  { title: "Workout Wizard", description: "Select muscles and generate workouts.", icon: Wand2 },
+  { title: "Rich Dataset", description: "Categorized exercises for all goals.", icon: Database },
+  { title: "Calculators", description: "BMI, calories, and protein formulas.", icon: Calculator },
+  { title: "AI Chatbot", description: "24/7 intelligent fitness assistant.", icon: MessageSquare },
+  { title: "Kanban Board", description: "Visual tracking for fitness tasks.", icon: Columns3 },
+  { title: "Mini Games", description: "Boost focus and motivation.", icon: Gamepad2 },
 ];
 
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
+const cardStyles = [
+  { bg: ACCENT, text: BG, shadow: "rgba(255, 0, 85, 0.4)", border: "none" },
+  { bg: BG, text: ACCENT, shadow: "rgba(13, 2, 33, 0.8)", border: `2px solid ${ACCENT}` },
+  { bg: ACCENT, text: BG, shadow: "rgba(255, 0, 85, 0.4)", border: "none" },
+];
 
 const Hero = () => {
-  const [selectedMuscle, setSelectedMuscle] =
-    useState(null);
-
-  const [highlightedMuscle, setHighlightedMuscle] =
-    useState(null);
-
-  const [mousePos, setMousePos] = useState({
-    x: 0,
-    y: 0,
-  });
+  const [selectedMuscle, setSelectedMuscle] = useState(null);
+  const [highlightedMuscle, setHighlightedMuscle] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const anatomyBoxRef = useRef(null);
 
-  /* =======================================================
-     PROBLEMS
-  ======================================================= */
-
   const problemList = useMemo(
     () => [
-      {
-        id: 1,
-        text: "No gym",
-        solution: "Train at home with minimal equipment.",
-        icon: MapPin,
-      },
-      {
-        id: 2,
-        text: "High cost",
-        solution: "Free workouts, tools, and guidance.",
-        icon: Calculator,
-      },
-      {
-        id: 3,
-        text: "Not sure what to do",
-        solution: "Follow simple, step-by-step exercises.",
-        icon: Info,
-      },
-      {
-        id: 4,
-        text: "Need guidance",
-        solution: "Ask the AI trainer whenever you need help.",
-        icon: MessageSquare,
-      },
-      {
-        id: 5,
-        text: "Limited knowledge",
-        solution: "Learn from a large exercise library.",
-        icon: Dumbbell,
-      },
-      {
-        id: 6,
-        text: "Can't get to the gym",
-        solution: "Follow effective home workout plans.",
-        icon: Zap,
-      },
-      {
-        id: 7,
-        text: "Need structure",
-        solution: "Organize your training with Kanban.",
-        icon: LayoutDashboard,
-      },
-      {
-        id: 8,
-        text: "Need motivation",
-        solution: "Stay engaged with simple daily tools.",
-        icon: Target,
-      },
-      {
-        id: 9,
-        text: "No equipment",
-        solution: "Start with bodyweight exercises.",
-        icon: Package,
-      },
+      { id: 1, text: "No gym access", solution: "Bodyweight routines" },
+      { id: 2, text: "Too expensive", solution: "Free workout plans" },
+      { id: 3, text: "Don't know how", solution: "Step-by-step guides" },
+      { id: 4, text: "Need privacy", solution: "24/7 AI trainer" },
+      { id: 5, text: "Lack of knowledge", solution: "800+ exercises" },
+      { id: 6, text: "Can't go out", solution: "Home programs" },
+      { id: 7, text: "Need structure", solution: "Kanban tracking" },
+      { id: 8, text: "No motivation", solution: "Motivation Marquee" },
+      { id: 9, text: "No equipment", solution: "Body weight trainings" },
     ],
     []
   );
 
-  /* =======================================================
-     POINTER
-  ======================================================= */
-
-  const handlePointerMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!anatomyBoxRef.current) return;
-
-    const rect =
-      anatomyBoxRef.current.getBoundingClientRect();
-
-    const clientX = e.touches
-      ? e.touches[0].clientX
-      : e.clientX;
-
-    const clientY = e.touches
-      ? e.touches[0].clientY
-      : e.clientY;
-
+    const rect = anatomyBoxRef.current.getBoundingClientRect();
     setMousePos({
-      x: clientX - rect.left,
-      y: clientY - rect.top,
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
     });
   }, []);
 
-  /* =======================================================
-     ANIMATION
-  ======================================================= */
-
-  const panelVariants = {
-    hidden: {
-      opacity: 0,
-      y: 15,
-    },
-
-    visible: (custom) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.45,
-        delay: custom * 0.1,
-      },
-    }),
-  };
-
-  /* =======================================================
-     SHARED PANEL
-  ======================================================= */
-
-  const panel =
-    "mx-auto w-full max-w-5xl overflow-hidden border-2";
-
   return (
     <main
-      className="min-h-screen w-full space-y-4 px-3 py-5 sm:px-5 md:space-y-5 md:px-8 md:py-8"
+      className="w-full flex flex-col antialiased"
       style={{
         backgroundColor: BG,
+        backgroundImage: `radial-gradient(circle at 50% 0%, #1a033d 0%, ${BG} 60%)`,
         color: ELEMENT,
+        fontFamily: '"Slackey", cursive',
       }}
     >
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Slackey&display=swap');
+        
+        :root {
+          --card-height: 280px;
+          --card-margin: 20px;
+          --card-top-offset: 1.5em;
+        }
 
-      {/* =====================================================
-          HERO
-      ===================================================== */}
+        @media (min-width: 768px) {
+          :root {
+            --card-height: 320px;
+            --card-margin: 30px;
+          }
+        }
 
-      <motion.section
-        custom={0}
-        initial="hidden"
-        animate="visible"
-        variants={panelVariants}
-        className={panel}
-        style={{
-          borderColor: ELEMENT,
-          backgroundColor: ELEMENT,
-          color: BG,
-        }}
-      >
-        <div className="p-7 text-center sm:p-10 md:p-14">
+        #stack-cards {
+          list-style: none;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: var(--card-margin);
+          width: 90vw;
+          max-width: 900px;
+          margin: 0 auto;
+          padding-bottom: calc(10vh + var(--card-height));
+        }
 
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.25em] opacity-60">
-            Your Personal Fitness Hub
-          </p>
+        .stack-card {
+          position: sticky;
+          top: 15vh;
+          padding-top: calc(var(--index) * var(--card-top-offset));
+          z-index: var(--index);
+        }
 
-          <h1 className="text-5xl font-light leading-none tracking-tight sm:text-7xl md:text-8xl">
-            noTrainer{" "}
-            <span className="font-normal">
+        .stack-card__content {
+          box-sizing: border-box;
+          padding: 24px;
+          width: 100%;
+          height: var(--card-height);
+          border-radius: 32px;
+          background: var(--card-bg);
+          color: var(--card-text);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: flex-start;
+          border: var(--card-border);
+          box-shadow: 0 20px 40px -10px var(--shadow-color);
+          position: relative;
+          overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+          .stack-card__content {
+            padding: 40px;
+          }
+        }
+
+        .stack-number {
+          font-size: clamp(4rem, 12vw, 8rem);
+          position: absolute;
+          right: 1.5rem;
+          top: 1rem;
+          opacity: 0.3;
+          line-height: 1;
+        }
+
+        .kinetic-list {
+          display: flex;
+          flex-direction: column;
+          gap: 3vh;
+          list-style: none;
+          padding: 0;
+          margin: 0 auto;
+          width:100%;
+        }
+
+        .kinetic-list li {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: clamp(1rem, 3vw, 2.5rem);
+          color: ${ELEMENT};
+          width: 100%;
+        }
+
+        .kinetic-list li > span:first-child {
+          flex: 1 1 0;
+          text-align: right;
+        }
+
+        .kinetic-list li > span:last-child {
+          flex: 1 1 0;
+          text-align: left;
+          font-family: sans-serif;
+          font-weight: 900;
+          color: ${ACCENT};
+        }
+
+        .kinetic-gap {
+          width: clamp(24px, 5vw, 48px);
+          margin: 0 clamp(1rem, 3vw, 3rem);
+          flex-shrink: 0;
+        }
+
+        .kinetic-arrow-fixed {
+          width: clamp(24px, 5vw, 48px);
+          height: clamp(24px, 5vw, 48px);
+          color: ${ACCENT};
+        }
+
+        @supports (animation-timeline: view()) {
+          .kinetic-list li {
+            opacity: 0.15;
+            animation: brighten linear both;
+            animation-timeline: view();
+            animation-range: cover 40% cover 60%;
+            transform: scale(0.9);
+          }
+
+          @keyframes brighten {
+            0%, 100% {
+              opacity: 0.15;
+              transform: scale(0.9);
+            }
+            50% {
+              opacity: 1;
+              transform: scale(1.05);
+            }
+          }
+        }
+      ` }} />
+
+      <section className="w-full min-h-screen flex flex-col items-center justify-center px-6 py-24 text-center">
+        <div className="flex w-full max-w-5xl flex-col items-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="flex flex-col items-center sm:flex-row tracking-tight"
+            style={{ fontSize: CONFIG.fontSize.hero }}
+          >
+            <span>noTrainer</span>
+            <motion.span
+              className="mt-2 sm:ml-4 sm:mt-0"
+              style={{ color: ACCENT }}
+            >
               AI
-            </span>
-          </h1>
+            </motion.span>
+          </motion.h1>
 
-          <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed opacity-80 sm:text-lg">
-            Work out anywhere, learn as you go, and
-            build a routine that works for you.
-          </p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="mt-6 max-w-xl text-xl sm:text-2xl md:text-3xl opacity-80"
+          >
+            Train Anywhere. <br></br> No Trainer Needed.
+          </motion.p>
 
-          <div className="mt-8 flex flex-wrap justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="mt-12 flex w-full max-w-3xl flex-wrap items-center justify-center gap-4"
+          >
             {heroTags.map((tag, index) => (
-              <span
+              <motion.div
                 key={tag}
-                className={`border-2 px-4 py-2 text-[10px] font-bold uppercase tracking-wider ${
-                  index !== heroTags.length - 1
-                    ? "border-r-0"
-                    : ""
-                }`}
-                style={{
-                  borderColor: BG,
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                className="cursor-default px-6 py-3 text-sm sm:text-base uppercase tracking-wider"
+                style={{ 
+                  backgroundColor: ACCENT, 
+                  color: BG,
+                  borderRadius: CONFIG.radius.pill 
                 }}
               >
                 {tag}
-              </span>
+              </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="w-full min-h-screen flex flex-col items-center justify-center px-6 py-5">
+        <div className="flex w-full max-w-5xl flex-col items-center">
+          <div className="mb-12 text-center">
+            <h2 className="tracking-tight" style={{ fontSize: CONFIG.fontSize.section }}>
+              Use <span style={{ color: ACCENT }}>Muscle</span> Diagrams
+            </h2>
           </div>
 
-        </div>
-      </motion.section>
-
-      {/* =====================================================
-          ANATOMY
-      ===================================================== */}
-
-      <motion.section
-        custom={1}
-        initial="hidden"
-        animate="visible"
-        variants={panelVariants}
-        className={panel}
-        style={{
-          borderColor: ELEMENT,
-          backgroundColor: "transparent",
-        }}
-      >
-
-        {/* HEADER */}
-
-        <div
-          className="border-b-2 p-6 sm:p-8"
-          style={{
-            borderColor: ELEMENT,
-          }}
-        >
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] opacity-50">
-            Explore Your Body
-          </p>
-
-          <h2 className="text-3xl font-light uppercase tracking-tight sm:text-5xl">
-            Choose a{" "}
-            <span className="font-semibold">
-              Muscle
-            </span>
-          </h2>
-
-          <p className="mt-3 max-w-xl text-sm leading-relaxed opacity-60">
-            Select a muscle to find exercises that
-            target it.
-          </p>
-        </div>
-
-        {/* SELECTED MUSCLE */}
-
-        <div
-          className="flex min-h-[60px] items-center justify-between border-b-2 px-6 py-4 sm:px-8"
-          style={{
-            borderColor: ELEMENT,
-          }}
-        >
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">
-            Selected
-          </span>
-
-          <span className="text-sm font-black uppercase">
-            {selectedMuscle
-              ? String(selectedMuscle)
-              : "Select a muscle"}
-          </span>
-        </div>
-
-        {/* ANATOMY */}
-
-        <div
-          ref={anatomyBoxRef}
-          onMouseMove={handlePointerMove}
-          onTouchMove={handlePointerMove}
-          className="relative flex w-full items-center justify-center overflow-auto p-6 sm:p-8 md:p-10"
-        >
-          <AnimatePresence>
-            {highlightedMuscle && (
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  scale: 0.9,
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  x: mousePos.x + 16,
-                  y: mousePos.y - 32,
-                }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.9,
-                }}
-                className="pointer-events-none absolute left-0 top-0 z-50 border-2 px-3 py-2 text-[10px] font-black uppercase tracking-widest"
-                style={{
-                  backgroundColor: BG,
-                  color: ELEMENT,
-                  borderColor: ELEMENT,
-                }}
+          <motion.div
+            layout
+            className="mb-12 flex w-full max-w-xs items-center justify-center px-6 py-4"
+            style={{ 
+              backgroundColor: selectedMuscle ? ACCENT : BG,
+              color: selectedMuscle ? BG : ACCENT,
+              border: `2px solid ${ACCENT}`,
+              borderRadius: CONFIG.radius.medium 
+            }}
+          >
+            {selectedMuscle ? (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-lg uppercase tracking-widest"
               >
-                {highlightedMuscle}
-              </motion.div>
+                {String(selectedMuscle)}
+              </motion.span>
+            ) : (
+              <span className="text-sm uppercase opacity-80">Select a Muscle</span>
             )}
-          </AnimatePresence>
+          </motion.div>
 
-          {/* SVG IS NOT RESIZED HERE.
-              FrontView controls its own size. */}
+          <div
+            ref={anatomyBoxRef}
+            onMouseMove={handleMouseMove}
+            className="relative flex w-full flex-col items-center justify-center [&_svg]:h-[400px] [&_svg]:w-auto sm:[&_svg]:h-[500px] md:[&_svg]:h-[400px] [&_svg]:cursor-crosshair"
+          >
+            <AnimatePresence>
+              {highlightedMuscle && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1, x: mousePos.x + 16, y: mousePos.y - 32 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="pointer-events-none absolute left-0 top-0 z-50 px-4 py-2 text-sm uppercase tracking-wider shadow-xl"
+                  style={{ 
+                    backgroundColor: ACCENT,
+                    color: BG,
+                    borderRadius: CONFIG.radius.small 
+                  }}
+                >
+                  {highlightedMuscle}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          <div className="shrink-0">
             <FrontView
               onHover={setHighlightedMuscle}
-              onLeave={() =>
-                setHighlightedMuscle(null)
-              }
+              onLeave={() => setHighlightedMuscle(null)}
               onSelect={setSelectedMuscle}
               selectedMuscle={selectedMuscle}
               highlightedMuscle={highlightedMuscle}
             />
           </div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* =====================================================
-          SOLUTIONS
-      ===================================================== */}
-
-      <motion.section
-        custom={2}
-        initial="hidden"
-        animate="visible"
-        variants={panelVariants}
-        className={panel}
-        style={{
-          backgroundColor: ELEMENT,
-          color: BG,
-          borderColor: ELEMENT,
-        }}
-      >
-
-        {/* HEADER */}
-
-        <div
-          className="border-b-2 p-6 sm:p-8"
-          style={{
-            borderColor:
-              "rgba(56, 244, 242, 0.2)",
-          }}
-        >
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] opacity-50">
-            What You Need
-          </p>
-
-          <h2 className="text-3xl font-light uppercase tracking-tight sm:text-5xl">
-            Simple{" "}
-            <span className="font-semibold">
-              Solutions
-            </span>
+      <section className="w-full flex flex-col items-center justify-center pt-24 pb-12">
+        <div className="w-full px-6 text-center z-20 relative mb-16">
+          <h2 className="uppercase tracking-tight flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6" style={{ fontSize: "clamp(1.5rem, 5vw, 3.5rem)" }}>
+            <span style={{ color: ELEMENT }}>Solving Problems</span>
+            <ArrowRight className="hidden sm:block" style={{ color: ACCENT }} strokeWidth={4} size={40} />
+            <ArrowRight className="sm:hidden rotate-90" style={{ color: ACCENT }} strokeWidth={4} size={28} />
+            <span style={{ color: ACCENT, fontFamily: 'sans-serif', fontWeight: 900 }}>in our Style</span>
           </h2>
         </div>
 
-        {/* LIST */}
-
-        <div>
-          {problemList.map((problem) => {
-            const Icon = problem.icon;
-
-            return (
-              <div
-                key={problem.id}
-                className="grid grid-cols-[32px_1fr] gap-4 border-b-2 p-5 last:border-b-0 sm:grid-cols-[40px_1fr_1fr] sm:items-center sm:gap-6 sm:p-6"
-                style={{
-                  borderColor:
-                    "rgba(56, 244, 242, 0.12)",
-                }}
-              >
-
-                {/* NUMBER */}
-
-                <span className="text-xs font-black opacity-40">
-                  {String(problem.id).padStart(
-                    2,
-                    "0"
-                  )}
-                </span>
-
-                {/* PROBLEM */}
-
-                <div className="flex items-center gap-3">
-                  <Icon
-                    size={18}
-                    strokeWidth={2}
-                    className="shrink-0 opacity-60"
-                  />
-
-                  <span className="text-sm font-black uppercase tracking-wide">
-                    {problem.text}
-                  </span>
-                </div>
-
-                {/* SOLUTION */}
-
-                <div className="col-start-2 flex items-start gap-2 sm:col-auto">
-                  <ArrowRight
-                    size={16}
-                    className="mt-0.5 shrink-0 opacity-40"
-                  />
-
-                  <p className="text-sm leading-relaxed opacity-70">
-                    {problem.solution}
-                  </p>
-                </div>
-
-              </div>
-            );
-          })}
+        <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-8">
+          <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-10 flex justify-center">
+            <div className="sticky top-[50vh] flex justify-center items-center h-0 -translate-y-1/2">
+              <ArrowRight className="kinetic-arrow-fixed" strokeWidth={4} />
+            </div>
+          </div>
+          
+          <ul className="kinetic-list relative z-0 py-[10vh]">
+            {problemList.map((problem) => (
+              <li key={problem.id}>
+                <span>{problem.text}</span>
+                <span className="kinetic-gap"></span>
+                <span>{problem.solution}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-      </motion.section>
+      </section>
 
-      {/* =====================================================
-          FEATURES
-      ===================================================== */}
-
-      <motion.section
-        custom={3}
-        initial="hidden"
-        animate="visible"
-        variants={panelVariants}
-        className={panel}
-        style={{
-          backgroundColor: ELEMENT,
-          color: BG,
-          borderColor: ELEMENT,
-        }}
-      >
-
-        {/* HEADER */}
-
-        <div
-          className="border-b-2 p-6 sm:p-8"
-          style={{
-            borderColor:
-              "rgba(56, 244, 242, 0.2)",
-          }}
+      <section className="w-full flex flex-col items-center justify-center   pt-12 pb-24 relative">
+        <div 
+          className="sticky top-3 w-full z-30 py-8 flex justify-center" 
+          
         >
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] opacity-50">
-            Inside noTrainer
-          </p>
-
-          <h2 className="text-3xl font-light uppercase tracking-tight sm:text-5xl">
-            Built to{" "}
-            <span className="font-semibold">
-              Help You Train
-            </span>
+          <h2 className="uppercase tracking-tight" style={{ fontSize: CONFIG.fontSize.section }}>
+            Features
           </h2>
         </div>
-
-        {/* FEATURES */}
-
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          {featureList.map((feature, index) => {
-            const Icon = feature.icon;
-
-            return (
-              <div
-                key={feature.title}
-                className={`flex gap-4 p-5 sm:p-6 ${
-                  index % 2 === 0
-                    ? "md:border-r-2"
-                    : ""
-                } ${
-                  index <
-                  featureList.length - 2
-                    ? "border-b-2"
-                    : ""
-                }`}
-                style={{
-                  borderColor:
-                    "rgba(56, 244, 242, 0.12)",
-                }}
-              >
-
-                {/* ICON */}
-
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center"
+        
+        <div className="flex w-full max-w-6xl flex-col">
+          <ul id="stack-cards">
+            {featureList.map((feature, i) => {
+              const Icon = feature.icon;
+              const styleObj = cardStyles[i % cardStyles.length];
+              return (
+                <li
+                  key={feature.title}
+                  className="stack-card"
                   style={{
-                    backgroundColor: BG,
-                    color: ELEMENT,
+                    "--index": i + 1,
+                    "--card-bg": styleObj.bg,
+                    "--card-text": styleObj.text,
+                    "--shadow-color": styleObj.shadow,
+                    "--card-border": styleObj.border,
                   }}
                 >
-                  <Icon
-                    size={19}
-                    strokeWidth={2.5}
-                  />
-                </div>
-
-                {/* TEXT */}
-
-                <div>
-                  <h3 className="mb-1 text-sm font-black uppercase tracking-wide">
-                    {feature.title}
-                  </h3>
-
-                  <p className="text-sm leading-relaxed opacity-70">
-                    {feature.description}
-                  </p>
-                </div>
-
-              </div>
-            );
-          })}
+                  <div className="stack-card__content">
+                    <span className="stack-number">0{i + 1}</span>
+                    <div className="mb-4 sm:mb-6">
+                      <Icon size={40} strokeWidth={2.5} />
+                    </div>
+                    <h3 className="mb-2 sm:mb-4 text-xl sm:text-3xl tracking-tight uppercase max-w-sm">
+                      {feature.title}
+                    </h3>
+                    <p className="text-base sm:text-lg opacity-90 max-w-xl font-sans font-bold">
+                      {feature.description}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </div>
-      </motion.section>
+      </section>
     </main>
   );
 };

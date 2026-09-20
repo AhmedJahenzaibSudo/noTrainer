@@ -6,11 +6,8 @@ import React from "react";
 
 const CONFIG = {
   colors: {
-    background: "color(display-p3 0.056 0.958 0.949)",
-    dark: "color(display-p3 0.079 0.201 0.346)",
-
     // inactive muscle
-    inactive: "color(display-p3 0.079 0.201 0.346)",
+    inactive: "#7b61abff",
 
     // hovered / selected muscle
     active: "color(display-p3 1 0 0)",
