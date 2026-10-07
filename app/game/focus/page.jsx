@@ -1,707 +1,338 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { X, RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Target } from "lucide-react";
+import { Slackey } from "next/font/google";
 
-const TIMER_OPTIONS = [10, 20, 30, 60];
+const slackey = Slackey({
+  subsets: ["latin"],
+  weight: "400",
+});
 
-/* =========================================================
-   COLORS
-========================================================= */
+const config = {
+  cyan: "color(display-p3 0.056 0.958 0.949)",
+  dark: "color(display-p3 0.079 0.201 0.346)",
+  accent: "color(display-p3 0.98 0.78 0.12)",
+};
 
-const CYAN = "color(display-p3 0.056 0.958 0.949)";
-const DARK = "color(display-p3 0.079 0.201 0.346)";
-const RED = "color(display-p3 1 0 0)";
-const YELLOW = "color(display-p3 0.98 0.78 0.12)";
+export default function FocusGame() {
+  const [step, setStep] = useState("intro");
 
-const FocusGame = () => {
+  const [duration, setDuration] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(30);
+
   const [score, setScore] = useState(0);
-  const [highScore, setHighScore] = useState(0);
-  const [selectedTime, setSelectedTime] = useState(20);
-  const [timeLeft, setTimeLeft] = useState(20);
-  const [isActive, setIsActive] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [position, setPosition] = useState({
-    top: "50%",
-    left: "50%",
+
+  const [targetPosition, setTargetPosition] = useState({
+    x: 50,
+    y: 50,
   });
-  const [combo, setCombo] = useState(0);
-  const [stats, setStats] = useState({
-    totalClicks: 0,
-    hits: 0,
-  });
-  const [flashMiss, setFlashMiss] = useState(false);
-  const [popups, setPopups] = useState([]);
 
-  const arenaRef = useRef(null);
-  const popupId = useRef(0);
+  // =========================
+  // Target position
+  // =========================
 
-  const level = Math.floor(score / 100) + 1;
-  const targetSize = Math.max(24, 54 - level * 4);
+  const moveTarget = () => {
+    const x = 10 + Math.random() * 80;
+    const y = 10 + Math.random() * 80;
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("focusHighScore");
-
-      if (saved) {
-        setHighScore(parseInt(saved));
-      }
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    if (!isActive && !gameOver) {
-      setTimeLeft(selectedTime);
-    }
-  }, [selectedTime, isActive, gameOver]);
-
-  useEffect(() => {
-    let timer;
-
-    if (isActive && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && isActive) {
-      setIsActive(false);
-      setGameOver(true);
-
-      if (score > highScore) {
-        setHighScore(score);
-
-        try {
-          localStorage.setItem(
-            "focusHighScore",
-            score.toString()
-          );
-        } catch {}
-      }
-    }
-
-    return () => clearInterval(timer);
-  }, [isActive, timeLeft, score, highScore]);
-
-  const moveTarget = useCallback(() => {
-    const top = Math.floor(Math.random() * 65) + 15;
-    const left = Math.floor(Math.random() * 75) + 12;
-
-    setPosition({
-      top: `${top}%`,
-      left: `${left}%`,
+    setTargetPosition({
+      x,
+      y,
     });
-  }, []);
+  };
+
+  // =========================
+  // Start game
+  // =========================
 
   const startGame = () => {
     setScore(0);
-    setTimeLeft(selectedTime);
-    setCombo(0);
-    setStats({
-      totalClicks: 0,
-      hits: 0,
-    });
-    setGameOver(false);
-    setPopups([]);
-    setIsActive(true);
+    setTimeLeft(duration);
+    moveTarget();
+    setStep("game");
+  };
+
+  // =========================
+  // Target click
+  // =========================
+
+  const hitTarget = () => {
+    setScore((prev) => prev + 1);
     moveTarget();
   };
 
-  const stopGame = () => {
-    setIsActive(false);
-    setGameOver(false);
-    setScore(0);
-    setCombo(0);
-    setStats({
-      totalClicks: 0,
-      hits: 0,
-    });
-    setPopups([]);
-    setTimeLeft(selectedTime);
-  };
+  // =========================
+  // Restart
+  // =========================
 
   const restartGame = () => {
     setScore(0);
-    setTimeLeft(selectedTime);
-    setCombo(0);
-    setStats({
-      totalClicks: 0,
-      hits: 0,
-    });
-    setGameOver(false);
-    setPopups([]);
-    setIsActive(true);
-    moveTarget();
+    setTimeLeft(duration);
+    setStep("intro");
   };
 
-  const handleArenaClick = () => {
-    if (!isActive) return;
+  // =========================
+  // Timer
+  // =========================
 
-    setStats((prev) => ({
-      ...prev,
-      totalClicks: prev.totalClicks + 1,
-    }));
+  useEffect(() => {
+    if (step !== "game") return;
 
-    setCombo(0);
-    setFlashMiss(true);
+    if (timeLeft <= 0) {
+      setStep("result");
+      return;
+    }
 
-    setTimeout(() => {
-      setFlashMiss(false);
-    }, 180);
-  };
+    const timer = setTimeout(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
 
-  const handleTargetClick = (e) => {
-    e.stopPropagation();
+    return () => clearTimeout(timer);
+  }, [timeLeft, step]);
 
-    if (!isActive) return;
+  // =========================
+  // Intro
+  // =========================
 
-    const newCombo = combo + 1;
-    const bonus = Math.floor(newCombo / 5) * 5;
-    const points = 10 + bonus;
+  if (step === "intro") {
+    return (
+      <main
+        className="flex min-h-screen w-full items-center justify-center px-6"
+        style={{
+          backgroundColor: config.cyan,
+        }}
+      >
+        <div className="text-center">
+          <Target
+            className="mx-auto mb-6 h-20 w-20"
+            strokeWidth={1.8}
+            style={{
+              color: config.dark,
+            }}
+          />
 
-    setScore((prev) => prev + points);
-    setCombo(newCombo);
+          <h1
+            className={`${slackey.className} text-5xl uppercase leading-none md:text-7xl`}
+            style={{
+              color: config.dark,
+            }}
+          >
+            Focus Strike
+          </h1>
 
-    setStats((prev) => ({
-      ...prev,
-      totalClicks: prev.totalClicks + 1,
-      hits: prev.hits + 1,
-    }));
+          <p
+            className="mx-auto mt-5 max-w-md text-base font-medium md:text-lg"
+            style={{
+              color: config.dark,
+            }}
+          >
+            Hit as many targets as you can before the time runs out.
+          </p>
 
-    moveTarget();
+          <button
+            onClick={() => setStep("time")}
+            className={`${slackey.className} mt-10 px-10 py-4 text-lg uppercase transition-transform hover:scale-105`}
+            style={{
+              backgroundColor: config.accent,
+              color: config.dark,
+            }}
+          >
+            Start
+          </button>
+        </div>
+      </main>
+    );
+  }
 
-    const id = popupId.current++;
-    const px = position.left;
-    const py = position.top;
+  // =========================
+  // Time selection
+  // =========================
 
-    setPopups((prev) => [
-      ...prev,
-      {
-        id,
-        points,
-        px,
-        py,
-      },
-    ]);
+  if (step === "time") {
+    return (
+      <main
+        className="flex min-h-screen w-full items-center justify-center px-6"
+        style={{
+          backgroundColor: config.cyan,
+        }}
+      >
+        <div className="w-full max-w-xl text-center">
+          <h1
+            className={`${slackey.className} text-4xl uppercase md:text-6xl`}
+            style={{
+              color: config.dark,
+            }}
+          >
+            Choose Time
+          </h1>
 
-    setTimeout(() => {
-      setPopups((prev) =>
-        prev.filter((p) => p.id !== id)
-      );
-    }, 700);
-  };
+          <div className="mt-10 grid grid-cols-3 gap-3">
+            {[30, 60, 90].map((time) => (
+              <button
+                key={time}
+                onClick={() => setDuration(time)}
+                className={`${slackey.className} py-5 text-lg transition-transform hover:scale-105 md:text-xl`}
+                style={{
+                  backgroundColor:
+                    duration === time ? config.dark : "transparent",
 
-  const accuracy =
-    stats.totalClicks > 0
-      ? Math.round(
-          (stats.hits / stats.totalClicks) * 100
-        )
-      : 0;
+                  color:
+                    duration === time ? config.cyan : config.dark,
 
-  const timerPct =
-    (timeLeft / selectedTime) * 100;
+                  border: `2px solid ${config.dark}`,
+                }}
+              >
+                {time}s
+              </button>
+            ))}
+          </div>
 
-  const timerColor =
-    timeLeft <= 5
-      ? RED
-      : timeLeft <= selectedTime * 0.4
-        ? YELLOW
-        : CYAN;
+          <button
+            onClick={startGame}
+            className={`${slackey.className} mt-10 px-10 py-4 text-lg uppercase transition-transform hover:scale-105`}
+            style={{
+              backgroundColor: config.accent,
+              color: config.dark,
+            }}
+          >
+            Start Game
+          </button>
+        </div>
+      </main>
+    );
+  }
 
+  // =========================
+  // Game
+  // =========================
+
+if (step === "game") {
   return (
     <main
-      className="focus-root relative flex flex-col overflow-hidden select-none"
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden"
       style={{
-        backgroundColor: CYAN,
-        color: DARK,
-        height: "calc(100dvh - 40px)",
-        fontFamily: "sans-serif",
+        backgroundColor: config.dark,
       }}
     >
-      <style>{`
-        @media (min-width: 768px) {
-          .focus-root {
-            height: calc(100dvh - 48px) !important;
-          }
-        }
-
-        @keyframes floatUp {
-          0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-
-          100% {
-            opacity: 0;
-            transform: translateY(-44px) scale(1.25);
-          }
-        }
-
-        @keyframes pulseRing {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0.7;
-          }
-
-          100% {
-            transform: translate(-50%, -50%) scale(2.4);
-            opacity: 0;
-          }
-        }
-
-        .popup-float {
-          animation: floatUp 0.7s ease-out forwards;
-        }
-
-        .ring-pulse {
-          animation: pulseRing 0.65s ease-out infinite;
-        }
-      `}</style>
-
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
-      <header
-        className="relative z-10 shrink-0 flex items-center justify-between px-4 py-3 md:px-8 md:py-4 border-b-2"
-        style={{
-          backgroundColor: DARK,
-          borderColor: DARK,
-          color: CYAN,
-        }}
-      >
-        {/* Accuracy */}
-
-        <div className="w-24 md:w-36">
-          <p
-            className="text-[9px] md:text-xs tracking-[0.25em] font-black uppercase"
-            style={{ color: CYAN }}
-          >
-            Accuracy
-          </p>
-
-          <p className="text-2xl md:text-3xl font-black">
-            {accuracy}%
-          </p>
-        </div>
-
-        {/* Title */}
-
-        <div className="text-center">
-          <h1
-            className="text-xl md:text-3xl font-black uppercase tracking-tight"
-            style={{
-              fontFamily: "'Krona One', sans-serif",
-              color: CYAN,
-            }}
-          >
-            Focus{" "}
-            <span
-              style={{
-                color: YELLOW,
-              }}
-            >
-              Strike
-            </span>
-          </h1>
-        </div>
-
-        {/* Combo */}
-
-        <div className="w-24 md:w-36 text-right">
-          <p
-            className="text-[9px] md:text-xs tracking-[0.25em] font-black uppercase"
-            style={{
-              color: CYAN,
-            }}
-          >
-            Combo
-          </p>
-
-          <p
-            className="text-2xl md:text-3xl font-black transition-all duration-150"
-            style={{
-              color: combo >= 5 ? YELLOW : CYAN,
-            }}
-          >
-            ×{combo}
-          </p>
-        </div>
-      </header>
-
-      {/* =====================================================
-          STATS
-      ===================================================== */}
-
-      <div
-        className="relative z-10 shrink-0 grid grid-cols-3 items-center px-4 py-2 md:px-8 md:py-3 border-b-2"
-        style={{
-          backgroundColor: CYAN,
-          borderColor: DARK,
-          color: DARK,
-        }}
-      >
-        {/* Score */}
-
-        <div className="text-center">
-          <p className="text-[9px] md:text-xs font-black uppercase tracking-widest opacity-60">
-            Score
-          </p>
-
-          <p className="text-3xl md:text-5xl font-black">
-            {score}
-          </p>
-        </div>
-
-        {/* Timer */}
-
-        <div className="flex flex-col items-center">
-          <p className="text-[9px] md:text-xs font-black uppercase tracking-widest mb-1 opacity-60">
+      {/* Right Controls */}
+      <div className="absolute right-3 top-3 z-20 flex items-center gap-2 sm:right-5 sm:top-5">
+        {/* Time */}
+        <div
+          className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3"
+          style={{
+            backgroundColor: config.cyan,
+            color: config.dark,
+          }}
+        >
+          <span className="text-[9px] font-black uppercase tracking-widest sm:text-xs">
             Time
-          </p>
+          </span>
 
-          <div className="relative w-12 h-12 md:w-16 md:h-16">
-            <svg
-              className="w-full h-full -rotate-90"
-              viewBox="0 0 48 48"
-            >
-              <circle
-                cx="24"
-                cy="24"
-                r="20"
-                fill="none"
-                stroke={DARK}
-                strokeOpacity="0.2"
-                strokeWidth="4"
-              />
-
-              <circle
-                cx="24"
-                cy="24"
-                r="20"
-                fill="none"
-                stroke={timerColor}
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 20}`}
-                strokeDashoffset={`${
-                  2 *
-                  Math.PI *
-                  20 *
-                  (1 - timerPct / 100)
-                }`}
-                style={{
-                  transition:
-                    "stroke-dashoffset 0.9s linear, stroke 0.3s",
-                }}
-              />
-            </svg>
-
-            <span
-              className="absolute inset-0 flex items-center justify-center text-sm md:text-lg font-black"
-              style={{
-                color:
-                  timeLeft <= selectedTime * 0.4
-                    ? timerColor
-                    : DARK,
-              }}
-            >
-              {timeLeft}
-            </span>
-          </div>
+          <span
+            className={`${slackey.className} text-lg sm:text-2xl`}
+          >
+            {timeLeft}s
+          </span>
         </div>
 
-        {/* Best */}
+        {/* Score */}
+        <div
+          className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3"
+          style={{
+            backgroundColor: config.cyan,
+            color: config.dark,
+          }}
+        >
+          <span className="text-[9px] font-black uppercase tracking-widest sm:text-xs">
+            Score
+          </span>
 
-        <div className="text-center">
-          <p className="text-[9px] md:text-xs font-black uppercase tracking-widest opacity-60">
-            Best
-          </p>
-
-          <p className="text-3xl md:text-5xl font-black opacity-50">
-            {highScore}
-          </p>
+          <span
+            className={`${slackey.className} text-lg sm:text-2xl`}
+          >
+            {score}
+          </span>
         </div>
+
+        {/* Stop */}
+        <button
+          onClick={() => setStep("result")}
+          className={`${slackey.className} px-3 py-2 text-[10px] uppercase transition-transform active:scale-95 sm:px-5 sm:py-3 sm:text-xs`}
+          style={{
+            backgroundColor: config.accent,
+            color: config.dark,
+          }}
+        >
+          Stop
+        </button>
       </div>
 
-      {/* =====================================================
-          ARENA
-      ===================================================== */}
-
-      <div
-        ref={arenaRef}
-        onClick={handleArenaClick}
-        className="relative z-10 flex-1 min-h-0 mx-4 mb-4 md:mx-6 md:mb-6 mt-3 overflow-hidden cursor-crosshair border-2"
-        style={{
-          borderColor: flashMiss ? RED : DARK,
-          backgroundColor: DARK,
-          transition: "border-color 0.15s",
-        }}
-      >
-        {/* In-game Controls */}
-
-        {isActive && (
-          <div className="absolute top-3 right-3 z-30 flex gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                restartGame();
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 border-2 font-black text-xs uppercase tracking-wider transition-all active:scale-95"
-              style={{
-                backgroundColor: CYAN,
-                borderColor: CYAN,
-                color: DARK,
-              }}
-            >
-              <RotateCcw size={13} />
-
-              <span className="hidden md:inline">
-                Restart
-              </span>
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                stopGame();
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 border-2 font-black text-xs uppercase tracking-wider transition-all active:scale-95"
-              style={{
-                backgroundColor: RED,
-                borderColor: RED,
-                color: DARK,
-              }}
-            >
-              <X size={13} />
-
-              <span className="hidden md:inline">
-                Stop
-              </span>
-            </button>
-          </div>
-        )}
-
-        {/* Score Popups */}
-
-        {popups.map((p) => (
-          <span
-            key={p.id}
-            className="popup-float pointer-events-none absolute font-black text-sm md:text-lg"
+      {/* Game Area */}
+      <div className="relative h-full w-full">
+        <button
+          onClick={hitTarget}
+          aria-label="Hit target"
+          className="absolute flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition-transform active:scale-90 sm:h-20 sm:w-20 md:h-24 md:w-24"
+          style={{
+            left: `${targetPosition.x}%`,
+            top: `${targetPosition.y}%`,
+            backgroundColor: config.accent,
+          }}
+        >
+          <Target
+            className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12"
+            strokeWidth={2}
             style={{
-              top: p.py,
-              left: p.px,
-              color: YELLOW,
-              transform: "translate(-50%, -100%)",
+              color: config.dark,
             }}
-          >
-            +{p.points}
-          </span>
-        ))}
-
-        {/* =================================================
-            START / GAME OVER OVERLAY
-        ================================================= */}
-
-        {!isActive && (
-          <div
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4"
-            style={{
-              backgroundColor: DARK,
-              color: CYAN,
-            }}
-          >
-            {gameOver ? (
-              <div className="text-center mb-6">
-                <p
-                  className="text-xs md:text-sm tracking-[0.4em] font-black uppercase mb-2"
-                  style={{
-                    fontFamily:
-                      "'Krona One', sans-serif",
-                    color: YELLOW,
-                  }}
-                >
-                  Game Over
-                </p>
-
-                <p
-                  className="text-7xl md:text-9xl font-black tracking-tighter mb-3"
-                  style={{
-                    color: CYAN,
-                  }}
-                >
-                  {score}
-                </p>
-
-                <div
-                  className="h-1 w-20 mx-auto mb-3"
-                  style={{
-                    backgroundColor: CYAN,
-                  }}
-                />
-
-                <p
-                  className="text-sm md:text-base font-bold tracking-wide"
-                  style={{
-                    color: CYAN,
-                    opacity: 0.7,
-                  }}
-                >
-                  Accuracy {accuracy}% · Hits {stats.hits}
-                </p>
-
-                {score > 0 && score >= highScore && (
-                  <p
-                    className="mt-3 text-xs md:text-sm font-black tracking-[0.3em] uppercase"
-                    style={{
-                      color: YELLOW,
-                    }}
-                  >
-                    ★ New Best!
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="text-center mb-6">
-                <h2
-                  className="text-4xl md:text-6xl font-black uppercase tracking-tight"
-                  style={{
-                    fontFamily:
-                      "'Krona One', sans-serif",
-                    color: CYAN,
-                  }}
-                >
-                  Focus{" "}
-                  <span
-                    style={{
-                      color: YELLOW,
-                    }}
-                  >
-                    Strike
-                  </span>
-                </h2>
-
-                <p
-                  className="text-xs md:text-sm tracking-[0.3em] uppercase mt-3 font-bold"
-                  style={{
-                    color: CYAN,
-                    opacity: 0.65,
-                  }}
-                >
-                  Tap the targets as fast as you can
-                </p>
-
-                {highScore > 0 && (
-                  <p
-                    className="mt-3 text-xs md:text-sm font-black tracking-widest uppercase"
-                    style={{
-                      color: YELLOW,
-                    }}
-                  >
-                    Best: {highScore}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Timer Picker */}
-
-            <div className="flex gap-2 mb-6">
-              {TIMER_OPTIONS.map((t) => {
-                const selected = selectedTime === t;
-
-                return (
-                  <button
-                    key={t}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTime(t);
-                    }}
-                    className="px-3 py-2 md:px-5 md:py-2.5 border-2 font-black text-xs md:text-sm uppercase tracking-wider transition-all active:scale-95"
-                    style={{
-                      backgroundColor: selected
-                        ? YELLOW
-                        : DARK,
-
-                      color: selected
-                        ? DARK
-                        : CYAN,
-
-                      borderColor: selected
-                        ? YELLOW
-                        : CYAN,
-                    }}
-                  >
-                    {t}s
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Start */}
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                startGame();
-              }}
-              className="px-14 md:px-20 py-4 md:py-5 border-2 font-black uppercase tracking-[0.3em] transition-all hover:scale-105 active:scale-95 text-sm md:text-base"
-              style={{
-                backgroundColor: CYAN,
-                borderColor: CYAN,
-                color: DARK,
-              }}
-            >
-              {gameOver ? "Play Again" : "Start"}
-            </button>
-          </div>
-        )}
-
-        {/* =================================================
-            TARGET
-        ================================================= */}
-
-        {isActive && (
-          <button
-            onClick={handleTargetClick}
-            className="absolute active:scale-75 duration-75"
-            style={{
-              top: position.top,
-              left: position.left,
-              width: `${targetSize}px`,
-              height: `${targetSize}px`,
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            <div
-              className="ring-pulse absolute rounded-full pointer-events-none"
-              style={{
-                top: "50%",
-                left: "50%",
-                width: `${targetSize}px`,
-                height: `${targetSize}px`,
-                border: `2px solid ${CYAN}`,
-              }}
-            />
-
-            <div
-              className="relative w-full h-full rounded-full flex items-center justify-center"
-              style={{
-                backgroundColor: CYAN,
-              }}
-            >
-              <div
-                className="rounded-full"
-                style={{
-                  width: "38%",
-                  height: "38%",
-                  backgroundColor: RED,
-                }}
-              />
-            </div>
-          </button>
-        )}
+          />
+        </button>
       </div>
     </main>
   );
-};
+}
+  // =========================
+  // Result
+  // =========================
 
-export default FocusGame;
+  return (
+    <main
+      className="flex min-h-screen w-full items-center justify-center px-6"
+      style={{
+        backgroundColor: config.cyan,
+      }}
+    >
+      <div className="text-center">
+        <p
+          className="mb-4 text-lg font-bold uppercase tracking-wider"
+          style={{
+            color: config.dark,
+          }}
+        >
+          Your Score
+        </p>
+
+        <h1
+          className={`${slackey.className} text-8xl md:text-9xl`}
+          style={{
+            color: config.dark,
+          }}
+        >
+          {score}
+        </h1>
+
+        <button
+          onClick={restartGame}
+          className={`${slackey.className} mt-10 px-10 py-4 text-lg uppercase transition-transform hover:scale-105`}
+          style={{
+            backgroundColor: config.accent,
+            color: config.dark,
+          }}
+        >
+          Play Again
+        </button>
+      </div>
+    </main>
+  );
+}

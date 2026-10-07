@@ -8,7 +8,7 @@ const CONFIG = {
   colors: {
 
     // inactive muscle
-    inactive: "#9681beff",
+    inactive: "#142F50",
 
     // hovered / selected muscle
     active: "color(display-p3 1 0 0)",

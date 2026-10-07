@@ -1,392 +1,433 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Brain } from "lucide-react";
+import { Slackey } from "next/font/google";
 
-const TIMER_OPTIONS = [10, 20, 30, 60];
+const slackey = Slackey({
+  subsets: ["latin"],
+  weight: "400",
+});
 
-/* =========================================================
-   COLORS
-========================================================= */
+// =======================
+// Colors
+// =======================
 
 const CYAN = "color(display-p3 0.056 0.958 0.949)";
 const DARK = "color(display-p3 0.079 0.201 0.346)";
 const RED = "color(display-p3 1 0 0)";
 const YELLOW = "color(display-p3 0.98 0.78 0.12)";
 
-const RecallGame = () => {
+export default function RecallGame() {
+  const [step, setStep] = useState("intro");
+
   const [sequence, setSequence] = useState([]);
   const [userSequence, setUserSequence] = useState([]);
-  const [isDisplaying, setIsDisplaying] = useState(false);
+
+  const [score, setScore] = useState(0);
+
   const [activeTile, setActiveTile] = useState(null);
   const [wrongTile, setWrongTile] = useState(null);
-  const [level, setLevel] = useState(0);
-  const [highScore, setHighScore] = useState(0);
-  const [gameState, setGameState] = useState("idle");
+  const [clickedTile, setClickedTile] = useState(null);
+
+  const [isDisplaying, setIsDisplaying] = useState(false);
+  const [success, setSuccess] = useState(false);
+
   const cancelRef = useRef(false);
 
-  const gridSize = level > 5 ? 4 : 3;
-  const tiles = Array.from(
-    { length: gridSize * gridSize },
-    (_, i) => i,
-  );
+  const tiles = Array.from({ length: 9 }, (_, i) => i);
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("recallBestSimple");
+  // =======================
+  // Wait
+  // =======================
 
-      if (saved) {
-        setHighScore(parseInt(saved));
-      }
-    } catch {}
-  }, []);
+  const wait = (ms) =>
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+
+  // =======================
+  // Show sequence
+  // =======================
 
   const playSequence = useCallback(async (seq) => {
-    cancelRef.current = false;
+    setUserSequence([]);
+    setClickedTile(null);
+    setSuccess(false);
     setIsDisplaying(true);
 
-    await new Promise((r) => setTimeout(r, 400));
+    await wait(500);
 
-    for (let i = 0; i < seq.length; i++) {
+    for (const tile of seq) {
       if (cancelRef.current) return;
 
-      setActiveTile(seq[i]);
+      setActiveTile(tile);
 
-      await new Promise((r) => setTimeout(r, 450));
+      await wait(450);
 
       if (cancelRef.current) return;
 
       setActiveTile(null);
 
-      await new Promise((r) => setTimeout(r, 250));
+      await wait(250);
     }
 
-    setIsDisplaying(false);
+    if (!cancelRef.current) {
+      setIsDisplaying(false);
+    }
   }, []);
 
-  const startNextLevel = useCallback(
-    (currentSeq = []) => {
-      const size = currentSeq.length > 5 ? 4 : 3;
-      const nextTile = Math.floor(Math.random() * size * size);
-      const newSeq = [...currentSeq, nextTile];
+  // =======================
+  // Next round
+  // =======================
 
-      setSequence(newSeq);
+  const nextRound = useCallback(
+    (currentSequence) => {
+      const nextTile = Math.floor(Math.random() * 9);
+
+      const newSequence = [
+        ...currentSequence,
+        nextTile,
+      ];
+
+      setSequence(newSequence);
       setUserSequence([]);
 
-      playSequence(newSeq);
+      playSequence(newSequence);
     },
-    [playSequence],
+    [playSequence]
   );
 
-  const handleTileClick = (tileId) => {
-    if (isDisplaying || gameState !== "playing") return;
-
-    const correctTile = sequence[userSequence.length];
-
-    if (tileId === correctTile) {
-      const newUserSeq = [...userSequence, tileId];
-
-      setUserSequence(newUserSeq);
-
-      if (newUserSeq.length === sequence.length) {
-        setLevel((prev) => prev + 1);
-
-        setTimeout(() => {
-          startNextLevel(sequence);
-        }, 900);
-      }
-    } else {
-      setWrongTile(tileId);
-
-      setTimeout(() => {
-        setWrongTile(null);
-      }, 500);
-
-      setTimeout(() => {
-        setGameState("failed");
-
-        if (level > highScore) {
-          setHighScore(level);
-
-          try {
-            localStorage.setItem(
-              "recallBestSimple",
-              level.toString(),
-            );
-          } catch {}
-        }
-      }, 400);
-    }
-  };
+  // =======================
+  // Start game
+  // =======================
 
   const startGame = () => {
-    cancelRef.current = true;
+    cancelRef.current = false;
 
-    setLevel(1);
+    setScore(0);
+
     setSequence([]);
     setUserSequence([]);
+
     setActiveTile(null);
     setWrongTile(null);
-    setGameState("playing");
+    setClickedTile(null);
+
+    setSuccess(false);
+    setIsDisplaying(false);
+
+    setStep("game");
 
     setTimeout(() => {
-      const nextTile = Math.floor(Math.random() * 9);
-      const newSeq = [nextTile];
-
-      setSequence(newSeq);
-      setUserSequence([]);
-
-      playSequence(newSeq);
-    }, 100);
+      nextRound([]);
+    }, 400);
   };
 
-  const resetGame = () => {
+  // =======================
+  // End game
+  // =======================
+
+  const endGame = () => {
     cancelRef.current = true;
 
-    setGameState("idle");
-    setLevel(0);
-    setSequence([]);
-    setUserSequence([]);
     setActiveTile(null);
+    setWrongTile(null);
+    setClickedTile(null);
+    setIsDisplaying(false);
+    setSuccess(false);
+
+    setStep("result");
   };
 
-  const progress =
-    sequence.length > 0
-      ? (userSequence.length / sequence.length) * 100
-      : 0;
+  // =======================
+  // Handle click
+  // =======================
 
+  const handleTileClick = (tileId) => {
+    if (
+      step !== "game" ||
+      isDisplaying ||
+      success
+    ) {
+      return;
+    }
+
+    const correctTile =
+      sequence[userSequence.length];
+
+    // =======================
+    // Correct click
+    // =======================
+
+    if (tileId === correctTile) {
+      setClickedTile(tileId);
+
+      setTimeout(() => {
+        setClickedTile(null);
+      }, 180);
+
+      const newUserSequence = [
+        ...userSequence,
+        tileId,
+      ];
+
+      setUserSequence(newUserSequence);
+
+      // Whole sequence completed
+      if (
+        newUserSequence.length ===
+        sequence.length
+      ) {
+        const newScore = score + 1;
+
+        setScore(newScore);
+        setSuccess(true);
+
+        setTimeout(() => {
+          setSuccess(false);
+
+          nextRound(sequence);
+        }, 900);
+      }
+
+      return;
+    }
+
+    // =======================
+    // Wrong click
+    // =======================
+
+    setWrongTile(tileId);
+
+    setTimeout(() => {
+      setStep("result");
+    }, 600);
+  };
+
+  // =======================
+  // Cleanup
+  // =======================
+
+  useEffect(() => {
+    return () => {
+      cancelRef.current = true;
+    };
+  }, []);
+
+  // =======================
+  // Intro
+  // =======================
+
+  if (step === "intro") {
+    return (
+      <main
+        className="flex min-h-screen w-full items-center justify-center px-6"
+        style={{
+          backgroundColor: CYAN,
+          color: DARK,
+        }}
+      >
+        <div className="text-center">
+          <Brain
+            className="mx-auto mb-6 h-20 w-20"
+            strokeWidth={1.8}
+            style={{
+              color: DARK,
+            }}
+          />
+
+          <h1
+            className={`${slackey.className} text-5xl uppercase leading-none md:text-7xl`}
+          >
+            Neural Recall
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-md text-base font-medium md:text-lg">
+            Watch the pattern, remember it, then
+            repeat it.
+          </p>
+
+          <button
+            onClick={startGame}
+            className={`${slackey.className} mt-10 px-10 py-4 text-lg uppercase transition-transform hover:scale-105`}
+            style={{
+              backgroundColor: YELLOW,
+              color: DARK,
+            }}
+          >
+            Start
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // =======================
+  // Game
+  // =======================
+
+  if (step === "game") {
   return (
     <main
-      className="recall-root relative flex flex-col overflow-hidden select-none"
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4"
       style={{
-        backgroundColor: CYAN,
-        color: DARK,
-        height: "calc(100dvh - 40px)",
-        fontFamily: "sans-serif",
+        backgroundColor: DARK,
       }}
     >
       <style>{`
-        @media (min-width: 768px) {
-          .recall-root {
-            height: calc(100dvh - 48px) !important;
-          }
-        }
-
-        @keyframes tileGlow {
-          0% {
-            box-shadow: 0 0 0px ${CYAN};
-          }
-
-          50% {
-            box-shadow: 0 0 28px ${CYAN};
-          }
-
-          100% {
-            box-shadow: 0 0 0px ${CYAN};
-          }
-        }
-
         @keyframes wrongShake {
           0%, 100% {
             transform: translateX(0);
           }
 
           25% {
-            transform: translateX(-4px);
+            transform: translateX(-6px);
           }
 
           75% {
-            transform: translateX(4px);
+            transform: translateX(6px);
           }
         }
 
-        .tile-active {
-          animation: tileGlow 0.45s ease-in-out;
+        @keyframes successPop {
+          0% {
+            transform: scale(0.8);
+            opacity: 0;
+          }
+
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
         }
 
-        .tile-wrong {
-          animation: wrongShake 0.35s ease-in-out;
-          background-color: ${RED} !important;
-          border-color: ${RED} !important;
+        .wrong-tile {
+          animation: wrongShake 0.3s ease-in-out;
+        }
+
+        .success-text {
+          animation: successPop 0.2s ease-out;
         }
       `}</style>
 
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
-      <header
-        className="relative z-10 shrink-0 flex items-center justify-between px-4 py-3 md:px-8 md:py-4 border-b-2"
-        style={{
-          backgroundColor: DARK,
-          borderColor: DARK,
-          color: CYAN,
-        }}
-      >
-        <div className="w-24 md:w-36">
-          <p
-            className="text-[9px] md:text-xs tracking-[0.25em] font-black uppercase"
-            style={{
-              color: CYAN,
-            }}
-          >
-            Level
-          </p>
-
-          <p
-            className="text-2xl md:text-3xl font-black"
-            style={{
-              color: CYAN,
-            }}
-          >
-            {level}
-          </p>
-        </div>
-
-        <h1
-          className="text-xl md:text-3xl font-black uppercase tracking-tight"
+      {/* Right Controls */}
+      <div className="absolute right-3 top-3 z-20 flex items-center gap-2 sm:right-5 sm:top-5">
+        {/* Score */}
+        <div
+          className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3"
           style={{
-            fontFamily: "'Krona One', sans-serif",
-            color: CYAN,
+            backgroundColor: CYAN,
+            color: DARK,
           }}
         >
-          Neural{" "}
-          <span
-            style={{
-              color: YELLOW,
-            }}
-          >
-            Recall
+          <span className="text-[9px] font-black uppercase tracking-widest sm:text-xs">
+            Score
           </span>
-        </h1>
 
-        <div className="w-24 md:w-36 text-right">
-          <p
-            className="text-[9px] md:text-xs tracking-[0.25em] font-black uppercase"
-            style={{
-              color: CYAN,
-            }}
+          <span
+            className={`${slackey.className} text-lg sm:text-2xl`}
           >
-            Best
-          </p>
-
-          <p
-            className="text-2xl md:text-3xl font-black"
-            style={{
-              color: CYAN,
-            }}
-          >
-            {highScore}
-          </p>
-        </div>
-      </header>
-
-      {/* =====================================================
-          STATUS BAR
-      ===================================================== */}
-
-      <div
-        className="relative z-10 shrink-0 px-4 py-2 md:px-8 md:py-3 border-b-2 flex items-center justify-between gap-4"
-        style={{
-          backgroundColor: CYAN,
-          borderColor: DARK,
-        }}
-      >
-        {/* Progress */}
-
-        <div className="flex gap-1.5 flex-wrap">
-          {sequence.map((_, i) => (
-            <div
-              key={i}
-              className="w-2 h-2 md:w-2.5 md:h-2.5 transition-all duration-200"
-              style={{
-                backgroundColor:
-                  i < userSequence.length
-                    ? YELLOW
-                    : DARK,
-
-                opacity:
-                  i < userSequence.length
-                    ? 1
-                    : 0.2,
-              }}
-            />
-          ))}
+            {score}
+          </span>
         </div>
 
-        {/* Status */}
-
-        <p
-          className="text-[9px] md:text-xs font-black uppercase tracking-[0.25em] shrink-0 transition-colors duration-300"
+        {/* Stop */}
+        <button
+          onClick={endGame}
+          className={`${slackey.className} px-3 py-2 text-[10px] uppercase transition-transform active:scale-95 sm:px-5 sm:py-3 sm:text-xs`}
           style={{
-            color: isDisplaying ? RED : DARK,
-            opacity: isDisplaying ? 1 : 0.55,
+            backgroundColor: YELLOW,
+            color: DARK,
           }}
         >
-          {isDisplaying
-            ? "Watch..."
-            : gameState === "playing"
-              ? "Your turn"
-              : ""}
-        </p>
+          Stop
+        </button>
       </div>
 
-      {/* =====================================================
-          PLAY AREA
-      ===================================================== */}
+      {/* Game Area */}
+      <div className="w-full max-w-[380px]">
+        {/* Status */}
+        <div className="mb-6 flex h-8 items-center justify-center">
+          {success ? (
+            <p
+              className={`${slackey.className} success-text text-lg uppercase`}
+              style={{
+                color: YELLOW,
+              }}
+            >
+              Correct!
+            </p>
+          ) : (
+            <p
+              className={`${slackey.className} text-sm uppercase md:text-base`}
+              style={{
+                color: isDisplaying ? YELLOW : CYAN,
+              }}
+            >
+              {isDisplaying ? "Watch" : "Your Turn"}
+            </p>
+          )}
+        </div>
 
-      <div className="relative z-10 flex-1 min-h-0 flex flex-col items-center justify-center px-4 pb-4 md:px-8 md:pb-6">
         {/* Grid */}
-
         <div
-          className="grid gap-2 md:gap-3 p-3 md:p-4 border-2"
+          className="grid grid-cols-3 gap-2 p-3 md:gap-3 md:p-4"
           style={{
-            gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-            width: "min(88vw, 360px)",
-            backgroundColor: DARK,
-            borderColor: DARK,
+            backgroundColor: CYAN,
           }}
         >
           {tiles.map((tile) => {
             const isActive = activeTile === tile;
             const isWrong = wrongTile === tile;
-            const isCompleted =
-              userSequence.includes(tile) && !isDisplaying;
+            const isClicked = clickedTile === tile;
 
             return (
               <button
                 key={tile}
                 onClick={() => handleTileClick(tile)}
-                disabled={
-                  isDisplaying || gameState !== "playing"
-                }
+                disabled={isDisplaying || success}
                 className={`
                   aspect-square
                   transition-all
                   duration-150
-                  ${isActive ? "tile-active scale-95" : ""}
-                  ${isWrong ? "tile-wrong" : ""}
+
+                  ${
+                    !isDisplaying && !success
+                      ? "active:scale-95"
+                      : ""
+                  }
+
+                  ${
+                    isWrong
+                      ? "wrong-tile"
+                      : ""
+                  }
                 `}
                 style={{
-                  backgroundColor: isActive
-                    ? YELLOW
-                    : isCompleted
-                      ? CYAN
-                      : DARK,
+                  backgroundColor:
+                    isWrong
+                      ? RED
+                      : isActive
+                        ? YELLOW
+                        : isClicked
+                          ? CYAN
+                          : DARK,
 
-                  border: isActive
-                    ? `2px solid ${YELLOW}`
-                    : isCompleted
-                      ? `2px solid ${CYAN}`
+                  border:
+                    isClicked
+                      ? `4px solid ${YELLOW}`
                       : `2px solid ${CYAN}`,
 
                   opacity:
-                    !isActive && !isCompleted
-                      ? 0.45
-                      : 1,
+                    isActive ||
+                    isClicked ||
+                    isWrong
+                      ? 1
+                      : 0.75,
 
                   cursor:
-                    isDisplaying ||
-                    gameState !== "playing"
+                    isDisplaying || success
                       ? "default"
                       : "pointer",
                 }}
@@ -395,153 +436,46 @@ const RecallGame = () => {
           })}
         </div>
 
-        {/* =================================================
-            IDLE / FAILED OVERLAY
-        ================================================= */}
-
-        {gameState !== "playing" && (
-          <div
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4"
-            style={{
-              backgroundColor: DARK,
-              color: CYAN,
-            }}
-          >
-            {gameState === "failed" && (
-              <div className="text-center mb-8">
-                <p
-                  className="text-xs md:text-sm tracking-[0.4em] font-black uppercase mb-2"
-                  style={{
-                    fontFamily:
-                      "'Krona One', sans-serif",
-
-                    color: RED,
-                  }}
-                >
-                  Game Over
-                </p>
-
-                <p
-                  className="text-7xl md:text-9xl font-black tracking-tighter mb-2"
-                  style={{
-                    color: CYAN,
-                  }}
-                >
-                  {level}
-                </p>
-
-                <div
-                  className="h-1 w-20 mx-auto mb-3"
-                  style={{
-                    backgroundColor: CYAN,
-                  }}
-                />
-
-                <p
-                  className="text-sm md:text-base font-medium tracking-wide"
-                  style={{
-                    color: CYAN,
-                    opacity: 0.65,
-                  }}
-                >
-                  You reached level {level}
-                </p>
-
-                {level >= highScore && level > 0 && (
-                  <p
-                    className="mt-2 text-xs md:text-sm font-black tracking-[0.3em] uppercase"
-                    style={{
-                      color: YELLOW,
-                    }}
-                  >
-                    ★ New Best!
-                  </p>
-                )}
-              </div>
-            )}
-
-            {gameState === "idle" && (
-              <div className="text-center mb-8">
-                <h2
-                  className="text-4xl md:text-6xl font-black uppercase tracking-tight"
-                  style={{
-                    fontFamily:
-                      "'Krona One', sans-serif",
-
-                    color: CYAN,
-                  }}
-                >
-                  Neural{" "}
-                  <span
-                    style={{
-                      color: YELLOW,
-                    }}
-                  >
-                    Recall
-                  </span>
-                </h2>
-
-                <p
-                  className="text-xs md:text-sm tracking-[0.3em] uppercase mt-2 font-bold"
-                  style={{
-                    color: CYAN,
-                    opacity: 0.6,
-                  }}
-                >
-                  Watch the pattern, then repeat it
-                </p>
-
-                {highScore > 0 && (
-                  <p
-                    className="mt-3 text-xs md:text-sm font-bold tracking-widest uppercase"
-                    style={{
-                      color: YELLOW,
-                    }}
-                  >
-                    Best: Level {highScore}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              {/* Start */}
-
-              <button
-                onClick={startGame}
-                className="px-12 md:px-20 py-4 md:py-5 border-2 font-black uppercase tracking-[0.3em] transition-all hover:scale-105 active:scale-95 text-sm md:text-base"
-                style={{
-                  backgroundColor: CYAN,
-                  color: DARK,
-                  borderColor: CYAN,
-                }}
-              >
-                {gameState === "failed"
-                  ? "Play Again"
-                  : "Start"}
-              </button>
-
-              {/* Reset */}
-
-              {gameState === "failed" && (
-                <button
-                  onClick={resetGame}
-                  className="px-6 md:px-8 py-4 md:py-5 border-2 font-black uppercase tracking-[0.2em] text-sm md:text-base transition-all active:scale-95"
-                  style={{
-                    backgroundColor: DARK,
-                    color: CYAN,
-                    borderColor: CYAN,
-                  }}
-                >
-                  Reset
-                </button>
-              )}
-            </div>
-          </div>
-        )}
+        
       </div>
     </main>
   );
-};
+}
 
-export default RecallGame;
+  // =======================
+  // Result
+  // =======================
+
+  return (
+    <main
+      className="flex min-h-screen w-full items-center justify-center px-6"
+      style={{
+        backgroundColor: CYAN,
+        color: DARK,
+      }}
+    >
+      <div className="text-center">
+        <p className="mb-4 text-lg font-bold uppercase tracking-wider">
+          Your Score
+        </p>
+
+        <h1
+          className={`${slackey.className} text-8xl md:text-9xl`}
+        >
+          {score}
+        </h1>
+
+        <button
+          onClick={startGame}
+          className={`${slackey.className} mt-10 px-10 py-4 text-lg uppercase transition-transform hover:scale-105`}
+          style={{
+            backgroundColor: YELLOW,
+            color: DARK,
+          }}
+        >
+          Play Again
+        </button>
+      </div>
+    </main>
+  );
+}

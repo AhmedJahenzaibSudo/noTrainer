@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Pause, Play, Maximize, Minimize } from "lucide-react";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/Navbar"; // Assuming this is used elsewhere
 import AuthButton from "@/components/AuthButton";
 
 const QUOTES = [
@@ -21,6 +21,11 @@ const QUOTES = [
 export default function Marquee() {
   const [isPaused, setIsPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Typewriter State
+  const [text, setText] = useState("");
+  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fullscreen Logic
   const toggleFullscreen = () => {
@@ -41,160 +46,92 @@ export default function Marquee() {
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-
-    return () =>
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
+
+  useEffect(() => {
+    if (isPaused) return; 
+
+    const currentQuote = QUOTES[quoteIndex % QUOTES.length];
+    let timeout;
+
+    if (!isDeleting && text === currentQuote) {
+      timeout = setTimeout(() => setIsDeleting(true), 1500);
+    } else if (isDeleting && text === "") {
+      setIsDeleting(false);
+      setQuoteIndex((prev) => prev + 1);
+    } else {
+      timeout = setTimeout(() => {
+        setText((prev) => {
+          if (isDeleting) {
+            return currentQuote.substring(0, prev.length - 1);
+          } else {
+            return currentQuote.substring(0, prev.length + 1);
+          }
+        });
+      }, isDeleting ? 40 : 100); 
+    }
+
+    return () => clearTimeout(timeout);
+  }, [text, isDeleting, quoteIndex, isPaused]);
 
   return (
     <div
-      className="sticky top-0 z-[100] w-full h-10 md:h-12 flex items-center border-b"
-      style={{
-        backgroundColor: "color(display-p3 0.079 0.201 0.346)",
-
-        borderColor: "color(display-p3 0.056 0.958 0.949)",
-      }}
+      // Added absolute, left-0, and pointer-events-none
+      className="fixed top-0 left-0 z-[100] w-full h-10 md:h-12 flex items-center pointer-events-none"
     >
       <div className="w-full max-w-7xl mx-auto px-3 md:px-4 flex items-center justify-between relative h-full">
         {/* LEFT */}
+        <div className="flex items-center gap-2 flex-shrink-0 z-20 relative"></div>
 
-        <div className="flex items-center gap-2 flex-shrink-0 z-20 relative">
-          <Navbar />
-        </div>
-
-        {/* CENTER: Ticker */}
-
-        <div className="absolute inset-0 flex items-center overflow-hidden pointer-events-none">
+        {/* CENTER: Typewriter Ticker */}
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none px-16">
           <div
-            className={`ticker-mask flex gap-8 md:gap-12 whitespace-nowrap ${
-              isPaused ? "pause-marquee" : "animate-marquee"
-            }`}
+            className="text-[10px] md:text-sm font-bold uppercase tracking-wider text-center whitespace-nowrap px-3 py-1 rounded"
             style={{
               fontFamily: "'Krona One', sans-serif",
-
-              color: "color(display-p3 0.056 0.958 0.949)",
+              color: "#FFFFFF",
+              backgroundColor: "#0D0221",
             }}
           >
-            {[...QUOTES, ...QUOTES].map((quote, i) => (
-              <span
-                key={i}
-                className="text-[10px] md:text-sm font-bold uppercase tracking-wider px-2"
-              >
-                {quote}
-              </span>
-            ))}
+            {text}
+            <span className="typewriter-cursor">|</span>
           </div>
         </div>
 
         {/* RIGHT */}
-
-        <div className="flex-shrink-0 flex items-center gap-2 z-20">
+        {/* Added pointer-events-auto so the buttons remain clickable! */}
+        <div className="flex-shrink-0 flex items-center gap-2 z-20 pointer-events-auto">
           <div className="flex items-center gap-0">
             {/* Auth Button */}
-
             <AuthButton />
 
             {/* Fullscreen Button */}
-
             <button
               onClick={toggleFullscreen}
-              className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border-2 transition-all active:scale-90"
-              style={{
-                backgroundColor: "color(display-p3 0.056 0.958 0.949)",
-
-                borderColor: "color(display-p3 0.056 0.958 0.949)",
-
-                color: "color(display-p3 0.079 0.201 0.346)",
-              }}
+              className="group relative w-9 h-9 flex items-center justify-center transition-all duration-300 hover:border-transparent hover:bg-[#FF0055] hover:text-white active:scale-90 rounded-md ml-2"
               aria-label="Toggle Fullscreen"
             >
-              {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
-            </button>
-
-            {/* Pause Button */}
-
-            <button
-              onClick={() => setIsPaused((p) => !p)}
-              className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border-2 transition-all duration-200 focus:outline-none"
-              style={{
-                backgroundColor: isPaused
-                  ? "color(display-p3 0.98 0.78 0.12)"
-                  : "color(display-p3 0.056 0.958 0.949)",
-
-                borderColor: isPaused
-                  ? "color(display-p3 0.98 0.78 0.12)"
-                  : "color(display-p3 0.056 0.958 0.949)",
-
-                color: "color(display-p3 0.079 0.201 0.346)",
-              }}
-              aria-label={isPaused ? "Play" : "Pause"}
-            >
-              {isPaused ? (
-                <Play size={12} className="fill-current ml-0.5" />
-              ) : (
-                <Pause size={12} className="fill-current" />
-              )}
+              {isFullscreen ? <Minimize size={16} strokeWidth={2.5} /> : <Maximize size={16} strokeWidth={2.5} />}
             </button>
           </div>
         </div>
       </div>
 
       {/* Global Styles */}
-
       <style jsx global>{`
-        .animate-marquee {
-          animation: ticker 40s linear infinite;
+        .typewriter-cursor {
+          color: #FF0055;
+          margin-left: 2px;
+          animation: blink 1s step-end infinite;
         }
 
-        .pause-marquee {
-          animation-play-state: paused;
-        }
-
-        @keyframes ticker {
-          0% {
-            transform: translateX(0%);
+        @keyframes blink {
+          from, to {
+            opacity: 0;
           }
-
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-
-        .ticker-mask {
-          mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 90px,
-            black calc(100% - 90px),
-            transparent
-          );
-
-          -webkit-mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 90px,
-            black calc(100% - 90px),
-            transparent
-          );
-        }
-
-        @media (max-width: 767px) {
-          .ticker-mask {
-            mask-image: linear-gradient(
-              to right,
-              transparent,
-              black 76px,
-              black calc(100% - 76px),
-              transparent
-            );
-
-            -webkit-mask-image: linear-gradient(
-              to right,
-              transparent,
-              black 76px,
-              black calc(100% - 76px),
-              transparent
-            );
+          50% {
+            opacity: 1;
           }
         }
       `}</style>

@@ -1,441 +1,613 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Zap,
-  Dumbbell,
-  LayoutDashboard,
-  Calculator,
-  MessageSquare,
-  Target,
-  Info,
-  MapPin,
-  Package,
-  Wand2,
-  Database,
-  Columns3,
-  Gamepad2,
-  ArrowRight,
+  Download,
+  LayoutList,
+  RotateCcw,
+  Trash2,
+  X,
 } from "lucide-react";
 
 import FrontView from "@/components/anatomy/FrontView";
+import BackView from "@/components/anatomy/BackView";
+import exercisesData from "@/public/exercises.json";
 
-const CONFIG = {
-  colors: {
-    bg: "#4d3285ff",       // Deep Indigo
-    element: "#FFFFFF",  // Pure White for text
-    accent: "#f65e91ff",    // Neon Pink
-  },
-  fontSize: {
-    hero: "clamp(3.5rem, 10vw, 7rem)",
-    section: "clamp(2.5rem, 6vw, 4rem)",
-    cardTitle: "1.25rem",
-    body: "1.1rem",
-  },
-  radius: {
-    small: "0.5rem",
-    medium: "1rem",
-    large: "1.5rem",
-    pill: "999px",
-  },
-  animation: {
-    duration: 0.5,
-    stagger: 0.05,
-  },
-};
+const BG = "#0D1117";
+const ELEMENT = "#FF7B72";
+const ACCENT = "#7EE787";
+const TEXT = "#FFFFFF";
 
-const BG = CONFIG.colors.bg;
-const ELEMENT = CONFIG.colors.element;
-const ACCENT = CONFIG.colors.accent;
+const RotatingImage = ({ images = [], name }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-const heroTags = ["Workout Wizard", "Kanban Board", "AI Chat", "Calculators", "Brain Training"];
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [images]);
 
-const featureList = [
-  { title: "Workout Wizard", description: "Select muscles and generate workouts.", icon: Wand2 },
-  { title: "Rich Dataset", description: "Categorized exercises for all goals.", icon: Database },
-  { title: "Calculators", description: "BMI, calories, and protein formulas.", icon: Calculator },
-  { title: "AI Chatbot", description: "24/7 intelligent fitness assistant.", icon: MessageSquare },
-  { title: "Kanban Board", description: "Visual tracking for fitness tasks.", icon: Columns3 },
-  { title: "Mini Games", description: "Boost focus and motivation.", icon: Gamepad2 },
-];
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, [images.length]);
 
-const cardStyles = [
-  { bg: ACCENT, text: BG, shadow: "rgba(255, 0, 85, 0.4)", border: "none" },
-  { bg: BG, text: ACCENT, shadow: "rgba(13, 2, 33, 0.8)", border: `2px solid ${ACCENT}` },
-  { bg: ACCENT, text: BG, shadow: "rgba(255, 0, 85, 0.4)", border: "none" },
-];
-
-const Hero = () => {
-  const [selectedMuscle, setSelectedMuscle] = useState(null);
-  const [highlightedMuscle, setHighlightedMuscle] = useState(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  const anatomyBoxRef = useRef(null);
-
-  const problemList = useMemo(
-    () => [
-      { id: 1, text: "No gym access", solution: "Bodyweight routines" },
-      { id: 2, text: "Too expensive", solution: "Free workout plans" },
-      { id: 3, text: "Don't know how", solution: "Step-by-step guides" },
-      { id: 4, text: "Need privacy", solution: "24/7 AI trainer" },
-      { id: 5, text: "Lack of knowledge", solution: "800+ exercises" },
-      { id: 6, text: "Can't go out", solution: "Home programs" },
-      { id: 7, text: "Need structure", solution: "Kanban tracking" },
-      { id: 8, text: "No motivation", solution: "Motivation Marquee" },
-      { id: 9, text: "No equipment", solution: "Body weight trainings" },
-    ],
-    []
-  );
-
-  const handleMouseMove = useCallback((e) => {
-    if (!anatomyBoxRef.current) return;
-    const rect = anatomyBoxRef.current.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  }, []);
+  if (!images.length) {
+    return (
+      <div className="flex h-full w-full items-center justify-center text-xs uppercase tracking-widest opacity-40">
+        No image
+      </div>
+    );
+  }
 
   return (
-    <main
-      className="w-full flex flex-col antialiased"
-      style={{
-        backgroundColor: BG,
-        backgroundImage: `radial-gradient(circle at 50% 0%, #1a033d 0%, ${BG} 60%)`,
-        color: ELEMENT,
-        fontFamily: '"Slackey", cursive',
-      }}
-    >
-      <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Slackey&display=swap');
-        
-        :root {
-          --card-height: 280px;
-          --card-margin: 20px;
-          --card-top-offset: 1.5em;
-        }
-
-        @media (min-width: 768px) {
-          :root {
-            --card-height: 320px;
-            --card-margin: 30px;
-          }
-        }
-
-        #stack-cards {
-          list-style: none;
-          padding: 0;
-          display: flex;
-          flex-direction: column;
-          gap: var(--card-margin);
-          width: 90vw;
-          max-width: 900px;
-          margin: 0 auto;
-          padding-bottom: calc(10vh + var(--card-height));
-        }
-
-        .stack-card {
-          position: sticky;
-          top: 15vh;
-          padding-top: calc(var(--index) * var(--card-top-offset));
-          z-index: var(--index);
-        }
-
-        .stack-card__content {
-          box-sizing: border-box;
-          padding: 24px;
-          width: 100%;
-          height: var(--card-height);
-          border-radius: 32px;
-          background: var(--card-bg);
-          color: var(--card-text);
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: flex-start;
-          border: var(--card-border);
-          box-shadow: 0 20px 40px -10px var(--shadow-color);
-          position: relative;
-          overflow: hidden;
-        }
-
-        @media (min-width: 768px) {
-          .stack-card__content {
-            padding: 40px;
-          }
-        }
-
-        .stack-number {
-          font-size: clamp(4rem, 12vw, 8rem);
-          position: absolute;
-          right: 1.5rem;
-          top: 1rem;
-          opacity: 0.3;
-          line-height: 1;
-        }
-
-        .kinetic-list {
-          display: flex;
-          flex-direction: column;
-          gap: 3vh;
-          list-style: none;
-          padding: 0;
-          margin: 0 auto;
-          width:100%;
-        }
-
-        .kinetic-list li {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: clamp(1rem, 3vw, 2.5rem);
-          color: ${ELEMENT};
-          width: 100%;
-        }
-
-        .kinetic-list li > span:first-child {
-          flex: 1 1 0;
-          text-align: right;
-        }
-
-        .kinetic-list li > span:last-child {
-          flex: 1 1 0;
-          text-align: left;
-          font-family: sans-serif;
-          font-weight: 900;
-          color: ${ACCENT};
-        }
-
-        .kinetic-gap {
-          width: clamp(24px, 5vw, 48px);
-          margin: 0 clamp(1rem, 3vw, 3rem);
-          flex-shrink: 0;
-        }
-
-        .kinetic-arrow-fixed {
-          width: clamp(24px, 5vw, 48px);
-          height: clamp(24px, 5vw, 48px);
-          color: ${ACCENT};
-        }
-
-        @supports (animation-timeline: view()) {
-          .kinetic-list li {
-            opacity: 0.15;
-            animation: brighten linear both;
-            animation-timeline: view();
-            animation-range: cover 40% cover 60%;
-            transform: scale(0.9);
-          }
-
-          @keyframes brighten {
-            0%, 100% {
-              opacity: 0.15;
-              transform: scale(0.9);
-            }
-            50% {
-              opacity: 1;
-              transform: scale(1.05);
-            }
-          }
-        }
-      ` }} />
-
-      <section className="w-full min-h-screen flex flex-col items-center justify-center px-6 py-24 text-center">
-        <div className="flex w-full max-w-5xl flex-col items-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex flex-col items-center sm:flex-row tracking-tight"
-            style={{ fontSize: CONFIG.fontSize.hero }}
-          >
-            <span>noTrainer</span>
-            <motion.span
-              className="mt-2 sm:ml-4 sm:mt-0"
-              style={{ color: ACCENT }}
-            >
-              AI
-            </motion.span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="mt-6 max-w-xl text-xl sm:text-2xl md:text-3xl opacity-80"
-          >
-            Train Anywhere. <br></br> No Trainer Needed.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="mt-12 flex w-full max-w-3xl flex-wrap items-center justify-center gap-4"
-          >
-            {heroTags.map((tag, index) => (
-              <motion.div
-                key={tag}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
-                whileHover={{ scale: 1.05 }}
-                className="cursor-default px-6 py-3 text-sm sm:text-base uppercase tracking-wider"
-                style={{ 
-                  backgroundColor: ACCENT, 
-                  color: BG,
-                  borderRadius: CONFIG.radius.pill 
-                }}
-              >
-                {tag}
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="w-full min-h-screen flex flex-col items-center justify-center px-6 py-5">
-        <div className="flex w-full max-w-5xl flex-col items-center">
-          <div className="mb-12 text-center">
-            <h2 className="tracking-tight" style={{ fontSize: CONFIG.fontSize.section }}>
-              Use <span style={{ color: ACCENT }}>Muscle</span> Diagrams
-            </h2>
-          </div>
-
-          <motion.div
-            layout
-            className="mb-12 flex w-full max-w-xs items-center justify-center px-6 py-4"
-            style={{ 
-              backgroundColor: selectedMuscle ? ACCENT : BG,
-              color: selectedMuscle ? BG : ACCENT,
-              border: `2px solid ${ACCENT}`,
-              borderRadius: CONFIG.radius.medium 
-            }}
-          >
-            {selectedMuscle ? (
-              <motion.span
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-lg uppercase tracking-widest"
-              >
-                {String(selectedMuscle)}
-              </motion.span>
-            ) : (
-              <span className="text-sm uppercase opacity-80">Select a Muscle</span>
-            )}
-          </motion.div>
-
-          <div
-            ref={anatomyBoxRef}
-            onMouseMove={handleMouseMove}
-            className="relative flex w-full flex-col items-center justify-center [&_svg]:h-[400px] [&_svg]:w-auto sm:[&_svg]:h-[500px] md:[&_svg]:h-[400px] [&_svg]:cursor-crosshair"
-          >
-            <AnimatePresence>
-              {highlightedMuscle && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1, x: mousePos.x + 16, y: mousePos.y - 32 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="pointer-events-none absolute left-0 top-0 z-50 px-4 py-2 text-sm uppercase tracking-wider shadow-xl"
-                  style={{ 
-                    backgroundColor: ACCENT,
-                    color: BG,
-                    borderRadius: CONFIG.radius.small 
-                  }}
-                >
-                  {highlightedMuscle}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <FrontView
-              onHover={setHighlightedMuscle}
-              onLeave={() => setHighlightedMuscle(null)}
-              onSelect={setSelectedMuscle}
-              selectedMuscle={selectedMuscle}
-              highlightedMuscle={highlightedMuscle}
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="w-full flex flex-col items-center justify-center pt-24 pb-12">
-        <div className="w-full px-6 text-center z-20 relative mb-16">
-          <h2 className="uppercase tracking-tight flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6" style={{ fontSize: "clamp(1.5rem, 5vw, 3.5rem)" }}>
-            <span style={{ color: ELEMENT }}>Solving Problems</span>
-            <ArrowRight className="hidden sm:block" style={{ color: ACCENT }} strokeWidth={4} size={40} />
-            <ArrowRight className="sm:hidden rotate-90" style={{ color: ACCENT }} strokeWidth={4} size={28} />
-            <span style={{ color: ACCENT, fontFamily: 'sans-serif', fontWeight: 900 }}>in our Style</span>
-          </h2>
-        </div>
-
-        <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-8">
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-10 flex justify-center">
-            <div className="sticky top-[50vh] flex justify-center items-center h-0 -translate-y-1/2">
-              <ArrowRight className="kinetic-arrow-fixed" strokeWidth={4} />
-            </div>
-          </div>
-          
-          <ul className="kinetic-list relative z-0 py-[10vh]">
-            {problemList.map((problem) => (
-              <li key={problem.id}>
-                <span>{problem.text}</span>
-                <span className="kinetic-gap"></span>
-                <span>{problem.solution}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="w-full flex flex-col items-center justify-center   pt-12 pb-24 relative">
-        <div 
-          className="sticky top-3 w-full z-30 py-8 flex justify-center" 
-          
-        >
-          <h2 className="uppercase tracking-tight" style={{ fontSize: CONFIG.fontSize.section }}>
-            Features
-          </h2>
-        </div>
-        
-        <div className="flex w-full max-w-6xl flex-col">
-          <ul id="stack-cards">
-            {featureList.map((feature, i) => {
-              const Icon = feature.icon;
-              const styleObj = cardStyles[i % cardStyles.length];
-              return (
-                <li
-                  key={feature.title}
-                  className="stack-card"
-                  style={{
-                    "--index": i + 1,
-                    "--card-bg": styleObj.bg,
-                    "--card-text": styleObj.text,
-                    "--shadow-color": styleObj.shadow,
-                    "--card-border": styleObj.border,
-                  }}
-                >
-                  <div className="stack-card__content">
-                    <span className="stack-number">0{i + 1}</span>
-                    <div className="mb-4 sm:mb-6">
-                      <Icon size={40} strokeWidth={2.5} />
-                    </div>
-                    <h3 className="mb-2 sm:mb-4 text-xl sm:text-3xl tracking-tight uppercase max-w-sm">
-                      {feature.title}
-                    </h3>
-                    <p className="text-base sm:text-lg opacity-90 max-w-xl font-sans font-bold">
-                      {feature.description}
-                    </p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </section>
-    </main>
+    <div className="relative h-full w-full overflow-hidden">
+      {images.map((image, index) => (
+        <img
+          key={`${image}-${index}`}
+          src={`/exercises/${image || "placeholder.png"}`}
+          alt={`${name} view ${index + 1}`}
+          className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${
+            index === currentIndex ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+    </div>
   );
 };
 
-export default Hero;
+export default function WorkoutWizard() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [view, setView] = useState("front");
+
+  const [muscle, setMuscle] = useState(null);
+  const [equipment, setEquipment] = useState(null);
+  const [category, setCategory] = useState(null);
+  const [level, setLevel] = useState(null);
+
+  const [routine, setRoutine] = useState([]);
+  const [highlightedMuscle, setHighlightedMuscle] = useState(null);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
+
+  const exercisesForMuscle = useMemo(() => {
+    if (!muscle) return [];
+    return exercisesData.filter(
+      (exercise) =>
+        exercise.primaryMuscles?.includes(muscle) ||
+        exercise.secondaryMuscles?.includes(muscle)
+    );
+  }, [muscle]);
+
+  const availableEquipment = useMemo(() => {
+    return [
+      ...new Set(
+        exercisesForMuscle
+          .map((exercise) => exercise.equipment)
+          .filter(Boolean)
+      ),
+    ].sort();
+  }, [exercisesForMuscle]);
+
+  const exercisesForEquipment = useMemo(() => {
+    return exercisesForMuscle.filter(
+      (exercise) => !equipment || exercise.equipment === equipment
+    );
+  }, [exercisesForMuscle, equipment]);
+
+  const availableCategories = useMemo(() => {
+    return [
+      ...new Set(
+        exercisesForEquipment
+          .map((exercise) => exercise.category)
+          .filter(Boolean)
+      ),
+    ].sort();
+  }, [exercisesForEquipment]);
+
+  const exercisesForCategory = useMemo(() => {
+    return exercisesForEquipment.filter(
+      (exercise) => !category || exercise.category === category
+    );
+  }, [exercisesForEquipment, category]);
+
+  const availableLevels = useMemo(() => {
+    return [
+      ...new Set(
+        exercisesForCategory.map((exercise) => exercise.level).filter(Boolean)
+      ),
+    ].sort();
+  }, [exercisesForCategory]);
+
+  const finalExercises = useMemo(() => {
+    return exercisesForCategory.filter(
+      (exercise) => !level || exercise.level === level
+    );
+  }, [exercisesForCategory, level]);
+
+  const currentPreview = finalExercises[activeIndex];
+
+  const breadcrumbText = [muscle, equipment, category, level]
+    .filter(Boolean)
+    .join(" / ");
+
+  useEffect(() => {
+    if (!isModalOpen && !isRoutineModalOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isModalOpen, isRoutineModalOpen]);
+
+  const handleNext = () => setCurrentStep((prev) => Math.min(prev + 1, 5));
+
+  const resetWizard = () => {
+    setCurrentStep(0);
+    setView("front");
+    setMuscle(null);
+    setEquipment(null);
+    setCategory(null);
+    setLevel(null);
+    setHighlightedMuscle(null);
+    setActiveIndex(0);
+  };
+
+  const handleSelectMuscle = (selected) => {
+    setMuscle(selected);
+    setEquipment(null);
+    setCategory(null);
+    setLevel(null);
+    setActiveIndex(0);
+  };
+
+  const handleSelectEquipment = (selected) => {
+    setEquipment(selected);
+    setCategory(null);
+    setLevel(null);
+    setActiveIndex(0);
+  };
+
+  const handleSelectCategory = (selected) => {
+    setCategory(selected);
+    setLevel(null);
+    setActiveIndex(0);
+  };
+
+  const handleSelectLevel = (selected) => {
+    setLevel(selected);
+    setActiveIndex(0);
+  };
+
+  const toggleRoutine = (exercise) => {
+    setRoutine((current) => {
+      const exists = current.some((item) => item.id === exercise.id);
+      if (exists) {
+        return current.filter((item) => item.id !== exercise.id);
+      }
+      return [...current, exercise];
+    });
+  };
+
+  const exportRoutineCSV = () => {
+    if (!routine.length) return;
+    const rows = [
+      ["Name", "Equipment", "Type", "Difficulty", "Primary Muscles"],
+      ...routine.map((exercise) => [
+        exercise.name || "",
+        exercise.equipment || "",
+        exercise.category || "",
+        exercise.level || "",
+        (exercise.primaryMuscles || []).join(", "),
+      ]),
+    ];
+
+    const csv = rows
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "workout-routine.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const btnBase = "w-full p-3 text-xs font-black uppercase tracking-widest transition-all rounded-lg";
+  const cardBase = "w-full p-3 text-left rounded-lg transition-all";
+
+  return (
+    <div
+      className="wizard-page relative w-full overflow-x-hidden min-h-screen flex flex-col"
+      style={{ backgroundColor: BG, color: TEXT }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Slackey&display=swap');
+        .wizard-page { font-family: 'Slackey', cursive; }
+        .wizard-card { background: #21262D; color: ${TEXT}; }
+        .wizard-card:hover { background: #30363D; }
+        .wizard-selected { background: ${ACCENT}; color: ${BG}; }
+        .wizard-primary { background: ${ELEMENT}; color: ${BG}; }
+        .wizard-primary:hover { opacity: 0.9; }
+        .wizard-outline { background: transparent; color: ${TEXT}; }
+        .wizard-outline:hover { background: #21262D; }
+        .wizard-scroll::-webkit-scrollbar { width: 4px; }
+        .wizard-scroll::-webkit-scrollbar-thumb { background: #30363D; }
+        .anatomy-svg-wrapper svg { display: block; width: 100% !important; height: auto !important; max-width: 100%; margin: 0 auto; }
+      `}</style>
+
+      {currentStep > 0 && (
+        <header className="flex items-center justify-between border-b border-[#30363D] p-4">
+          <div className="min-w-0">
+            <h1 className="text-sm font-black uppercase tracking-tight">Wizard</h1>
+            {breadcrumbText && (
+              <p className="mt-0.5 truncate text-[10px] font-bold opacity-60">
+                {breadcrumbText}
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={resetWizard}
+              className="wizard-outline flex h-9 items-center justify-center gap-2 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg"
+            >
+              <RotateCcw size={12} />
+              Reset
+            </button>
+            <button
+              onClick={() => setIsRoutineModalOpen(true)}
+              className="wizard-primary flex h-9 items-center justify-center gap-2 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg"
+            >
+              <LayoutList size={12} />
+              Routine ({routine.length})
+            </button>
+          </div>
+        </header>
+      )}
+
+      <main className="relative w-full flex-1 flex flex-col p-4">
+        {currentStep === 0 && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-6">
+            <h1 className="text-3xl font-black uppercase tracking-tight sm:text-4xl">
+              Workout Wizard
+            </h1>
+            <button
+              onClick={handleNext}
+              className="wizard-primary max-w-xs px-8 py-4 text-sm uppercase tracking-widest rounded-lg"
+            >
+              Start
+            </button>
+          </div>
+        )}
+
+        {currentStep === 1 && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-6">
+            <h2 className="text-xs font-bold uppercase tracking-widest opacity-60">Select Target</h2>
+            <div className="flex gap-2">
+              {["front", "back"].map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setView(item)}
+                  className={`rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all ${
+                    view === item ? "wizard-selected" : "wizard-outline"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+            <div className="anatomy-svg-wrapper w-48 sm:w-64">
+              {view === "front" ? (
+                <FrontView
+                  onSelect={handleSelectMuscle}
+                  selectedMuscle={muscle}
+                  highlightedMuscle={highlightedMuscle}
+                  onHover={setHighlightedMuscle}
+                  onLeave={() => setHighlightedMuscle(null)}
+                />
+              ) : (
+                <BackView
+                  onSelect={handleSelectMuscle}
+                  selectedMuscle={muscle}
+                  highlightedMuscle={highlightedMuscle}
+                  onHover={setHighlightedMuscle}
+                  onLeave={() => setHighlightedMuscle(null)}
+                />
+              )}
+            </div>
+            <button
+              onClick={handleNext}
+              disabled={!muscle}
+              className={`wizard-primary max-w-xs ${btnBase} ${!muscle ? "opacity-30 cursor-not-allowed" : ""}`}
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+        {currentStep === 2 && (
+          <div className="flex flex-1 flex-col gap-4">
+            <h2 className="text-center text-xs font-bold uppercase tracking-widest opacity-60">Select Equipment</h2>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 flex-1 content-start">
+              {availableEquipment.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => handleSelectEquipment(item)}
+                  className={`${cardBase} text-xs font-bold uppercase tracking-wider ${
+                    equipment === item ? "wizard-selected" : "wizard-card"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleNext}
+              disabled={!equipment}
+              className={`wizard-primary max-w-xs mx-auto ${!equipment ? "opacity-30 cursor-not-allowed" : ""} ${btnBase}`}
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+        {currentStep === 3 && (
+          <div className="flex flex-1 flex-col gap-4">
+            <h2 className="text-center text-xs font-bold uppercase tracking-widest opacity-60">Select Type</h2>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 flex-1 content-start">
+              {availableCategories.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => handleSelectCategory(item)}
+                  className={`${cardBase} text-xs font-bold uppercase tracking-wider ${
+                    category === item ? "wizard-selected" : "wizard-card"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleNext}
+              disabled={!category}
+              className={`wizard-primary max-w-xs mx-auto ${!category ? "opacity-30 cursor-not-allowed" : ""} ${btnBase}`}
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+        {currentStep === 4 && (
+          <div className="flex flex-1 flex-col gap-4">
+            <h2 className="text-center text-xs font-bold uppercase tracking-widest opacity-60">Select Difficulty</h2>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 flex-1 content-start">
+              {availableLevels.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => handleSelectLevel(item)}
+                  className={`${cardBase} text-xs font-bold uppercase tracking-wider ${
+                    level === item ? "wizard-selected" : "wizard-card"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleNext}
+              disabled={!level}
+              className={`wizard-primary max-w-xs mx-auto ${!level ? "opacity-30 cursor-not-allowed" : ""} ${btnBase}`}
+            >
+              Show Workouts
+            </button>
+          </div>
+        )}
+
+        {currentStep === 5 && (
+          <div className="flex flex-1 flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-black uppercase tracking-tight">Your Workouts</h2>
+              <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                {finalExercises.length} results
+              </span>
+            </div>
+            {finalExercises.length ? (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 flex-1 content-start">
+                {finalExercises.map((exercise, index) => (
+                  <button
+                    key={exercise.id}
+                    onClick={() => {
+                      setActiveIndex(index);
+                      setIsModalOpen(true);
+                    }}
+                    className="wizard-card p-3 text-left text-xs font-bold uppercase tracking-wider leading-tight"
+                  >
+                    {exercise.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-1 items-center justify-center text-xs font-bold uppercase tracking-widest opacity-40">
+                No workouts found
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      <AnimatePresence>
+        {isModalOpen && currentPreview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setIsModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.98, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.98, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="wizard-scroll relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-[#30363D] bg-[#0D1117]"
+            >
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-[#21262D] text-[#FFFFFF] hover:bg-[#30363D]"
+                aria-label="Close"
+              >
+                <X size={14} strokeWidth={3} />
+              </button>
+
+              {/* Image */}
+              <div className="flex h-[200px] w-full items-center justify-center border-b border-[#30363D] bg-[#21262D]">
+                <RotatingImage
+                  images={currentPreview.images}
+                  name={currentPreview.name}
+                />
+              </div>
+
+              {/* Info Below */}
+              <div className="p-4 space-y-4">
+                <h3 className="pr-8 text-lg font-black uppercase leading-tight">
+                  {currentPreview.name}
+                </h3>
+
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  <span>{currentPreview.equipment}</span>
+                  <span>{currentPreview.category}</span>
+                  <span>{currentPreview.level}</span>
+                </div>
+
+                <div>
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
+                    Target Muscles
+                  </p>
+                  <p className="text-xs font-bold uppercase opacity-90">
+                    {currentPreview.primaryMuscles?.join(" • ")}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
+                    Instructions
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-xs opacity-90">
+                    {currentPreview.instructions?.map((step, index) => (
+                      <li key={index}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+
+                <button
+                  onClick={() => toggleRoutine(currentPreview)}
+                  className={`w-full rounded-lg py-3 text-xs font-black uppercase tracking-widest transition-all ${
+                    routine.some((item) => item.id === currentPreview.id)
+                      ? "wizard-outline"
+                      : "wizard-primary"
+                  }`}
+                >
+                  {routine.some((item) => item.id === currentPreview.id)
+                    ? "Remove"
+                    : "Add to Routine"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isRoutineModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsRoutineModalOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.98, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.98, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-xl border border-[#30363D] bg-[#0D1117]"
+            >
+              <div className="flex items-center justify-between border-b border-[#30363D] p-4">
+                <h2 className="text-sm font-black uppercase">My Routine</h2>
+                <div className="flex items-center gap-2">
+                  {routine.length > 0 && (
+                    <button
+                      onClick={() => setRoutine([])}
+                      className="text-[10px] font-bold uppercase tracking-wider opacity-60 hover:opacity-100"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setIsRoutineModalOpen(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#21262D] hover:bg-[#30363D]"
+                    aria-label="Close routine"
+                  >
+                    <X size={14} strokeWidth={3} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="wizard-scroll min-h-0 flex-1 overflow-y-auto p-4">
+                {routine.length === 0 ? (
+                  <div className="flex min-h-[120px] items-center justify-center text-center text-[10px] font-bold uppercase tracking-widest opacity-40">
+                    Empty
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {routine.map((exercise) => (
+                      <div
+                        key={exercise.id}
+                        className="wizard-card flex items-center justify-between gap-3 rounded-lg p-3"
+                      >
+                        <h3 className="min-w-0 break-words text-xs font-bold uppercase tracking-wider">
+                          {exercise.name}
+                        </h3>
+                        <button
+                          onClick={() => toggleRoutine(exercise)}
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#0D1117] text-[#FFFFFF] hover:bg-[#30363D]"
+                          aria-label={`Remove ${exercise.name}`}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-[#30363D] p-4">
+                <button
+                  onClick={exportRoutineCSV}
+                  disabled={!routine.length}
+                  className={`flex w-full items-center justify-center gap-2 rounded-lg py-3 text-xs font-black uppercase tracking-widest transition-all ${
+                    routine.length ? "wizard-primary" : "cursor-not-allowed opacity-30"
+                  }`}
+                >
+                  <Download size={14} strokeWidth={3} />
+                  Export CSV
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

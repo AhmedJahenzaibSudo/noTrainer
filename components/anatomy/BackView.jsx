@@ -7,7 +7,7 @@ import React from "react";
 const CONFIG = {
   colors: {
     // inactive muscle
-    inactive: "#7b61abff",
+    inactive: "#142F50",
 
     // hovered / selected muscle
     active: "color(display-p3 1 0 0)",
